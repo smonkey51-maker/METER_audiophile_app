@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
 import { RIGS } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
-
-// L'ultima pagina è sempre questa, indipendentemente da cosa dicono i dati.
-const CLOSING_PHOTOS = ["/wrapped/closing-1.jpg"];
+import AvatarNico from "./AvatarNico";
+import AvatarPartner from "./AvatarPartner";
 
 type WrappedData = {
   spotify: {
@@ -119,17 +117,14 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
       ),
     });
 
+    // Le ultime due carte non dipendono dai dati: chiudono sempre così.
     list.push({
       eyebrow: "Grazie per l'ascolto",
-      body: (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%" }}>
-          {CLOSING_PHOTOS.map((src) => (
-            <div key={src} className="wrapped-photo">
-              <Image src={src} alt="" fill sizes="(max-width: 640px) 92vw, 480px" style={{ objectFit: "cover" }} />
-            </div>
-          ))}
-        </div>
-      ),
+      body: <AvatarNico size={120} />,
+    });
+    list.push({
+      eyebrow: "— Jessica",
+      body: <AvatarPartner size={120} />,
     });
 
     return list;
