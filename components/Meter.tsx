@@ -1,40 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  Check, Download, ExternalLink, Headphones, HelpCircle, Moon, Pause, Play,
+  Check, Download, ExternalLink, Headphones, Moon, Pause, Play,
   Plus, Search, SkipBack, SkipForward, Sparkles, Sun, X,
 } from "lucide-react";
-import { DIMS, EMPTY_MODEL, RIGS, VERDICTS, type Listen, type Model, type Rec, type Verdict } from "@/lib/types";
+import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
+import JessicaAvatar from "./JessicaAvatar";
+import SpotifyMark from "./SpotifyMark";
 
-type Msg = { role: "user" | "agent"; text: string };
-type Op = { type: string; index?: number; claim?: string; confidence?: number; reason?: string };
 type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string };
 type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
 
-// Da dove viene ogni voce del registro: la fonte pesa quanto il giudizio,
-// va sempre leggibile, mai dedotta dal contesto.
-const SOURCE_LABEL: Record<Listen["source"], string> = {
-  spotify: "Spotify", manual: "Manuale", rec: "Consiglio", import: "Innesto",
-};
-
 export default function Meter() {
-  // Lo strumento nasce acceso al buio: il pannello chiaro è la variante da laboratorio.
   const [dark, setDark] = useState(true);
   const [model, setModel] = useState<Model>(EMPTY_MODEL);
   const [listens, setListens] = useState<Listen[]>([]);
   const [pending, setPending] = useState(0);
   const [rig, setRig] = useState<string>("aperte");
   const [ready, setReady] = useState(false);
-
-  const [mode, setMode] = useState<"curatore" | "memoria">("curatore");
-  const [chat, setChat] = useState<Msg[]>([{ role: "agent", text: "Da dove partiamo? Un umore, un artista da cui divergere, o un difetto che non sopporti più." }]);
-  const [memChat, setMemChat] = useState<Msg[]>([{ role: "agent", text: "Chiedimi cosa ho capito del tuo ascolto, o correggimi se ho generalizzato male." }]);
-  const [ops, setOps] = useState<Op[]>([]);
-  const [recs, setRecs] = useState<Rec[]>([]);
-  const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"modello" | "profilo" | "registro">("modello");
 
   const [rating, setRating] = useState<{ rec: Partial<Rec> & { id?: number }; verdict: Verdict | null; dims: string[] } | null>(null);
   const [manual, setManual] = useState({ open: false, artist: "", track: "" });
@@ -47,22 +31,17 @@ export default function Meter() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
-  const [firstName, setFirstName] = useState<string | null>(null);
 
-  const history = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
-  const memHistory = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
-  const scroller = useRef<HTMLDivElement>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const toastTimer = useState<{ current: ReturnType<typeof setTimeout> | undefined }>({ current: undefined })[0];
 
   useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
-  useEffect(() => { if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight; }, [chat, memChat, busy, mode]);
-  useEffect(() => () => clearTimeout(toastTimer.current), []);
+  useEffect(() => () => clearTimeout(toastTimer.current), [toastTimer]);
 
   const flash = useCallback((t: string) => {
     clearTimeout(toastTimer.current);
     setToast(t);
     toastTimer.current = setTimeout(() => setToast(null), 3400);
-  }, []);
+  }, [toastTimer]);
 
   // Spotify torna qui con ?spotify=ok|error dopo il consenso: è l'unico momento
   // in cui l'esito del collegamento è noto, va detto subito o si perde.
@@ -84,14 +63,6 @@ export default function Meter() {
   }, []);
 
   useEffect(() => { refresh().finally(() => setReady(true)); }, [refresh]);
-
-  // Solo per personalizzare la tesi in apertura: se Spotify non è collegato
-  // o non risponde, resta null e il saluto torna generico. Non è critico.
-  useEffect(() => {
-    fetch("/api/spotify/profile").then((x) => x.json()).then((r) => {
-      if (r.name) setFirstName(String(r.name).split(" ")[0]);
-    }).catch(() => {});
-  }, []);
 
   const refreshPlayback = useCallback(async () => {
     const r = await fetch("/api/spotify/player").then((x) => x.json()).catch(() => ({ state: null }));
@@ -127,49 +98,16 @@ export default function Meter() {
     finally { setSearching(false); }
   }
 
-  const kept = useMemo(() => listens.filter((l) => l.verdict === "keep"), [listens]);
-  // Un ascolto ripetuto è segnale più forte di uno singolo: viene per primo.
-  const unjudged = useMemo(
-    () => listens.filter((l) => !l.verdict).sort((a, b) => b.plays - a.plays).slice(0, 8),
-    [listens]
-  );
-  const messages = mode === "curatore" ? chat : memChat;
+  // Jessica propone da sola ogni notte: qui compaiono solo i suoi consigli,
+  // non più gli ascolti passivi rilevati da Spotify — quelli li assorbe già
+  // in silenzio il ciclo di consolidamento.
+  const dailyPicks = listens
+    .filter((l) => !l.verdict && l.source === "rec")
+    .sort((a, b) => b.plays - a.plays)
+    .slice(0, 8);
 
-  async function send(raw?: string) {
-    const text = (raw ?? input).trim();
-    if (!text || busy) return;
-    setInput("");
-    (mode === "curatore" ? setChat : setMemChat)((m) => [...m, { role: "user", text }]);
-    setBusy(true);
-    try {
-      if (mode === "curatore") {
-        const r = await fetch("/api/curate", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, rig, history: history.current }),
-        }).then((x) => x.json());
-        history.current = [...history.current, { role: "user" as const, content: text }, { role: "assistant" as const, content: JSON.stringify(r) }].slice(-8);
-        setChat((m) => [...m, { role: "agent", text: r.reply ?? "—" }]);
-        setRecs(r.recs ?? []);
-      } else {
-        const r = await fetch("/api/memory", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, history: memHistory.current }),
-        }).then((x) => x.json());
-        memHistory.current = [...memHistory.current, { role: "user" as const, content: text }, { role: "assistant" as const, content: JSON.stringify(r) }].slice(-10);
-        setMemChat((m) => [...m, { role: "agent", text: r.reply ?? "—" }]);
-        setOps(r.ops ?? []);
-      }
-    } catch { flash("Chiamata fallita."); }
-    finally { setBusy(false); }
-  }
-
-  async function applyOp(op: Op, i: number) {
-    const r = await fetch("/api/memory", {
-      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(op),
-    }).then((x) => x.json());
-    setModel(r.model);
-    setOps((o) => o.filter((_, k) => k !== i));
-    flash("Modello aggiornato.");
+  function openRating(e: Partial<Rec> & { id?: number }) {
+    setRating({ rec: e, verdict: null, dims: [] });
   }
 
   async function commitRating() {
@@ -181,10 +119,9 @@ export default function Meter() {
         artist: rec.artist, track: rec.track, album: rec.album, spotify_url: rec.url,
         verdict, dims, rig, meter: rec.meter, dynamics: rec.dynamics,
         production: rec.production, era: rec.era, bridge: rec.bridge,
-        source: rec.id ? "spotify" : "rec",
+        source: rec.id ? "rec" : "manual",
       }),
     });
-    setRecs((x) => x.filter((y) => !(y.artist === rec.artist && y.track === rec.track)));
     setRating(null);
     await refresh();
     flash(`${rec.track}: ${VERDICTS.find((v) => v.key === verdict)!.label}`);
@@ -195,7 +132,6 @@ export default function Meter() {
     setDreaming(true);
     try {
       const r = await fetch("/api/consolidate", { method: "POST" }).then((x) => x.json());
-      if (r.model) { setModel(r.model); history.current = []; memHistory.current = []; setTab("modello"); }
       await refresh();
       flash(r.model ? `Consolidato: ${r.model.axes.length} assi attivi.` : "Niente da consolidare.");
     } catch { flash("Consolidamento fallito."); }
@@ -208,7 +144,7 @@ export default function Meter() {
     try {
       const r = await fetch("/api/import", { method: "POST" }).then((x) => x.json());
       if (r.error) { flash("Spotify non autorizzato: collega l'account."); return; }
-      setModel(r.model); setGaps(r.gaps ?? []); setImportSummary(r.model.changelog?.[0] ?? "Profilo Spotify importato."); setTab("modello");
+      setModel(r.model); setGaps(r.gaps ?? []); setImportSummary(r.model.changelog?.[0] ?? "Profilo Spotify importato.");
       await refresh();
       flash("Profilo Spotify importato.");
     } catch { flash("Importazione fallita."); }
@@ -243,43 +179,51 @@ export default function Meter() {
           transition: "opacity 1.1s var(--ease)",
         }}
       />
+      {/* Il ritratto di Jessica, non la scritta: la firma della pagina. */}
+      <div className="brand-mark" title="Jessica AI">
+        <JessicaAvatar />
+        <span
+          className={dreaming || importing ? "led pulse" : "led led--idle"}
+          title={dreaming || importing ? "Al lavoro" : "In attesa"}
+          style={{ position: "absolute", bottom: 2, right: 2, width: 8, height: 8, border: "2px solid var(--shell)" }}
+        />
+      </div>
+
       {/* Niente più barra: riaggiorno e consolidamento sono automatici (dream
           cron, ogni notte), non serve più un frontalino di controlli. Resta
-          solo la pill, sospesa in alto — sticky ma senza sfondo proprio. */}
-      <div style={{ position: "sticky", top: 16, zIndex: 40, maxWidth: 1120, margin: "0 auto", padding: "0 28px", display: "flex", justifyContent: "flex-end" }}>
-        <div className="recess seg seg--xs" role="group" aria-label="Stato e preferenze">
-          <span className="seg-item" style={{ cursor: "default", display: "inline-flex", alignItems: "center", gap: 5 }}>
-            <span
-              className={busy || dreaming || importing ? "led pulse" : "led"}
-              title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
-              style={{ width: 5, height: 5 }}
-            />
-            Jessica AI
-          </span>
-          <a className="seg-item" href="/api/spotify/login" style={{ textDecoration: "none" }}>Spotify</a>
-          <label className="seg-item" style={{ display: "inline-flex", alignItems: "center", gap: 5, paddingRight: 9 }}>
-            <Headphones size={12} aria-hidden="true" />
-            <select value={rig} onChange={(e) => setRig(e.target.value)} style={{ appearance: "none", background: "transparent", border: 0, color: "inherit", font: "inherit" }} aria-label="Catena d'ascolto">
+          solo la pill di utilità — sticky in alto su desktop, in basso al
+          centro su mobile (vedi .status-row). */}
+      <div className="status-row">
+        <div className="pill-status seg" role="group" aria-label="Stato e preferenze">
+          <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
+            <SpotifyMark size={16} />
+          </a>
+          <span className="seg-divider" aria-hidden="true" />
+          <span className="seg-item seg-item--icon" style={{ position: "relative" }}>
+            <Headphones size={14} aria-hidden="true" />
+            <select
+              value={rig} onChange={(e) => setRig(e.target.value)}
+              aria-label="Catena d'ascolto" title={RIGS.find((r) => r.key === rig)?.label}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, border: 0, cursor: "pointer", appearance: "none" }}
+            >
               {RIGS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
             </select>
-          </label>
+          </span>
           <span className="seg-divider" aria-hidden="true" />
-          <button className="seg-item" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} style={{ display: "inline-flex", alignItems: "center" }}>
-            {dark ? <Moon size={12} /> : <Sun size={12} />}
+          <button className="seg-item seg-item--icon" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
+            {dark ? <Moon size={14} /> : <Sun size={14} />}
           </button>
         </div>
       </div>
 
       <div className="shell" style={{ maxWidth: 1120, margin: "0 auto" }}>
-        {/* tesi: breve. Il paragrafo analitico completo (model.identity) non si
-            mostra da nessuna parte — ripeteva quanto già detto qui, gli assi
-            sotto sono la versione strutturata della stessa cosa. */}
+        {/* tesi: Jessica dice cosa sa di te, sempre in tono scherzoso — il
+            paragrafo (model.summary) inizia sempre con "Bubi sei...", lo
+            garantisce il prompt che lo genera. */}
         <section className="rise" style={{ maxWidth: 820, marginBottom: 40 }}>
-          <p className="label" style={{ marginBottom: 12, color: "var(--mute)" }}>
-            {firstName ? `Info su di te, ${firstName}` : "Info su di te"}
-          </p>
+          <p className="label" style={{ marginBottom: 12, color: "var(--mute)" }}>Cosa sa Jessica?</p>
           <p className="warmup t-display" style={{ fontSize: 22, lineHeight: 1.45 }}>
-            {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
+            {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
           </p>
         </section>
 
@@ -330,7 +274,7 @@ export default function Meter() {
                   <span style={{ fontSize: 15.5, minWidth: 0 }}><span className="t-display" style={{ fontSize: 15.5 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <button className="btn btn--sm" onClick={() => playerAction("play", r.uri)}>Riproduci</button>
-                    <button className="btn btn--ghost btn--sm" onClick={() => setRating({ rec: { artist: r.artist, track: r.track, album: r.album, url: r.url }, verdict: null, dims: [] })}>Giudica</button>
+                    <button className="btn btn--ghost btn--sm" onClick={() => openRating({ artist: r.artist, track: r.track, album: r.album, url: r.url })}>Giudica</button>
                   </div>
                 </div>
               ))}
@@ -357,231 +301,52 @@ export default function Meter() {
           </section>
         )}
 
-        {/* Tutto quello che riguarda il modello di gusto — la conversazione
-            (Consiglia/Interroga) e i suoi dati strutturati (Modello/Profilo/
-            Registro) — vive sotto la stessa intestazione: sono la stessa cosa
-            vista da due lati, non due funzioni separate. */}
+        {/* Jessica lavora da sola: ogni notte guarda cosa ascolti e propone
+            brani nuovi senza che nessuno glielo chieda. Qui vedi solo il
+            risultato, non c'è più una conversazione da tenere in piedi. */}
         <section style={{ marginTop: 8 }}>
           <div className="section-label"><p className="label">Opinioni di Jessica sulla tua musica</p></div>
           <p className="t-body" style={{ fontSize: 15.5, maxWidth: 640, marginBottom: 28 }}>
-            Chiedile un consiglio o interrogala su cosa ha capito di te — sotto, come ci è arrivata: gli assi del modello, il tuo profilo, il registro di ogni ascolto.
+            Ogni notte passa in rassegna quello che ascolti e sceglie brani nuovi per conto suo — in totale autonomia, non glielo chiedi tu.
           </p>
 
-          {/* modalità */}
-          <div className="recess seg" style={{ marginBottom: 20 }}>
-          {([["curatore", "Consiglia"], ["memoria", "Interroga"]] as const).map(([k, l]) => (
-            <button key={k} className={`seg-item${mode === k ? " is-active" : ""}`} onClick={() => setMode(k)}>
-              {l}
-            </button>
-          ))}
-        </div>
-
-        <div className="cols">
-          <section style={{ minWidth: 0 }}>
-            <div ref={scroller} className="block scroll" style={{ height: 290, overflowY: "auto", padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
-              {messages.map((m, i) => (
-                <div key={i} className="rise" style={{ maxWidth: "92%", alignSelf: m.role === "user" ? "flex-end" : "flex-start" }}>
-                  {m.role === "agent" && <p className="label" style={{ marginBottom: 6 }}>Jessica AI</p>}
-                  <p style={{ fontSize: 17.5, lineHeight: 1.5, color: m.role === "user" ? "var(--mute)" : "var(--ink)", textAlign: m.role === "user" ? "right" : "left" }}>{m.text}</p>
-                </div>
-              ))}
-              {busy && <p className="label pulse">…</p>}
-            </div>
-
-            {mode === "memoria" && ops.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <p className="label" style={{ marginBottom: 10 }}>Proposte di modifica</p>
-                {ops.map((op, i) => (
-                  <div key={i} className="block pop" style={{ padding: 20, marginBottom: 8, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div style={{ minWidth: 0 }}>
-                      <p className="label" style={{ marginBottom: 5 }}>{op.type.replace("_", " ")}</p>
-                      <p className="t-body" style={{ fontSize: 16.5 }}>{op.claim || `indice ${op.index}`}</p>
-                      {op.reason && <p className="t-body" style={{ fontSize: 15.5, marginTop: 5 }}>{op.reason}</p>}
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                      <button className="btn btn--pri btn--sm" onClick={() => applyOp(op, i)}>Applica</button>
-                      <button className="btn btn--ghost btn--sm" onClick={() => setOps((o) => o.filter((_, k) => k !== i))}>Scarta</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-              <input className="field" value={input} onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && send()}
-                placeholder={mode === "curatore" ? "Dinamica ampia, niente remaster compressi…" : "Da dove viene l'asse sul timbro?"} />
-              <button className="btn btn--pri" onClick={() => send()} disabled={busy || !input.trim()}>Invia</button>
-            </div>
-
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-              {(mode === "curatore"
-                ? ["Divergi dal mio ascolto recente", "Testa un asse incerto", "Registrazioni analogiche", "Sorprendimi"]
-                : ["Cosa hai capito?", "L'asse più debole", "Contraddizioni?", "Come sono cambiato?"]
-              ).map((q) => <button key={q} className="btn btn--sm" onClick={() => send(q)} disabled={busy}>{q}</button>)}
-            </div>
-
-            {mode === "curatore" && (
-              <div style={{ marginTop: 44 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
-                  <p className="label">In valutazione</p>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {pending > 0 && (
-                      <button className="btn btn--ghost btn--sm" onClick={consolidate} disabled={dreaming} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                        <Sparkles size={13} /> {dreaming ? "Consolido…" : <>Consolida ora <span className="tnum">{pending}</span></>}
-                      </button>
-                    )}
-                    <button className="btn btn--ghost btn--sm" onClick={() => setManual({ open: true, artist: "", track: "" })} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                      <Plus size={14} /> Registra un ascolto
-                    </button>
-                  </div>
-                </div>
-
-                {recs.length === 0 && !busy && (
-                  <p className="t-body" style={{ fontSize: 15.5, maxWidth: 480 }}>
-                    Coda vuota — chiedi un consiglio qui sopra. Quando giudichi, dì anche <em>su cosa</em>: produzione, dinamica, arrangiamento. È da lì che impara, non dal verdetto.
-                  </p>
-                )}
-
-                {recs.map((r, i) => (
-                  <article key={`${r.artist}-${r.track}`} className="block rise" style={{ padding: 28, marginBottom: 12, animationDelay: `${i * 70}ms` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "baseline", flexWrap: "wrap" }}>
-                      <h3 className="t-display" style={{ fontSize: 22, margin: 0 }}>{r.track}</h3>
-                      <span className="t-subdisplay" style={{ fontSize: 15.5 }}>{r.artist}</span>
-                    </div>
-                    {r.learned && <p className="label" style={{ color: "var(--accent)", marginTop: 10 }}>Dal modello · {r.learned}</p>}
-
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px", margin: "20px 0" }}>
-                      {([["Metrica", r.meter], ["Dinamica", r.dynamics], ["Produzione", r.production], ["Epoca", r.era]] as const).map(([k, v]) => (
-                        <div key={k} style={{ minWidth: 104 }}>
-                          <p className="label">{k}</p>
-                          <p style={{ fontSize: 15.5, marginTop: 3 }}>{v || "—"}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <p className="t-body" style={{ fontSize: 17 }}>{r.why}</p>
-                    <p className="label" style={{ marginTop: 12 }}>Ponte · {r.bridge || "—"}</p>
-
-                    <div style={{ display: "flex", gap: 8, marginTop: 22, flexWrap: "wrap" }}>
-                      {r.url && (
-                        <a className="btn btn--sm" href={r.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "var(--good)", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          <ExternalLink size={13} /> Ascolta
-                        </a>
-                      )}
-                      <button className="btn btn--pri btn--sm" onClick={() => setRating({ rec: r, verdict: null, dims: [] })}>Giudica</button>
-                    </div>
-                  </article>
-                ))}
-
-                {unjudged.length > 0 && (
-                  <div style={{ marginTop: 44 }}>
-                    <div className="section-label"><p className="label">Rilevati da Spotify — {unjudged.length}</p></div>
-                    <p className="t-body" style={{ fontSize: 15.5, marginBottom: 14, maxWidth: 520 }}>
-                      Contano già come esposizione. Un giudizio li rende segnale forte.
-                    </p>
-                    <div className="block rows">
-                      {unjudged.map((e) => (
-                        <div key={e.id} className="row-tap" role="button" tabIndex={0}
-                          onClick={() => setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}
-                          onKeyDown={(ev) => ev.key === "Enter" && setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}
-                          style={{ display: "flex", alignItems: "baseline", gap: 10, cursor: "pointer" }}>
-                          <span className="t-display" style={{ fontSize: 16, minWidth: 0 }}>{e.track}</span>
-                          <span className="t-subdisplay" style={{ minWidth: 0 }}>{e.artist}</span>
-                          {e.plays > 1 && <span className="tnum" style={{ color: "var(--faint)", fontSize: 13 }}>{e.plays}×</span>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-
-          {/* laterale */}
-          <aside style={{ minWidth: 0 }}>
-            <div className="recess seg" style={{ width: "100%", marginBottom: 18 }}>
-              {([["modello", model.axes.length], ["profilo", model.taste.length], ["registro", listens.length]] as const).map(([t, n]) => (
-                <button key={t} className={`seg-item${tab === t ? " is-active" : ""}`} onClick={() => setTab(t as any)} style={{ flex: 1 }}>
-                  {t} <span className="tnum" style={{ color: "var(--faint)" }}>{n}</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
+            <p className="label">Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button className="btn btn--ghost btn--sm" onClick={() => setManual({ open: true, artist: "", track: "" })} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <Plus size={14} /> Registra un ascolto
+              </button>
+              {pending > 0 && (
+                <button className="btn btn--ghost btn--sm" onClick={consolidate} disabled={dreaming} aria-label="Consolida ora" title="Consolida ora" style={{ display: "inline-flex", alignItems: "center" }}>
+                  <Sparkles size={14} />
                 </button>
+              )}
+              <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing} aria-label="Riaggiorna dal profilo Spotify" title="Riaggiorna dal profilo Spotify" style={{ display: "inline-flex", alignItems: "center" }}>
+                <Download size={14} />
+              </button>
+            </div>
+          </div>
+
+          {dailyPicks.length === 0 ? (
+            <p className="t-body" style={{ fontSize: 15.5, maxWidth: 480 }}>
+              Niente di nuovo ancora — Jessica propone al ciclo notturno. Nel frattempo registra un ascolto che vuoi farle conoscere.
+            </p>
+          ) : (
+            <div className="block rows">
+              {dailyPicks.map((e) => (
+                <div key={e.id} className="row-tap" role="button" tabIndex={0}
+                  onClick={() => openRating({ ...e, url: e.spotify_url, id: e.id })}
+                  onKeyDown={(ev) => ev.key === "Enter" && openRating({ ...e, url: e.spotify_url, id: e.id })}
+                  style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, cursor: "pointer" }}>
+                  <span style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0 }}>
+                    <span className="t-display" style={{ fontSize: 16 }}>{e.track}</span>
+                    <span className="t-subdisplay">{e.artist}</span>
+                  </span>
+                  {e.bridge && <span className="label" style={{ flexShrink: 0 }}>{e.bridge}</span>}
+                </div>
               ))}
             </div>
-
-            {tab === "modello" && (
-              <div className="rise">
-                {model.rules.length > 0 && (
-                  <>
-                    <div className="section-label" style={{ marginTop: 24 }}><p className="label">Regole assolute</p></div>
-                    <div className="block rows">
-                      {model.rules.map((r, i) => (
-                        <p key={i} className="t-body" style={{ fontSize: 16.5 }}>{r}</p>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {model.eras.length > 0 && (
-                  <>
-                    <div className="section-label" style={{ marginTop: 24 }}><p className="label">Ere precedenti</p></div>
-                    <div className="block rows">
-                      {model.eras.slice().reverse().map((e, i) => (
-                        <p key={i} className="t-body" style={{ fontSize: 15.5 }}>
-                          <span className="tnum" style={{ color: "var(--faint)" }}>#{e.n}</span> · {e.summary}
-                        </p>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {tab === "profilo" && (
-              <div className="rise">
-                <div className="section-label">
-                  <p className="label">Profilo</p>
-                  <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing} style={{ display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                    <Download size={13} />
-                    {importing ? "Leggo il profilo…" : model.taste.length ? "Riaggiorna" : "Importa da Spotify"}
-                  </button>
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {model.taste.map((a) => <span key={a} className="btn btn--sm" style={{ cursor: "default" }}>{a}</span>)}
-                  {model.taste.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Profilo vuoto — si riempie da solo ogni notte, o subito col bottone qui sopra.</p>}
-                </div>
-              </div>
-            )}
-
-            {tab === "registro" && (
-              <div className="rise">
-                <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-                  {VERDICTS.map((v) => (
-                    <div key={v.key} className="block" style={{ flex: 1, padding: 20 }}>
-                      <div className="tnum t-display" style={{ fontSize: 28, lineHeight: 1 }}>
-                        {listens.filter((l) => l.verdict === v.key).length}
-                      </div>
-                      <div className="label" style={{ marginTop: 6 }}>{v.label}</div>
-                    </div>
-                  ))}
-                </div>
-                {listens.map((e) => (
-                  <div key={e.id} className="block" style={{ padding: "16px 22px", marginBottom: 8, opacity: e.consolidated ? 0.66 : 1 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
-                      <span style={{ fontSize: 16, minWidth: 0 }}><span className="t-display" style={{ fontSize: 16 }}>{e.track}</span> <span className="t-subdisplay">· {e.artist}</span></span>
-                      <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                        <span className="label">{SOURCE_LABEL[e.source]}</span>
-                        <span style={{ fontSize: 13.5, color: e.verdict ? "var(--accent)" : "var(--faint)", whiteSpace: "nowrap" }}>
-                          {e.verdict ? VERDICTS.find((v) => v.key === e.verdict)!.label : `${e.plays}× ascoltato`}
-                        </span>
-                      </span>
-                    </div>
-                    {e.dims?.length > 0 && <p className="label" style={{ marginTop: 6 }}>{e.dims.join(" · ")}</p>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </aside>
-        </div>
+          )}
         </section>
       </div>
 
@@ -637,14 +402,14 @@ export default function Meter() {
           <div className="block sheet" style={{ maxWidth: 430, width: "100%", padding: 30 }}>
             <p className="t-display" style={{ fontSize: 21 }}>Registra un ascolto</p>
             <p className="t-body" style={{ fontSize: 15.5, margin: "10px 0 20px" }}>
-              Quello che ascolti fuori da qui vale più dei miei suggerimenti.
+              Quello che ascolti fuori da qui vale più dei suoi suggerimenti.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <input className="field" placeholder="Artista" value={manual.artist} onChange={(e) => setManual((m) => ({ ...m, artist: e.target.value }))} />
               <input className="field" placeholder="Brano" value={manual.track} onChange={(e) => setManual((m) => ({ ...m, track: e.target.value }))} />
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                 <button className="btn btn--pri" style={{ flex: 1 }} disabled={!manual.artist.trim() || !manual.track.trim()}
-                  onClick={() => { setRating({ rec: { artist: manual.artist.trim(), track: manual.track.trim() }, verdict: null, dims: [] }); setManual({ open: false, artist: "", track: "" }); }}>
+                  onClick={() => { openRating({ artist: manual.artist.trim(), track: manual.track.trim() }); setManual({ open: false, artist: "", track: "" }); }}>
                   Continua
                 </button>
                 <button className="btn btn--ghost" onClick={() => setManual({ open: false, artist: "", track: "" })}>Annulla</button>

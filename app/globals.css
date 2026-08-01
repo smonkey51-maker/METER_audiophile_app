@@ -181,6 +181,34 @@ html, body {
    nel riferimento: IT/EN/FR da una parte, luna dall'altra. */
 .seg-divider { width: 1px; align-self: stretch; background: var(--hair); margin: 4px 1px; }
 
+/* La pill di stato: a differenza di .recess dev'essere una superficie che
+   si legge subito, come nel sito di riferimento — vetro pieno, ombra,
+   bordo — non un incavo quasi invisibile sullo sfondo. */
+.pill-status {
+  display: inline-flex; align-items: center; padding: 5px;
+  border-radius: 999px; border: 1px solid var(--hair);
+  background: var(--panel), var(--form);
+  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--lift-1);
+}
+.pill-status .seg-item { font-size: 12px; padding: 8px 14px; }
+.pill-status .seg-item--icon {
+  padding: 8px; width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* Marchio di Jessica: un ritratto a tratto, sospeso in cima alla pagina
+   come una firma, non nella pill — quella resta solo utilità. */
+.brand-mark {
+  position: relative;
+  width: 68px; height: 68px; margin: 4px auto 32px;
+  display: grid; place-items: center; color: var(--ink);
+  border-radius: 999px; border: 1px solid var(--hair);
+  background: var(--panel), var(--form);
+  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--lift-1);
+}
+
 .field {
   border: 1px solid var(--hair); outline: 0; border-radius: 999px;
   background: var(--recess); color: var(--ink);
@@ -292,7 +320,25 @@ html, body {
    con lo schermo. Niente riflussi strutturali, solo respiro proporzionato. */
 .shell { padding: 48px 28px 96px; }
 @media (max-width: 640px) {
-  .shell { padding: 24px 16px 64px; }
+  /* Spazio in più in fondo: sotto c'è la pill fissa, il contenuto non
+     deve finirci sotto. */
+  .shell { padding: 24px 16px 112px; }
+}
+
+/* La riga di stato: sticky in alto a destra su desktop, come nel
+   riferimento. Su mobile non c'è spazio a destra per farla respirare,
+   quindi scende in basso, centrata e sempre a portata di pollice. */
+.status-row {
+  position: sticky; top: 16px; z-index: 40;
+  max-width: 1120px; margin: 0 auto 40px; padding: 0 28px;
+  display: flex; justify-content: flex-end;
+}
+@media (max-width: 640px) {
+  .status-row {
+    position: fixed; top: auto; left: 0; right: 0;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    margin: 0; padding: 0 16px; justify-content: center; z-index: 60;
+  }
 }
 
 .scroll::-webkit-scrollbar { width: 4px }
