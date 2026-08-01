@@ -19,12 +19,12 @@
   --on-accent: #1A0800;
   --good:   #32D74B;
 
-  /* Elevazione morbida: ombra diffusa più un filo di luce sul bordo alto
-     del vetro. Nessun colore nell'ombra, nessun bagliore. */
-  --lift-1: 0 1px 1px rgba(0,0,0,.08), 0 10px 28px rgba(0,0,0,.20),
-            inset 0 1px 0 rgba(255,255,255,.10);
-  --lift-2: 0 2px 4px rgba(0,0,0,.10), 0 20px 48px rgba(0,0,0,.28),
-            inset 0 1px 0 rgba(255,255,255,.15);
+  /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
+     alto del vetro. Nessun colore nell'ombra, nessun bagliore. */
+  --lift-1: 0 1px 1px rgba(0,0,0,.14), 0 6px 16px rgba(0,0,0,.18),
+            0 22px 44px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.10);
+  --lift-2: 0 2px 4px rgba(0,0,0,.16), 0 12px 28px rgba(0,0,0,.22),
+            0 36px 72px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.15);
   --carve:  inset 0 1px 3px rgba(0,0,0,.28), inset 0 -1px 0 rgba(255,255,255,.04);
 
   /* Un accento appena percepibile sul primario: mai un alone, solo
