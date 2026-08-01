@@ -221,6 +221,12 @@ export async function previousTrack(owner = OWNER) {
   return command("POST", `/me/player/previous?device_id=${device}`, undefined, owner);
 }
 
+/** Il nome mostrato sul profilo Spotify — per personalizzare l'interfaccia. */
+export async function profileName(owner = OWNER) {
+  const data = await get("/me", owner);
+  return data?.display_name as string | undefined;
+}
+
 export async function createPlaylist(name: string, uris: string[], owner = OWNER) {
   const token = await accessToken(owner);
   if (!token) throw new Error("spotify: non autorizzato");
