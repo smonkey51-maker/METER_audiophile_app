@@ -289,7 +289,10 @@ export default function Meter() {
         <section className="block rise" style={{ padding: 24, marginBottom: 32 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
-              <p className="label" style={{ marginBottom: 6 }}>
+              <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                {playback?.isPlaying && (
+                  <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
+                )}
                 {playback ? `In ascolto${playback.device ? " su " + playback.device : ""}` : "Ora in ascolto"}
               </p>
               <p style={{ fontSize: 17 }}>
@@ -449,19 +452,21 @@ export default function Meter() {
 
                 {unjudged.length > 0 && (
                   <div style={{ marginTop: 44 }}>
-                    <p className="label" style={{ marginBottom: 4 }}>Rilevati da Spotify — {unjudged.length}</p>
+                    <div className="section-label"><p className="label">Rilevati da Spotify — {unjudged.length}</p></div>
                     <p className="t-body" style={{ fontSize: 15.5, marginBottom: 14, maxWidth: 520 }}>
                       Contano già come esposizione. Un giudizio li rende segnale forte.
                     </p>
-                    {unjudged.map((e) => (
-                      <div key={e.id} className="block" style={{ padding: "16px 22px", marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-                        <span style={{ fontSize: 16, minWidth: 0 }}>
-                          <span className="t-display" style={{ fontSize: 16 }}>{e.track}</span> <span className="t-subdisplay">· {e.artist}</span>
-                          {e.plays > 1 && <span className="tnum" style={{ color: "var(--accent)", marginLeft: 10, fontSize: 13.5 }}>{e.plays}×</span>}
-                        </span>
-                        <button className="btn btn--sm" onClick={() => setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}>Giudica</button>
-                      </div>
-                    ))}
+                    <div className="block rows">
+                      {unjudged.map((e) => (
+                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+                          <span style={{ fontSize: 16, minWidth: 0 }}>
+                            <span className="t-display" style={{ fontSize: 16 }}>{e.track}</span> <span className="t-subdisplay">· {e.artist}</span>
+                            {e.plays > 1 && <span className="tnum" style={{ color: "var(--accent)", marginLeft: 10, fontSize: 13.5 }}>{e.plays}×</span>}
+                          </span>
+                          <button className="btn btn--sm" onClick={() => setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}>Giudica</button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -481,35 +486,43 @@ export default function Meter() {
             {tab === "modello" && (
               <div className="rise">
                 {model.axes.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Nessun asse. Importa il profilo, oppure giudica qualche brano.</p>}
-                {model.axes.map((a, i) => (
-                  <div key={i} className="block rise" style={{ padding: 22, marginBottom: 10, display: "flex", gap: 18, alignItems: "flex-start", animationDelay: `${i * 45}ms` }}>
-                    <Ring value={a.confidence} size={40} />
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <p className="t-body" style={{ fontSize: 16.5 }}>{a.claim}</p>
-                      {a.trace?.length > 0 && <p style={{ fontSize: 14.5, color: "var(--faint)", marginTop: 8, lineHeight: 1.5 }}>{a.trace.join(" · ")}</p>}
-                      <p className="label tnum" style={{ marginTop: 8 }}>{a.confidence.toFixed(2)} · {a.evidence} evidenze</p>
-                    </div>
+                {model.axes.length > 0 && (
+                  <div className="block rows">
+                    {model.axes.map((a, i) => (
+                      <div key={i} style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+                        <Ring value={a.confidence} size={40} />
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p className="t-body" style={{ fontSize: 16.5 }}>{a.claim}</p>
+                          {a.trace?.length > 0 && <p style={{ fontSize: 14.5, color: "var(--faint)", marginTop: 8, lineHeight: 1.5 }}>{a.trace.join(" · ")}</p>}
+                          <p className="label tnum" style={{ marginTop: 8 }}>{a.confidence.toFixed(2)} · {a.evidence} evidenze</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
 
                 {model.rules.length > 0 && (
                   <>
-                    <p className="label" style={{ margin: "24px 0 10px" }}>Regole assolute</p>
-                    {model.rules.map((r, i) => (
-                      <div key={i} className="block t-body" style={{ padding: "16px 22px", marginBottom: 8, fontSize: 16.5 }}>{r}</div>
-                    ))}
+                    <div className="section-label" style={{ marginTop: 24 }}><p className="label">Regole assolute</p></div>
+                    <div className="block rows">
+                      {model.rules.map((r, i) => (
+                        <p key={i} className="t-body" style={{ fontSize: 16.5 }}>{r}</p>
+                      ))}
+                    </div>
                   </>
                 )}
 
                 {model.eras.length > 0 && (
-                  <div className="recess" style={{ padding: 22, marginTop: 24 }}>
-                    <p className="label" style={{ marginBottom: 12 }}>Ere precedenti</p>
-                    {model.eras.slice().reverse().map((e, i) => (
-                      <p key={i} className="t-body" style={{ fontSize: 15.5, marginBottom: 8 }}>
-                        <span className="tnum" style={{ color: "var(--faint)" }}>#{e.n}</span> · {e.summary}
-                      </p>
-                    ))}
-                  </div>
+                  <>
+                    <div className="section-label" style={{ marginTop: 24 }}><p className="label">Ere precedenti</p></div>
+                    <div className="block rows">
+                      {model.eras.slice().reverse().map((e, i) => (
+                        <p key={i} className="t-body" style={{ fontSize: 15.5 }}>
+                          <span className="tnum" style={{ color: "var(--faint)" }}>#{e.n}</span> · {e.summary}
+                        </p>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             )}

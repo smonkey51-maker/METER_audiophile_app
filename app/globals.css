@@ -67,10 +67,12 @@ body {
   --accent: #E8501A;
   --on-accent: #FFFFFF;
   --good:   #1E7A4B;
-  --lift-1: 0 1px 1px rgba(20,18,14,.03), 0 8px 22px rgba(20,18,14,.06),
-            inset 0 1px 0 rgba(255,255,255,.7);
-  --lift-2: 0 2px 4px rgba(20,18,14,.04), 0 18px 40px rgba(20,18,14,.09),
-            inset 0 1px 0 rgba(255,255,255,.85);
+  /* Tre strati — vicino, medio, lontano — invece di uno solo: è quello
+     che fa sembrare la carta sospesa e non solo scontornata. */
+  --lift-1: 0 1px 1px rgba(20,18,14,.03), 0 4px 10px rgba(20,18,14,.04),
+            0 16px 32px rgba(20,18,14,.05), inset 0 1px 0 rgba(255,255,255,.7);
+  --lift-2: 0 2px 4px rgba(20,18,14,.04), 0 8px 20px rgba(20,18,14,.06),
+            0 28px 56px rgba(20,18,14,.08), inset 0 1px 0 rgba(255,255,255,.85);
   --carve:  inset 0 1px 3px rgba(20,18,14,.07), inset 0 -1px 0 rgba(255,255,255,.6);
   --glow-1: 0 4px 14px color-mix(in srgb, var(--accent) 14%, transparent);
   --glow-2: 0 8px 22px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -88,11 +90,10 @@ html, body {
   letter-spacing: -0.011em;
 }
 
-/* ── superfici: vetro sospeso, mai bordo disegnato ── */
+/* ── superfici: si distinguono per tono, mai per un bordo disegnato ── */
 .block {
   background: var(--panel), var(--form);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  border: 1px solid var(--hair);
   border-radius: var(--r-block);
   box-shadow: var(--lift-1);
   transition: box-shadow .45s var(--ease), transform .45s var(--ease), background .45s var(--ease);
@@ -103,6 +104,21 @@ html, body {
   border-radius: var(--r-inner);
   box-shadow: var(--carve);
 }
+
+/* Contenitore con righe interne: una lista non è N card ripetute, è UN
+   contenitore diviso da fili sottili — meno rumore, più leggibile. */
+.rows > * {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--hair);
+}
+.rows > *:last-child { border-bottom: 0; }
+
+/* Etichetta di sezione con un filo che la prolunga fino al bordo. */
+.section-label {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 14px;
+}
+.section-label::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
 .flush { background: transparent; }
 
 /* ── controlli: capsule di vetro ── */
@@ -201,6 +217,22 @@ html, body {
 }
 .led--idle { background: var(--faint); }
 
+/* Equalizzatore: si muove solo quando la musica è davvero in corso,
+   non un'animazione decorativa fine a sé stessa. */
+.eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; flex-shrink: 0; }
+.eq i {
+  display: block; width: 2px; background: var(--accent); border-radius: 1px;
+  animation: eq-bounce 1s ease-in-out infinite;
+}
+.eq i:nth-child(1) { height: 40%; animation-delay: -0.9s; }
+.eq i:nth-child(2) { height: 100%; animation-delay: -0.6s; }
+.eq i:nth-child(3) { height: 60%; animation-delay: -0.3s; }
+.eq i:nth-child(4) { height: 80%; animation-delay: 0s; }
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(.35); }
+  50%      { transform: scaleY(1); }
+}
+
 /* ── barra superiore: vetro, non frontalino ── */
 .bar {
   position: sticky; top: 0; z-index: 40;
@@ -263,6 +295,6 @@ html, body {
 .scroll::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 99px; opacity: .4 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .pop, .sheet, .pulse, .warmup { animation: none }
+  .rise, .pop, .sheet, .pulse, .warmup, .eq i { animation: none }
   .btn:hover:not(:disabled) { transform: none }
 }
