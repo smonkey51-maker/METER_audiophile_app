@@ -214,7 +214,7 @@ export default function Meter() {
     <main style={{ minHeight: "100vh" }}>
       {/* barra */}
       <div className="bar">
-        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "18px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
+        <div className="bar-inner" style={{ maxWidth: 1120, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
           {/* Marchio serigrafato + LED di alimentazione: acceso quando l'agente lavora. */}
           <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span
@@ -243,44 +243,30 @@ export default function Meter() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "48px 28px 96px" }}>
-        {/* tesi */}
-        <section className="rise" style={{ maxWidth: 820, marginBottom: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
-          {/* L'indicatore: unico strumento a quadrante della pagina, sempre acceso. */}
-          <div style={{ position: "relative", flexShrink: 0, paddingTop: 4, isolation: "isolate" }}>
-            <Ring value={Math.min(1, model.cycles / 8)} size={112} live={dreaming} accent="var(--accent)" core={false} />
-            <span
-              className="label tnum"
-              style={{
-                position: "absolute", inset: 0, display: "grid", placeItems: "center",
-                fontSize: 19, letterSpacing: 0, color: "var(--ink)", paddingTop: 4,
-              }}
-            >
-              {model.cycles}
-            </span>
-          </div>
-          <div>
-            <p className="label" style={{ marginBottom: 12 }}>
-              {model.cycles ? `Modello dopo ${model.cycles} ${model.cycles === 1 ? "ciclo" : "cicli"}` : "Nessun consolidamento"}
-            </p>
-            {model.identity ? (
-              <>
-                {/* L'identità non è uno slogan: è un paragrafo analitico, va letto
-                    a corpo normale. La classe "display" resta solo per il testo
-                    breve dello stato vuoto — ingrandire un paragrafo lo rompe. */}
-                <p className="warmup" style={{ fontSize: 20, lineHeight: 1.55, fontWeight: 600, letterSpacing: "-0.015em", color: "var(--ink)" }}>
-                  {model.identity}
-                </p>
-                {model.summary && (
-                  <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--mute)", marginTop: 14 }}>{model.summary}</p>
-                )}
-              </>
-            ) : (
-              <p className="display warmup">
-                {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
+      <div className="shell" style={{ maxWidth: 1120, margin: "0 auto" }}>
+        {/* tesi: solo testo, niente indicatore decorativo — il numero di
+            cicli non ha un "pieno" reale da mostrare come progresso. */}
+        <section className="rise" style={{ maxWidth: 820, marginBottom: 40 }}>
+          <p className="label" style={{ marginBottom: 12 }}>
+            {model.cycles ? `Modello dopo ${model.cycles} ${model.cycles === 1 ? "ciclo" : "cicli"}` : "Nessun consolidamento"}
+          </p>
+          {model.identity ? (
+            <>
+              {/* L'identità non è uno slogan: è un paragrafo analitico, va letto
+                  a corpo normale. La classe "display" resta solo per il testo
+                  breve dello stato vuoto — ingrandire un paragrafo lo rompe. */}
+              <p className="warmup" style={{ fontSize: 20, lineHeight: 1.55, fontWeight: 600, letterSpacing: "-0.015em", color: "var(--ink)" }}>
+                {model.identity}
               </p>
-            )}
-          </div>
+              {model.summary && (
+                <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--mute)", marginTop: 14 }}>{model.summary}</p>
+              )}
+            </>
+          ) : (
+            <p className="display warmup">
+              {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
+            </p>
+          )}
         </section>
 
         {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
