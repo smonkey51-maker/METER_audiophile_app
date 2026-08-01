@@ -165,6 +165,9 @@ export default function Meter() {
             </span>
           </span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <a className="btn btn--ghost btn--sm" href="/api/spotify/login" style={{ textDecoration: "none" }}>
+              Collega a Spotify
+            </a>
             <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing}>
               {importing ? "Leggo il profilo…" : model.cycles || model.axes.length ? "Riaggiorna dal profilo" : "Importa da Spotify"}
             </button>
