@@ -237,7 +237,7 @@ export default function Meter() {
               className={busy || dreaming || importing ? "led pulse" : "led"}
               title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
             />
-            <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-.01em" }}>
+            <span className="t-display" style={{ fontSize: 16 }}>
               METER
             </span>
           </span>
@@ -264,7 +264,7 @@ export default function Meter() {
             vive nel tab "modello" — qui nessuno lo leggerebbe comunque. */}
         <section className="rise" style={{ maxWidth: 820, marginBottom: 40 }}>
           <p className="label" style={{ marginBottom: 12 }}>Info su di te</p>
-          <p className="warmup" style={{ fontSize: 22, lineHeight: 1.45, fontWeight: 600, letterSpacing: "-0.018em", color: "var(--ink)" }}>
+          <p className="warmup t-display" style={{ fontSize: 22, lineHeight: 1.45 }}>
             {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
           </p>
           {model.axes.length > 0 && (
@@ -283,10 +283,10 @@ export default function Meter() {
               <p className="label" style={{ marginBottom: 6 }}>
                 {playback ? `In ascolto${playback.device ? " su " + playback.device : ""}` : "Ora in ascolto"}
               </p>
-              <p style={{ fontSize: 16.5 }}>
+              <p style={{ fontSize: 17 }}>
                 {playback
-                  ? <>{playback.track} <span style={{ color: "var(--mute)" }}>· {playback.artist}</span></>
-                  : <span style={{ color: "var(--mute)" }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</span>}
+                  ? <><span className="t-display">{playback.track}</span> <span className="t-subdisplay">· {playback.artist}</span></>
+                  : <span className="t-body">Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</span>}
               </p>
             </div>
             {playback && (
@@ -316,7 +316,7 @@ export default function Meter() {
             <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
               {searchResults.map((r) => (
                 <div key={r.uri} className="recess" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 15.5, minWidth: 0 }}>{r.track} <span style={{ color: "var(--mute)" }}>· {r.artist}</span></span>
+                  <span style={{ fontSize: 15.5, minWidth: 0 }}><span className="t-display" style={{ fontSize: 15.5 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <button className="btn btn--sm" onClick={() => playerAction("play", r.uri)}>Riproduci</button>
                     <button className="btn btn--ghost btn--sm" onClick={() => setRating({ rec: { artist: r.artist, track: r.track, album: r.album, url: r.url }, verdict: null, dims: [] })}>Giudica</button>
@@ -331,12 +331,12 @@ export default function Meter() {
           <section className="block pop" style={{ padding: 24, marginBottom: 32, maxWidth: 760, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ minWidth: 0 }}>
               {importSummary && (
-                <p style={{ fontSize: 16.5, lineHeight: 1.5, marginBottom: gaps.length > 0 ? 16 : 0 }}>{importSummary}</p>
+                <p className="t-body" style={{ fontSize: 16.5, marginBottom: gaps.length > 0 ? 16 : 0 }}>{importSummary}</p>
               )}
               {gaps.length > 0 && (
                 <>
                   <p className="label" style={{ marginBottom: 10 }}>A cui il profilo non risponde</p>
-                  {gaps.map((g, i) => <p key={i} style={{ fontSize: 16.5, lineHeight: 1.5, marginBottom: 8 }}>{g}</p>)}
+                  {gaps.map((g, i) => <p key={i} className="t-body" style={{ fontSize: 16.5, marginBottom: 8 }}>{g}</p>)}
                 </>
               )}
             </div>
@@ -373,8 +373,8 @@ export default function Meter() {
                   <div key={i} className="block pop" style={{ padding: 20, marginBottom: 8, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ minWidth: 0 }}>
                       <p className="label" style={{ marginBottom: 5 }}>{op.type.replace("_", " ")}</p>
-                      <p style={{ fontSize: 16.5, lineHeight: 1.45 }}>{op.claim || `indice ${op.index}`}</p>
-                      {op.reason && <p style={{ fontSize: 15.5, color: "var(--mute)", marginTop: 5, lineHeight: 1.45 }}>{op.reason}</p>}
+                      <p className="t-body" style={{ fontSize: 16.5 }}>{op.claim || `indice ${op.index}`}</p>
+                      {op.reason && <p className="t-body" style={{ fontSize: 15.5, marginTop: 5 }}>{op.reason}</p>}
                     </div>
                     <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                       <button className="btn btn--pri btn--sm" onClick={() => applyOp(op, i)}>Applica</button>
@@ -407,7 +407,7 @@ export default function Meter() {
                 </div>
 
                 {recs.length === 0 && !busy && (
-                  <p style={{ color: "var(--mute)", fontSize: 17, lineHeight: 1.55, maxWidth: 560 }}>
+                  <p className="t-body" style={{ fontSize: 17, maxWidth: 560 }}>
                     Niente in coda. Il modello impara dalle dimensioni, non dai verdetti: quando giudichi, dichiara <em>cosa</em> ha funzionato o rotto.
                   </p>
                 )}
@@ -415,8 +415,8 @@ export default function Meter() {
                 {recs.map((r, i) => (
                   <article key={`${r.artist}-${r.track}`} className="block rise" style={{ padding: 28, marginBottom: 12, animationDelay: `${i * 70}ms` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "baseline", flexWrap: "wrap" }}>
-                      <h3 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.028em", margin: 0 }}>{r.track}</h3>
-                      <span style={{ fontSize: 15.5, color: "var(--mute)" }}>{r.artist}</span>
+                      <h3 className="t-display" style={{ fontSize: 22, margin: 0 }}>{r.track}</h3>
+                      <span className="t-subdisplay" style={{ fontSize: 15.5 }}>{r.artist}</span>
                     </div>
                     {r.learned && <p className="label" style={{ color: "var(--accent)", marginTop: 10 }}>Dal modello · {r.learned}</p>}
 
@@ -429,7 +429,7 @@ export default function Meter() {
                       ))}
                     </div>
 
-                    <p style={{ fontSize: 17, lineHeight: 1.55 }}>{r.why}</p>
+                    <p className="t-body" style={{ fontSize: 17 }}>{r.why}</p>
                     <p className="label" style={{ marginTop: 12 }}>Ponte · {r.bridge || "—"}</p>
 
                     <div style={{ display: "flex", gap: 8, marginTop: 22, flexWrap: "wrap" }}>
@@ -442,13 +442,13 @@ export default function Meter() {
                 {unjudged.length > 0 && (
                   <div style={{ marginTop: 44 }}>
                     <p className="label" style={{ marginBottom: 4 }}>Rilevati da Spotify — {unjudged.length}</p>
-                    <p style={{ fontSize: 15.5, color: "var(--mute)", marginBottom: 14, lineHeight: 1.5, maxWidth: 520 }}>
+                    <p className="t-body" style={{ fontSize: 15.5, marginBottom: 14, maxWidth: 520 }}>
                       Contano già come esposizione. Un giudizio li rende segnale forte.
                     </p>
                     {unjudged.map((e) => (
                       <div key={e.id} className="block" style={{ padding: "16px 22px", marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
                         <span style={{ fontSize: 16, minWidth: 0 }}>
-                          {e.track} <span style={{ color: "var(--mute)" }}>· {e.artist}</span>
+                          <span className="t-display" style={{ fontSize: 16 }}>{e.track}</span> <span className="t-subdisplay">· {e.artist}</span>
                           {e.plays > 1 && <span className="tnum" style={{ color: "var(--accent)", marginLeft: 10, fontSize: 13.5 }}>{e.plays}×</span>}
                         </span>
                         <button className="btn btn--sm" onClick={() => setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}>Giudica</button>
@@ -475,15 +475,15 @@ export default function Meter() {
                 {model.identity && (
                   <div className="recess" style={{ padding: 22, marginBottom: 18 }}>
                     <p className="label" style={{ marginBottom: 10 }}>Identità d'ascolto</p>
-                    <p style={{ fontSize: 15.5, lineHeight: 1.6, color: "var(--mute)" }}>{model.identity}</p>
+                    <p className="t-body" style={{ fontSize: 15.5 }}>{model.identity}</p>
                   </div>
                 )}
-                {model.axes.length === 0 && <p style={{ color: "var(--mute)", fontSize: 16.5, lineHeight: 1.55 }}>Nessun asse. Importa il profilo, oppure giudica qualche brano.</p>}
+                {model.axes.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Nessun asse. Importa il profilo, oppure giudica qualche brano.</p>}
                 {model.axes.map((a, i) => (
                   <div key={i} className="block rise" style={{ padding: 22, marginBottom: 10, display: "flex", gap: 18, alignItems: "flex-start", animationDelay: `${i * 45}ms` }}>
                     <Ring value={a.confidence} size={40} />
                     <div style={{ minWidth: 0, flex: 1 }}>
-                      <p style={{ fontSize: 16.5, lineHeight: 1.45 }}>{a.claim}</p>
+                      <p className="t-body" style={{ fontSize: 16.5 }}>{a.claim}</p>
                       {a.trace?.length > 0 && <p style={{ fontSize: 14.5, color: "var(--faint)", marginTop: 8, lineHeight: 1.5 }}>{a.trace.join(" · ")}</p>}
                       <p className="label tnum" style={{ marginTop: 8 }}>{a.confidence.toFixed(2)} · {a.evidence} evidenze</p>
                     </div>
@@ -494,7 +494,7 @@ export default function Meter() {
                   <>
                     <p className="label" style={{ margin: "24px 0 10px" }}>Regole assolute</p>
                     {model.rules.map((r, i) => (
-                      <div key={i} className="block" style={{ padding: "16px 22px", marginBottom: 8, fontSize: 16.5 }}>{r}</div>
+                      <div key={i} className="block t-body" style={{ padding: "16px 22px", marginBottom: 8, fontSize: 16.5 }}>{r}</div>
                     ))}
                   </>
                 )}
@@ -503,7 +503,7 @@ export default function Meter() {
                   <div className="recess" style={{ padding: 22, marginTop: 24 }}>
                     <p className="label" style={{ marginBottom: 12 }}>Ere precedenti</p>
                     {model.eras.slice().reverse().map((e, i) => (
-                      <p key={i} style={{ fontSize: 15.5, color: "var(--mute)", lineHeight: 1.5, marginBottom: 8 }}>
+                      <p key={i} className="t-body" style={{ fontSize: 15.5, marginBottom: 8 }}>
                         <span className="tnum" style={{ color: "var(--faint)" }}>#{e.n}</span> · {e.summary}
                       </p>
                     ))}
@@ -515,7 +515,7 @@ export default function Meter() {
             {tab === "profilo" && (
               <div className="rise" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {model.taste.map((a) => <span key={a} className="btn btn--sm" style={{ cursor: "default" }}>{a}</span>)}
-                {model.taste.length === 0 && <p style={{ color: "var(--mute)", fontSize: 16.5 }}>Profilo vuoto. Importa da Spotify.</p>}
+                {model.taste.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Profilo vuoto. Importa da Spotify.</p>}
               </div>
             )}
 
@@ -524,7 +524,7 @@ export default function Meter() {
                 <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
                   {VERDICTS.map((v) => (
                     <div key={v.key} className="block" style={{ flex: 1, padding: 20 }}>
-                      <div className="tnum" style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-.03em", lineHeight: 1 }}>
+                      <div className="tnum t-display" style={{ fontSize: 28, lineHeight: 1 }}>
                         {listens.filter((l) => l.verdict === v.key).length}
                       </div>
                       <div className="label" style={{ marginTop: 6 }}>{v.label}</div>
@@ -534,7 +534,7 @@ export default function Meter() {
                 {listens.map((e) => (
                   <div key={e.id} className="block" style={{ padding: "16px 22px", marginBottom: 8, opacity: e.consolidated ? 0.66 : 1 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
-                      <span style={{ fontSize: 16, minWidth: 0 }}>{e.track} <span style={{ color: "var(--mute)" }}>· {e.artist}</span></span>
+                      <span style={{ fontSize: 16, minWidth: 0 }}><span className="t-display" style={{ fontSize: 16 }}>{e.track}</span> <span className="t-subdisplay">· {e.artist}</span></span>
                       <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                         <span className="label">{SOURCE_LABEL[e.source]}</span>
                         <span style={{ fontSize: 13.5, color: e.verdict ? "var(--accent)" : "var(--faint)", whiteSpace: "nowrap" }}>
@@ -556,8 +556,8 @@ export default function Meter() {
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && setRating(null)}>
           <div className="block sheet" style={{ maxWidth: 470, width: "100%", padding: 30 }}>
             <p className="label">Giudizio</p>
-            <p style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.028em", marginTop: 6 }}>{rating.rec.track}</p>
-            <p style={{ fontSize: 15.5, color: "var(--mute)", marginTop: 2 }}>{rating.rec.artist}</p>
+            <p className="t-display" style={{ fontSize: 22, marginTop: 6 }}>{rating.rec.track}</p>
+            <p className="t-subdisplay" style={{ fontSize: 15.5, marginTop: 2 }}>{rating.rec.artist}</p>
 
             <div style={{ display: "flex", gap: 8, margin: "26px 0" }}>
               {VERDICTS.map((v) => (
@@ -569,7 +569,7 @@ export default function Meter() {
             </div>
 
             <p className="label">Su cosa</p>
-            <p style={{ fontSize: 15.5, color: "var(--mute)", margin: "6px 0 14px", lineHeight: 1.45 }}>
+            <p className="t-body" style={{ fontSize: 15.5, margin: "6px 0 14px" }}>
               È la parte che il modello impara davvero. Puoi sceglierne più di una.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 26 }}>
@@ -597,8 +597,8 @@ export default function Meter() {
       {manual.open && (
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && setManual({ open: false, artist: "", track: "" })}>
           <div className="block sheet" style={{ maxWidth: 430, width: "100%", padding: 30 }}>
-            <p style={{ fontSize: 21, fontWeight: 600, letterSpacing: "-.028em" }}>Registra un ascolto</p>
-            <p style={{ fontSize: 15.5, color: "var(--mute)", margin: "10px 0 20px", lineHeight: 1.5 }}>
+            <p className="t-display" style={{ fontSize: 21 }}>Registra un ascolto</p>
+            <p className="t-body" style={{ fontSize: 15.5, margin: "10px 0 20px" }}>
               Quello che ascolti fuori da qui vale più dei miei suggerimenti.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -618,7 +618,7 @@ export default function Meter() {
 
       {toast && (
         <div className="block pop" style={{ position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: 26, zIndex: 70, padding: "14px 24px", boxShadow: "var(--lift-2)", maxWidth: "92vw" }}>
-          <span style={{ fontSize: 15.5 }}>{toast}</span>
+          <span className="t-body" style={{ fontSize: 15.5 }}>{toast}</span>
         </div>
       )}
     </main>
