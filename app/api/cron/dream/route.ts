@@ -7,10 +7,11 @@ export const maxDuration = 300;
  * Alle 4:00. Consolidare a ore morte invece che a soglia di reazioni:
  * la memoria si assesta mentre dormi e la mattina il modello è cambiato.
  *
- * Il riaggiornamento dal profilo Spotify gira prima, nello stesso ciclo:
- * non ha un suo cron dedicato (il piano Hobby ne ammette uno solo al
- * giorno per progetto, già preso da questo), quindi condivide la
- * finestra col consolidamento invece di restare manuale.
+ * Il riaggiornamento dal profilo Spotify e la scelta dei consigli del
+ * giorno girano nello stesso ciclo, incatenati: nessuno dei due ha un
+ * cron dedicato (il piano Hobby ne ammette uno solo al giorno per
+ * progetto, già preso da questo). Jessica propone dopo il consolidamento,
+ * così i consigli riflettono il modello appena aggiornato.
  */
 export async function GET(req: Request) {
   if (process.env.CRON_SECRET && req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -27,5 +28,15 @@ export async function GET(req: Request) {
   }
 
   const res = await fetch(`${base}/api/consolidate`, { method: "POST" });
-  return NextResponse.json({ reimport, consolidate: await res.json() });
+  const consolidate = await res.json();
+
+  let picks: unknown = { skipped: true };
+  try {
+    const p = await fetch(`${base}/api/picks`, { method: "POST" });
+    picks = await p.json();
+  } catch (e: any) {
+    picks = { error: e.message };
+  }
+
+  return NextResponse.json({ reimport, consolidate, picks });
 }
