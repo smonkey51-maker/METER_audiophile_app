@@ -99,7 +99,7 @@ export default function Meter() {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action, uri }),
     }).then((x) => x.json()).catch(() => ({ error: "comando fallito" }));
-    if (r.error) { flash("Comando fallito: apri Spotify su un dispositivo."); return; }
+    if (r.error) { flash(r.error); return; }
     setPlayback(r.state ?? null);
   }
 
