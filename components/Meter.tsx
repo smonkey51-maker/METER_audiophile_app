@@ -263,11 +263,22 @@ export default function Meter() {
             <p className="label" style={{ marginBottom: 12 }}>
               {model.cycles ? `Modello dopo ${model.cycles} ${model.cycles === 1 ? "ciclo" : "cicli"}` : "Nessun consolidamento"}
             </p>
-            <p className="display warmup">
-              {model.identity || model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
-            </p>
-            {model.identity && model.summary && (
-              <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--mute)", marginTop: 16 }}>{model.summary}</p>
+            {model.identity ? (
+              <>
+                {/* L'identità non è uno slogan: è un paragrafo analitico, va letto
+                    a corpo normale. La classe "display" resta solo per il testo
+                    breve dello stato vuoto — ingrandire un paragrafo lo rompe. */}
+                <p className="warmup" style={{ fontSize: 20, lineHeight: 1.55, fontWeight: 600, letterSpacing: "-0.015em", color: "var(--ink)" }}>
+                  {model.identity}
+                </p>
+                {model.summary && (
+                  <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--mute)", marginTop: 14 }}>{model.summary}</p>
+                )}
+              </>
+            ) : (
+              <p className="display warmup">
+                {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
+              </p>
             )}
           </div>
         </section>
