@@ -398,6 +398,41 @@ html, body {
 .scroll::-webkit-scrollbar { width: 4px }
 .scroll::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 99px; opacity: .4 }
 
+/* Il "simil-Wrapped": una scena a sé, non un foglio sopra la pagina —
+   schermo intero, una carta alla volta, come una storia. */
+.wrapped-scrim {
+  position: fixed; inset: 0; z-index: 90;
+  background: var(--shell); color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: veil .32s ease both;
+}
+.wrapped-close {
+  position: absolute; top: 20px; right: 20px; z-index: 3;
+  border: 0; background: var(--recess); color: var(--mute);
+  width: 38px; height: 38px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.wrapped-close:hover { color: var(--ink); background: var(--form); }
+.wrapped-progress {
+  position: absolute; top: 20px; left: 20px; right: 74px; z-index: 3;
+  display: flex; gap: 5px;
+}
+.wrapped-progress-seg {
+  flex: 1; height: 3px; border-radius: 99px; background: var(--hair);
+  overflow: hidden;
+}
+.wrapped-progress-seg.is-done, .wrapped-progress-seg.is-active { background: var(--ink); }
+.wrapped-progress-seg.is-active { opacity: .55; }
+.wrapped-card {
+  position: relative; z-index: 2; pointer-events: none;
+  max-width: 480px; width: 100%; text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+.wrapped-nav { position: absolute; inset: 0; display: flex; z-index: 1; }
+.wrapped-tap { flex: 1; border: 0; background: transparent; cursor: pointer; }
+
 @media (prefers-reduced-motion: reduce) {
   .rise, .pop, .sheet, .pulse, .warmup, .eq i { animation: none }
   .btn:hover:not(:disabled) { transform: none }
