@@ -6,3 +6,6 @@ node_modules
 *.log
 next-env.d.ts
 *.tsbuildinfo
+
+# In attesa che la repo diventi privata: non committare foto personali.
+/public/wrapped/

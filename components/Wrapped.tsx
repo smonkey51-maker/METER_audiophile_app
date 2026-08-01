@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { RIGS } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
+
+// L'ultima pagina è sempre questa, indipendentemente da cosa dicono i dati.
+const CLOSING_PHOTOS = ["/wrapped/closing-1.jpg"];
 
 type WrappedData = {
   spotify: {
@@ -88,23 +92,6 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
       });
     }
 
-    if (data.stats.judged > 0) {
-      list.push({
-        eyebrow: "Verdetti dati",
-        body: (
-          <>
-            <p className="t-display" style={{ fontSize: 44 }}>{data.stats.judged}</p>
-            <p className="t-body" style={{ fontSize: 15.5, marginTop: 4 }}>brani giudicati</p>
-            <div style={{ display: "flex", gap: 20, marginTop: 22 }}>
-              <div><p className="t-display" style={{ fontSize: 22 }}>{data.stats.keep}</p><p className="label">Tenuti</p></div>
-              <div><p className="t-display" style={{ fontSize: 22 }}>{data.stats.maybe}</p><p className="label">In dubbio</p></div>
-              <div><p className="t-display" style={{ fontSize: 22 }}>{data.stats.drop}</p><p className="label">Scartati</p></div>
-            </div>
-          </>
-        ),
-      });
-    }
-
     if (data.model.axes.length > 0) {
       const top = [...data.model.axes].sort((a, b) => b.confidence - a.confidence)[0];
       list.push({
@@ -129,6 +116,19 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
             <p className="t-body" style={{ fontSize: 15.5, marginTop: 18 }}>Catena preferita: <span className="t-subdisplay">{rigLabel(data.stats.topRig)}</span></p>
           )}
         </>
+      ),
+    });
+
+    list.push({
+      eyebrow: "Grazie per l'ascolto",
+      body: (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%" }}>
+          {CLOSING_PHOTOS.map((src) => (
+            <div key={src} className="wrapped-photo">
+              <Image src={src} alt="" fill sizes="(max-width: 640px) 92vw, 480px" style={{ objectFit: "cover" }} />
+            </div>
+          ))}
+        </div>
       ),
     });
 
