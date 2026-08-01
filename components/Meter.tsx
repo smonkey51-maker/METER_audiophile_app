@@ -357,8 +357,18 @@ export default function Meter() {
           </section>
         )}
 
-        {/* modalità */}
-        <div className="recess seg" style={{ marginBottom: 20 }}>
+        {/* Tutto quello che riguarda il modello di gusto — la conversazione
+            (Consiglia/Interroga) e i suoi dati strutturati (Modello/Profilo/
+            Registro) — vive sotto la stessa intestazione: sono la stessa cosa
+            vista da due lati, non due funzioni separate. */}
+        <section style={{ marginTop: 8 }}>
+          <div className="section-label"><p className="label">Opinioni di Jessica sulla tua musica</p></div>
+          <p className="t-body" style={{ fontSize: 15.5, maxWidth: 640, marginBottom: 28 }}>
+            Chiedile un consiglio o interrogala su cosa ha capito di te — sotto, come ci è arrivata: gli assi del modello, il tuo profilo, il registro di ogni ascolto.
+          </p>
+
+          {/* modalità */}
+          <div className="recess seg" style={{ marginBottom: 20 }}>
           {([["curatore", "Consiglia"], ["memoria", "Interroga"]] as const).map(([k, l]) => (
             <button key={k} className={`seg-item${mode === k ? " is-active" : ""}`} onClick={() => setMode(k)}>
               {l}
@@ -572,6 +582,7 @@ export default function Meter() {
             )}
           </aside>
         </div>
+        </section>
       </div>
 
       {/* foglio di giudizio */}
