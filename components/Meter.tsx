@@ -7,6 +7,12 @@ import { DIMS, EMPTY_MODEL, RIGS, VERDICTS, type Listen, type Model, type Rec, t
 type Msg = { role: "user" | "agent"; text: string };
 type Op = { type: string; index?: number; claim?: string; confidence?: number; reason?: string };
 
+// Da dove viene ogni voce del registro: la fonte pesa quanto il giudizio,
+// va sempre leggibile, mai dedotta dal contesto.
+const SOURCE_LABEL: Record<Listen["source"], string> = {
+  spotify: "Spotify", manual: "Manuale", rec: "Consiglio", import: "Innesto",
+};
+
 export default function Meter() {
   // Lo strumento nasce acceso al buio: il pannello chiaro è la variante da laboratorio.
   const [dark, setDark] = useState(true);
@@ -30,6 +36,7 @@ export default function Meter() {
   const [dreaming, setDreaming] = useState(false);
   const [importing, setImporting] = useState(false);
   const [gaps, setGaps] = useState<string[]>([]);
+  const [importSummary, setImportSummary] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const history = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -46,6 +53,20 @@ export default function Meter() {
     setToast(t);
     toastTimer.current = setTimeout(() => setToast(null), 3400);
   }, []);
+
+  // Spotify torna qui con ?spotify=ok|error dopo il consenso: è l'unico momento
+  // in cui l'esito del collegamento è noto, va detto subito o si perde.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get("spotify");
+    if (s === "ok") flash("Spotify collegato con successo.");
+    if (s === "error") flash("Collegamento a Spotify fallito. Riprova.");
+    if (s) {
+      params.delete("spotify");
+      const qs = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+    }
+  }, [flash]);
 
   const refresh = useCallback(async () => {
     const r = await fetch("/api/state").then((x) => x.json());
@@ -131,7 +152,7 @@ export default function Meter() {
     try {
       const r = await fetch("/api/import", { method: "POST" }).then((x) => x.json());
       if (r.error) { flash("Spotify non autorizzato: collega l'account."); return; }
-      setModel(r.model); setGaps(r.gaps ?? []); setTab("modello");
+      setModel(r.model); setGaps(r.gaps ?? []); setImportSummary(r.model.changelog?.[0] ?? "Profilo Spotify importato."); setTab("modello");
       await refresh();
       flash("Profilo Spotify importato.");
     } catch { flash("Importazione fallita."); }
@@ -153,7 +174,7 @@ export default function Meter() {
     <main style={{ minHeight: "100vh" }}>
       {/* barra */}
       <div className="bar">
-        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "14px 24px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "18px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
           {/* Marchio serigrafato + LED di alimentazione: acceso quando l'agente lavora. */}
           <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span
@@ -182,7 +203,7 @@ export default function Meter() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "40px 24px 80px" }}>
+      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "48px 28px 96px" }}>
         {/* tesi */}
         <section className="rise" style={{ maxWidth: 820, marginBottom: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
           {/* L'indicatore: unico strumento a quadrante della pagina, sempre acceso. */}
@@ -211,10 +232,20 @@ export default function Meter() {
           </div>
         </section>
 
-        {gaps.length > 0 && (
-          <section className="block pop" style={{ padding: 24, marginBottom: 32, maxWidth: 760 }}>
-            <p className="label" style={{ marginBottom: 10 }}>A cui il profilo non risponde</p>
-            {gaps.map((g, i) => <p key={i} style={{ fontSize: 16.5, lineHeight: 1.5, marginBottom: 8 }}>{g}</p>)}
+        {(importSummary || gaps.length > 0) && (
+          <section className="block pop" style={{ padding: 24, marginBottom: 32, maxWidth: 760, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ minWidth: 0 }}>
+              {importSummary && (
+                <p style={{ fontSize: 16.5, lineHeight: 1.5, marginBottom: gaps.length > 0 ? 16 : 0 }}>{importSummary}</p>
+              )}
+              {gaps.length > 0 && (
+                <>
+                  <p className="label" style={{ marginBottom: 10 }}>A cui il profilo non risponde</p>
+                  {gaps.map((g, i) => <p key={i} style={{ fontSize: 16.5, lineHeight: 1.5, marginBottom: 8 }}>{g}</p>)}
+                </>
+              )}
+            </div>
+            <button className="btn btn--ghost btn--sm" onClick={() => { setImportSummary(null); setGaps([]); }}>Chiudi</button>
           </section>
         )}
 
@@ -403,8 +434,11 @@ export default function Meter() {
                   <div key={e.id} className="block" style={{ padding: "16px 22px", marginBottom: 8, opacity: e.consolidated ? 0.66 : 1 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
                       <span style={{ fontSize: 16, minWidth: 0 }}>{e.track} <span style={{ color: "var(--mute)" }}>· {e.artist}</span></span>
-                      <span style={{ fontSize: 13.5, color: e.verdict ? "var(--accent)" : "var(--faint)", whiteSpace: "nowrap" }}>
-                        {e.verdict ? VERDICTS.find((v) => v.key === e.verdict)!.label : `${e.plays}× ascoltato`}
+                      <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                        <span className="label">{SOURCE_LABEL[e.source]}</span>
+                        <span style={{ fontSize: 13.5, color: e.verdict ? "var(--accent)" : "var(--faint)", whiteSpace: "nowrap" }}>
+                          {e.verdict ? VERDICTS.find((v) => v.key === e.verdict)!.label : `${e.plays}× ascoltato`}
+                        </span>
                       </span>
                     </div>
                     {e.dims?.length > 0 && <p className="label" style={{ marginTop: 6 }}>{e.dims.join(" · ")}</p>}
