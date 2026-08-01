@@ -9,14 +9,14 @@
    ───────────────────────────────────────────── */
 
 :root {
-  --shell:  #0B0B10;   /* sfondo: nero quasi puro, con un filo di blu */
+  --shell:  #000000;   /* OLED: nero puro, non grigio scurissimo */
   --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
   --recess: rgba(255,255,255,.03);   /* incavo: campi, tab non attive */
   --ink:    #F5F5F7;
   --mute:   #A1A1A6;
   --faint:  #6E6E73;
-  --accent: #0A84FF;
-  --on-accent: #FFFFFF;
+  --accent: #FF6A3D;   /* arancione hi-fi: l'unico colore vivido, riservato ai dettagli critici */
+  --on-accent: #1A0800;
   --good:   #32D74B;
 
   /* Elevazione morbida: ombra diffusa più un filo di luce sul bordo alto
@@ -37,9 +37,10 @@
 
   --hair: rgba(255,255,255,.12);
   --blur: blur(26px) saturate(180%);
-  --r-block: 24px;
-  --r-inner: 16px;
+  --r-block: 28px;   /* squircle: curvatura accentuata, mai un angolo netto */
+  --r-inner: 20px;
   --ease: cubic-bezier(.22,1,.36,1);
+  --spring: cubic-bezier(.34,1.56,.64,1);   /* per i pochi momenti che devono "arrivare" — fogli e comparse, non gli hover */
   --mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 
@@ -47,32 +48,34 @@
    niente griglia tecnica. È lo sfondo dietro il vetro, non un pattern. */
 body {
   background:
-    radial-gradient(60% 50% at 12% -6%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 68%),
-    radial-gradient(55% 46% at 96% 8%, color-mix(in srgb, #9B5CFF 16%, transparent), transparent 66%),
-    radial-gradient(70% 60% at 50% 118%, color-mix(in srgb, var(--good) 8%, transparent), transparent 70%),
+    radial-gradient(60% 50% at 12% -6%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 68%),
+    radial-gradient(55% 46% at 96% 8%, color-mix(in srgb, #5C7CFF 12%, transparent), transparent 66%),
+    radial-gradient(70% 60% at 50% 118%, color-mix(in srgb, var(--good) 6%, transparent), transparent 70%),
     var(--shell);
   background-attachment: fixed;
 }
 
+/* Editoriale: non "scuro invertito", ma un'altra stanza — bianco latte,
+   ampio, da rivista d'arte. Meno saturazione ovunque tranne l'accento. */
 [data-theme="light"] {
-  --shell:  #F2F2F7;
-  --form:   rgba(255,255,255,.55);
-  --recess: rgba(0,0,0,.035);
-  --ink:    #1D1D1F;
-  --mute:   #6E6E73;
-  --faint:  #98989D;
-  --accent: #0066FF;
+  --shell:  #FAF9F6;
+  --form:   rgba(255,255,255,.6);
+  --recess: rgba(20,18,14,.035);
+  --ink:    #1C1B18;
+  --mute:   #716C63;
+  --faint:  #A19B8F;
+  --accent: #E8501A;
   --on-accent: #FFFFFF;
-  --good:   #248A3D;
-  --lift-1: 0 1px 1px rgba(0,0,0,.03), 0 8px 22px rgba(0,0,0,.07),
+  --good:   #1E7A4B;
+  --lift-1: 0 1px 1px rgba(20,18,14,.03), 0 8px 22px rgba(20,18,14,.06),
             inset 0 1px 0 rgba(255,255,255,.7);
-  --lift-2: 0 2px 4px rgba(0,0,0,.04), 0 18px 40px rgba(0,0,0,.10),
+  --lift-2: 0 2px 4px rgba(20,18,14,.04), 0 18px 40px rgba(20,18,14,.09),
             inset 0 1px 0 rgba(255,255,255,.85);
-  --carve:  inset 0 1px 3px rgba(0,0,0,.08), inset 0 -1px 0 rgba(255,255,255,.6);
-  --glow-1: 0 4px 14px color-mix(in srgb, var(--accent) 16%, transparent);
-  --glow-2: 0 8px 22px color-mix(in srgb, var(--accent) 20%, transparent);
+  --carve:  inset 0 1px 3px rgba(20,18,14,.07), inset 0 -1px 0 rgba(255,255,255,.6);
+  --glow-1: 0 4px 14px color-mix(in srgb, var(--accent) 14%, transparent);
+  --glow-2: 0 8px 22px color-mix(in srgb, var(--accent) 18%, transparent);
   --panel: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,0) 55%);
-  --hair: rgba(0,0,0,.07);
+  --hair: rgba(20,18,14,.06);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -149,11 +152,12 @@ html, body {
   box-shadow: var(--carve), 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
-/* Etichette: piccole, discrete, in maiuscolo — mai monospace: non c'è
-   più nulla da leggere come serigrafato su un pannello. */
+/* Etichette: i metadati tecnici (fonte, dimensioni, catena d'ascolto) sono
+   l'unico punto dove il monospace resta — piccolissimo, geometrico, mai invasivo. */
 .label {
-  font-size: 11px; font-weight: 600; color: var(--faint);
-  letter-spacing: .07em; text-transform: uppercase;
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 500; color: var(--faint);
+  letter-spacing: .08em; text-transform: uppercase;
 }
 
 /* Cifre allineate, con il font di sistema: niente cambio di famiglia. */
@@ -192,7 +196,7 @@ html, body {
   to   { opacity: 1; transform: none }
 }
 @keyframes sheet {
-  from { opacity: 0; transform: translateY(36px) scale(.96); filter: blur(10px) }
+  from { opacity: 0; transform: translateY(36px) scale(.94); filter: blur(10px) }
   to   { opacity: 1; transform: none; filter: blur(0) }
 }
 @keyframes veil  { from { opacity: 0 } to { opacity: 1 } }
@@ -208,7 +212,7 @@ html, body {
 
 .rise   { animation: rise .6s var(--ease) both }
 .pop    { animation: pop .38s var(--ease) both }
-.sheet  { animation: sheet .5s var(--ease) both }
+.sheet  { animation: sheet .55s var(--spring) both }
 .pulse  { animation: pulse 1.8s infinite ease-in-out }
 .warmup { animation: warmup .9s var(--ease) both }
 
