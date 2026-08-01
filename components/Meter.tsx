@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { Moon, Pause, Play, SkipBack, SkipForward, Sun } from "lucide-react";
 import Ring from "./Ring";
 import { DIMS, EMPTY_MODEL, RIGS, VERDICTS, type Listen, type Model, type Rec, type Verdict } from "@/lib/types";
 
@@ -244,30 +244,40 @@ export default function Meter() {
       {/* barra */}
       <div className="bar">
         <div className="bar-inner" style={{ maxWidth: 1120, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
-          {/* Marchio serigrafato + LED di alimentazione: acceso quando l'agente lavora. */}
+          {/* Marchio: il nome della webapp, statico. Chi lavora è Jessica AI,
+              nella pill qui a fianco — è lì che pulsa il LED d'attività. */}
           <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span
-              className={busy || dreaming || importing ? "led pulse" : "led"}
-              title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
-            />
             <span className="t-display" style={{ fontSize: 16 }}>
               METER
             </span>
           </span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <a className="btn btn--ghost btn--sm" href="/api/spotify/login" style={{ textDecoration: "none" }}>
-              Collega a Spotify
-            </a>
             <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing}>
               {importing ? "Leggo il profilo…" : model.cycles || model.axes.length ? "Riaggiorna dal profilo" : "Importa da Spotify"}
             </button>
-            <select className="btn btn--sm" value={rig} onChange={(e) => setRig(e.target.value)} style={{ appearance: "none" }}>
-              {RIGS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
-            </select>
             <button className={`btn btn--sm ${pending ? "btn--pri" : ""}`} onClick={consolidate} disabled={!pending || dreaming}>
               {dreaming ? "Consolido…" : <>Consolida <span className="tnum">{pending}</span></>}
             </button>
-            <button className="btn btn--ghost btn--sm" onClick={() => setDark((d) => !d)}>{dark ? "Chiaro" : "Scuro"}</button>
+
+            {/* Pill unica: identità, collegamento Spotify, catena d'ascolto, tema —
+                un solo binario invece di controlli sparsi, pensata soprattutto
+                per il mobile dove prima la barra andava a capo su più righe. */}
+            <div className="recess seg" role="group" aria-label="Stato e preferenze">
+              <span className="seg-item" style={{ cursor: "default", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <span
+                  className={busy || dreaming || importing ? "led pulse" : "led"}
+                  title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
+                />
+                Jessica AI
+              </span>
+              <a className="seg-item" href="/api/spotify/login" style={{ textDecoration: "none" }}>Spotify</a>
+              <select className="seg-item" value={rig} onChange={(e) => setRig(e.target.value)} style={{ appearance: "none" }} aria-label="Catena d'ascolto">
+                {RIGS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
+              </select>
+              <button className="seg-item" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} style={{ display: "inline-flex", alignItems: "center" }}>
+                {dark ? <Moon size={14} /> : <Sun size={14} />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
