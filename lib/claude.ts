@@ -1,15 +1,31 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 export const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-export const MODEL = "claude-sonnet-4-6";
+
+/**
+ * Due modelli, non uno. Conversazione e memoria girano sul modello economico:
+ * sono turni brevi, frequenti, e un errore si corregge nel turno dopo.
+ * Consolidamento e innesto girano sul modello capace: riscrivono il modello
+ * appreso una volta al giorno, e un asse sbagliato lì resta per settimane.
+ * Entrambi sovrascrivibili da env se vuoi spostare l'ago su costo o qualità.
+ */
+export const MODEL_FAST = process.env.CLAUDE_MODEL_FAST || "claude-haiku-4-5";
+export const MODEL_DEEP = process.env.CLAUDE_MODEL_DEEP || "claude-sonnet-4-6";
 
 /**
  * Il system prompt è marcato per il caching: identità, assi e regole non cambiano
- * tra una richiesta e l'altra, quindi in lettura costano il 10%.
+ * tra una richiesta e l'altra, quindi in lettura costano il 10%. Attenzione alla
+ * soglia minima: sotto i 4096 token di prefisso Haiku non mette niente in cache
+ * (Sonnet si ferma a 1024), quindi all'inizio, con pochi assi, lo sconto non c'è.
  */
-export async function ask(system: string, messages: Anthropic.MessageParam[], maxTokens = 1200) {
+export async function ask(
+  system: string,
+  messages: Anthropic.MessageParam[],
+  maxTokens = 1200,
+  model: string = MODEL_FAST,
+) {
   const res = await anthropic.messages.create({
-    model: MODEL,
+    model,
     max_tokens: maxTokens,
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
     messages,

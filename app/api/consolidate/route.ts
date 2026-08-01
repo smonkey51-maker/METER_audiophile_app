@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ask, clampAxes, parseJson } from "@/lib/claude";
+import { ask, clampAxes, parseJson, MODEL_DEEP } from "@/lib/claude";
 import { getModel, logCycle, markConsolidated, pendingListens, saveModel } from "@/lib/db";
 import { CONSOLIDATE_SYSTEM, META_SYSTEM, listenLine } from "@/lib/prompts";
 import { MAX_AXES, MAX_RULES, META_EVERY } from "@/lib/types";
@@ -21,7 +21,7 @@ ${JSON.stringify({ axes: model.axes, rules: model.rules, summary: model.summary 
 NUOVE VOCI (${fresh.length}):
 ${fresh.map(listenLine).join("\n")}`;
 
-  const content = await ask(CONSOLIDATE_SYSTEM, [{ role: "user", content: payload }], 1800);
+  const content = await ask(CONSOLIDATE_SYSTEM, [{ role: "user", content: payload }], 1800, MODEL_DEEP);
   const next = parseJson<any>(content, null);
   if (!next?.axes) return NextResponse.json({ error: "consolidamento illeggibile" }, { status: 502 });
 
@@ -50,7 +50,7 @@ ${model.eras.map((e) => `- ciclo ${e.n}: ${e.summary}`).join("\n") || "(nessuna)
 
 MODELLO CORRENTE:
 ${JSON.stringify({ axes, rules: updated.rules, summary: updated.summary }, null, 1)}`,
-      }], 800);
+      }], 800, MODEL_DEEP);
       const meta = parseJson<any>(metaContent, null);
       if (meta?.identity) {
         updated = {

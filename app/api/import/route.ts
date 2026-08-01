@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ask, clampAxes, parseJson } from "@/lib/claude";
+import { ask, clampAxes, parseJson, MODEL_DEEP } from "@/lib/claude";
 import { getModel, logCycle, saveModel, upsertListen } from "@/lib/db";
 import { SEED_SYSTEM } from "@/lib/prompts";
 import { fullProfile } from "@/lib/spotify";
@@ -27,7 +27,7 @@ LIBRERIA SALVATA: ${p.savedTracks.join(" | ")}
 ARTISTI SEGUITI: ${p.following.join(", ")}
 ASCOLTATI DI RECENTE: ${p.recent.map((r: any) => `${r.artist} — ${r.track}`).join(" | ")}`;
 
-  const content = await ask(SEED_SYSTEM, [{ role: "user", content: body }], 2000);
+  const content = await ask(SEED_SYSTEM, [{ role: "user", content: body }], 2000, MODEL_DEEP);
   const seed = parseJson<any>(content, null);
   if (!seed?.axes) return NextResponse.json({ error: "innesto illeggibile" }, { status: 502 });
 
