@@ -126,7 +126,11 @@ export default function Meter() {
   }
 
   const kept = useMemo(() => listens.filter((l) => l.verdict === "keep"), [listens]);
-  const unjudged = useMemo(() => listens.filter((l) => !l.verdict).slice(0, 8), [listens]);
+  // Un ascolto ripetuto è segnale più forte di uno singolo: viene per primo.
+  const unjudged = useMemo(
+    () => listens.filter((l) => !l.verdict).sort((a, b) => b.plays - a.plays).slice(0, 8),
+    [listens]
+  );
   const messages = mode === "curatore" ? chat : memChat;
 
   async function send(raw?: string) {
@@ -269,20 +273,16 @@ export default function Meter() {
       </div>
 
       <div className="shell" style={{ maxWidth: 1120, margin: "0 auto" }}>
-        {/* tesi: breve e visuale. Il paragrafo analitico completo (model.identity)
-            vive nel tab "modello" — qui nessuno lo leggerebbe comunque. */}
+        {/* tesi: breve. Il paragrafo analitico completo (model.identity) non si
+            mostra da nessuna parte — ripeteva quanto già detto qui, gli assi
+            sotto sono la versione strutturata della stessa cosa. */}
         <section className="rise" style={{ maxWidth: 820, marginBottom: 40 }}>
-          <p className="label" style={{ marginBottom: 12 }}>{firstName ? `Info su di te, ${firstName}` : "Info su di te"}</p>
+          <p className="label" style={{ marginBottom: 12, color: "var(--mute)" }}>
+            {firstName ? `Info su di te, ${firstName}` : "Info su di te"}
+          </p>
           <p className="warmup t-display" style={{ fontSize: 22, lineHeight: 1.45 }}>
             {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
           </p>
-          {model.axes.length > 0 && (
-            <div className="pop" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18 }}>
-              {model.axes.slice(0, 4).map((a, i) => (
-                <span key={i} className="btn btn--sm" style={{ cursor: "default" }}>{a.claim}</span>
-              ))}
-            </div>
-          )}
         </section>
 
         {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
@@ -354,10 +354,9 @@ export default function Meter() {
         )}
 
         {/* modalità */}
-        <div className="recess" style={{ display: "inline-flex", gap: 4, padding: 4, marginBottom: 20 }}>
+        <div className="recess seg" style={{ marginBottom: 20 }}>
           {([["curatore", "Consiglia"], ["memoria", "Interroga"]] as const).map(([k, l]) => (
-            <button key={k} className="btn btn--sm" onClick={() => setMode(k)}
-              style={{ background: mode === k ? "var(--form)" : "transparent", color: mode === k ? "var(--ink)" : "var(--mute)", boxShadow: mode === k ? "var(--lift-1)" : "none" }}>
+            <button key={k} className={`seg-item${mode === k ? " is-active" : ""}`} onClick={() => setMode(k)}>
               {l}
             </button>
           ))}
@@ -471,9 +470,9 @@ export default function Meter() {
 
           {/* laterale */}
           <aside style={{ minWidth: 0 }}>
-            <div className="recess" style={{ display: "flex", gap: 4, padding: 4, marginBottom: 18 }}>
+            <div className="recess seg" style={{ width: "100%", marginBottom: 18 }}>
               {([["modello", model.axes.length], ["profilo", model.taste.length], ["registro", listens.length]] as const).map(([t, n]) => (
-                <button key={t} className="btn btn--sm" onClick={() => setTab(t as any)} style={{ flex: 1, background: tab === t ? "var(--form)" : "transparent", color: tab === t ? "var(--ink)" : "var(--mute)", boxShadow: tab === t ? "var(--lift-1)" : "none" }}>
+                <button key={t} className={`seg-item${tab === t ? " is-active" : ""}`} onClick={() => setTab(t as any)} style={{ flex: 1 }}>
                   {t} <span className="tnum" style={{ color: "var(--faint)" }}>{n}</span>
                 </button>
               ))}
@@ -481,12 +480,6 @@ export default function Meter() {
 
             {tab === "modello" && (
               <div className="rise">
-                {model.identity && (
-                  <div className="recess" style={{ padding: 22, marginBottom: 18 }}>
-                    <p className="label" style={{ marginBottom: 10 }}>Identità d'ascolto</p>
-                    <p className="t-body" style={{ fontSize: 15.5 }}>{model.identity}</p>
-                  </div>
-                )}
                 {model.axes.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Nessun asse. Importa il profilo, oppure giudica qualche brano.</p>}
                 {model.axes.map((a, i) => (
                   <div key={i} className="block rise" style={{ padding: 22, marginBottom: 10, display: "flex", gap: 18, alignItems: "flex-start", animationDelay: `${i * 45}ms` }}>
