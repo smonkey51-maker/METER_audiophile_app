@@ -1,6 +1,6 @@
 # METER - JESSICA AI
 
-Curatrice musicale con memoria che si consolida nel tempo.
+Curatrice musicale umanamente artificiale.
 
 Non è un motore di raccomandazione: è un'agente che si costruisce un **modello esplicito** del tuo ascolto, lo mostra, e ti lascia correggerlo. Il modello vive su tre livelli — registro grezzo, assi appresi, identità di lungo periodo — e solo i due livelli superiori entrano nel prompt, così il costo per richiesta resta costante anche dopo migliaia di ascolti.
 
