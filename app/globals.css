@@ -113,6 +113,11 @@ html, body {
 }
 .rows > *:last-child { border-bottom: 0; }
 
+/* Riga cliccabile: l'azione è la riga stessa, non un bottone ripetuto
+   su ognuna — un tono al passaggio basta a dirlo. */
+.row-tap { transition: background .2s var(--ease); }
+.row-tap:hover, .row-tap:focus-visible { background: var(--recess); outline: none; }
+
 /* Etichetta di sezione con un filo che la prolunga fino al bordo. */
 .section-label {
   display: flex; align-items: center; gap: 14px;
@@ -166,6 +171,15 @@ html, body {
 }
 .seg-item.is-active { background: var(--form); color: var(--ink); box-shadow: var(--lift-1); }
 .seg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* Variante minuscola: solo per la pill di stato in alto, non tocca il
+   toggle Consiglia/Interroga né i tab modello/profilo/registro. */
+.seg--xs { padding: 3px; }
+.seg--xs .seg-item { font-size: 11px; padding: 5px 9px; }
+
+/* Il filo che separa il gruppo informativo dall'azione icona-sola, come
+   nel riferimento: IT/EN/FR da una parte, luna dall'altra. */
+.seg-divider { width: 1px; align-self: stretch; background: var(--hair); margin: 4px 1px; }
 
 .field {
   border: 1px solid var(--hair); outline: 0; border-radius: 999px;
@@ -233,14 +247,6 @@ html, body {
   50%      { transform: scaleY(1); }
 }
 
-/* ── barra superiore: vetro, non frontalino ── */
-.bar {
-  position: sticky; top: 0; z-index: 40;
-  background: color-mix(in srgb, var(--shell) 55%, transparent);
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  border-bottom: 1px solid var(--hair);
-}
-
 /* ── movimento: sempre con un piccolo blur che si scioglie ── */
 @keyframes rise  {
   from { opacity: 0; transform: translateY(14px); filter: blur(6px) }
@@ -285,10 +291,8 @@ html, body {
 /* Stessa app, stesso layout: solo lo spazio intorno alle cose cambia
    con lo schermo. Niente riflussi strutturali, solo respiro proporzionato. */
 .shell { padding: 48px 28px 96px; }
-.bar-inner { padding: 18px 28px; }
 @media (max-width: 640px) {
   .shell { padding: 24px 16px 64px; }
-  .bar-inner { padding: 12px 16px; }
 }
 
 .scroll::-webkit-scrollbar { width: 4px }
