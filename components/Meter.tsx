@@ -8,7 +8,8 @@ type Msg = { role: "user" | "agent"; text: string };
 type Op = { type: string; index?: number; claim?: string; confidence?: number; reason?: string };
 
 export default function Meter() {
-  const [dark, setDark] = useState(false);
+  // Lo strumento nasce acceso al buio: il pannello chiaro è la variante da laboratorio.
+  const [dark, setDark] = useState(true);
   const [model, setModel] = useState<Model>(EMPTY_MODEL);
   const [listens, setListens] = useState<Listen[]>([]);
   const [pending, setPending] = useState(0);
@@ -138,7 +139,14 @@ export default function Meter() {
   }
 
   if (!ready) {
-    return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "var(--faint)" }}>Carico la memoria…</main>;
+    return (
+      <main style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span className="led pulse" />
+          <span className="label warmup">Carico la memoria</span>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -146,7 +154,19 @@ export default function Meter() {
       {/* barra */}
       <div className="bar">
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "14px 24px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-.03em" }}>METER</span>
+          {/* Marchio serigrafato + LED di alimentazione: acceso quando l'agente lavora. */}
+          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span
+              className={busy || dreaming || importing ? "led pulse" : "led"}
+              title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
+            />
+            <span style={{ fontFamily: "var(--mono)", fontSize: 15, fontWeight: 600, letterSpacing: ".26em" }}>
+              METER
+            </span>
+          </span>
+          <span className="ticks" aria-hidden="true" style={{ flex: "0 1 96px", minWidth: 0 }}>
+            {Array.from({ length: 16 }, (_, i) => <i key={i} />)}
+          </span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing}>
               {importing ? "Leggo il profilo…" : model.cycles || model.axes.length ? "Riaggiorna dal profilo" : "Importa da Spotify"}
@@ -164,13 +184,26 @@ export default function Meter() {
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "40px 24px 80px" }}>
         {/* tesi */}
-        <section className="rise" style={{ maxWidth: 760, marginBottom: 40, display: "flex", gap: 24, alignItems: "flex-start" }}>
-          <Ring value={Math.min(1, model.cycles / 8)} size={64} live={dreaming} />
+        <section className="rise" style={{ maxWidth: 820, marginBottom: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
+          {/* L'indicatore: unico strumento a quadrante della pagina, sempre acceso. */}
+          <div style={{ position: "relative", flexShrink: 0, paddingTop: 4, isolation: "isolate" }}>
+            <span className="halo" aria-hidden="true" />
+            <Ring value={Math.min(1, model.cycles / 8)} size={112} live={dreaming} accent="var(--accent)" core={false} />
+            <span
+              className="label tnum"
+              style={{
+                position: "absolute", inset: 0, display: "grid", placeItems: "center",
+                fontSize: 19, letterSpacing: 0, color: "var(--ink)", paddingTop: 4,
+              }}
+            >
+              {model.cycles}
+            </span>
+          </div>
           <div>
             <p className="label" style={{ marginBottom: 12 }}>
               {model.cycles ? `Modello dopo ${model.cycles} ${model.cycles === 1 ? "ciclo" : "cicli"}` : "Nessun consolidamento"}
             </p>
-            <p className="display">
+            <p className="display warmup">
               {model.identity || model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
             </p>
             {model.identity && model.summary && (
