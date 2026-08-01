@@ -247,12 +247,16 @@ export default function Meter() {
           </p>
         </section>
 
-        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
-        <section className="block rise" style={{ padding: 24, marginBottom: 32 }}>
+        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo.
+            Flush come il resto della pagina — solo il web player, quando c'è
+            qualcosa da mostrare, resta una superficie propria. */}
+        <section className="rise" style={{ marginBottom: 32 }}>
+          <div className="section-label"><p className="label">Ora in ascolto</p></div>
+
           {playback ? (
             /* Qualcosa è caricato, anche solo in pausa: diventa un web player
                vero, con la copertina, non più la sola riga di testo. */
-            <div className="webplayer">
+            <div className="webplayer" style={{ marginBottom: 20 }}>
               <div className="webplayer-art" aria-hidden="true" style={playback.art ? { backgroundImage: `url(${playback.art})` } : undefined}>
                 {!playback.art && <Music2 size={20} style={{ opacity: .4 }} />}
               </div>
@@ -280,13 +284,10 @@ export default function Meter() {
               </div>
             </div>
           ) : (
-            <div>
-              <p className="label" style={{ marginBottom: 6 }}>Ora in ascolto</p>
-              <p className="t-body" style={{ fontSize: 17 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
-            </div>
+            <p className="t-body" style={{ fontSize: 17, marginBottom: 20 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
           )}
 
-          <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+          <div style={{ display: "flex", gap: 8 }}>
             <input className="field" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && runSearch()} placeholder="Cerca un brano su Spotify" />
             <button className="btn btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
