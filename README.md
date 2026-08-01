@@ -7,8 +7,8 @@ Il modello vive su tre livelli — registra, analizza, crea l'identità (contest
 
 ## Come impara
 
-**Registra** Ogni ascolto, con verdetto e dimensioni toccate. Due origini: i giudizi espliciti che dai (segnale forte) e ciò che Spotify registra da solo (segnale debole di esposizione).
+**Registra** ogni ascolto, con verdetto e dimensioni toccate. Due origini: i giudizi espliciti che dai (segnale forte) e ciò che Spotify registra da solo (segnale debole di esposizione).
 
-**Assi** Affermazioni sul tuo gusto con una confidenza tra 0.25 e 0.95. Mai 1: un modello di gusto non chiude del tutto una porta. Ogni asse porta le evidenze da cui nasce.
+**Analizza** affermazioni sul tuo gusto con una confidenza tra 0.25 e 0.95. Mai 1: un modello di gusto non chiude del tutto una porta. Ogni asse porta le evidenze da cui nasce.
 
-**Identità** La somma del resto, per costruire un'idea dell'ascoltatore.
+**Crea l'identità** ovvero, la somma del resto, per costruire un'idea dell'ascoltatore.
