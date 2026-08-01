@@ -368,7 +368,7 @@ export default function Meter() {
             <div ref={scroller} className="block scroll" style={{ height: 290, overflowY: "auto", padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
               {messages.map((m, i) => (
                 <div key={i} className="rise" style={{ maxWidth: "92%", alignSelf: m.role === "user" ? "flex-end" : "flex-start" }}>
-                  {m.role === "agent" && <p className="label" style={{ marginBottom: 6 }}>METER</p>}
+                  {m.role === "agent" && <p className="label" style={{ marginBottom: 6 }}>Jessica AI</p>}
                   <p style={{ fontSize: 17.5, lineHeight: 1.5, color: m.role === "user" ? "var(--mute)" : "var(--ink)", textAlign: m.role === "user" ? "right" : "left" }}>{m.text}</p>
                 </div>
               ))}
