@@ -29,18 +29,48 @@ psql $POSTGRES_URL -f db/schema.sql
 npm run dev
 ```
 
-Poi apri `/api/spotify/login` una volta per autorizzare l'account.
+Poi apri `/api/spotify/login` una volta per autorizzare l'account. In locale usa
+`http://127.0.0.1:3000`, non `localhost`: vedi la nota sul redirect qui sotto.
 
 ### Variabili
 
 | Variabile | Dove si prende |
 |---|---|
 | `ANTHROPIC_API_KEY` | console.anthropic.com |
-| `POSTGRES_URL` | Vercel → Storage → Neon |
+| `CLAUDE_MODEL_FAST` / `_DEEP` | opzionali; default `claude-haiku-4-5` e `claude-sonnet-4-6` |
+| `POSTGRES_URL` | Vercel → Storage → Create Database → Neon (iniettata da sola) |
 | `SPOTIFY_CLIENT_ID` / `SECRET` | developer.spotify.com/dashboard |
 | `SPOTIFY_REDIRECT_URI` | deve combaciare *esattamente* con quello registrato nel dashboard |
-| `CRON_SECRET` | stringa casuale; Vercel la invia come `Authorization: Bearer` |
+| `CRON_SECRET` | stringa casuale; serve sia a Vercel sia ai secret GitHub |
 | `OWNER_ID` | un identificatore qualsiasi, singolo proprietario |
+
+### Il redirect URI di Spotify
+
+È la causa numero uno di fallimento in questo flusso, e ha una regola che sorprende:
+**Spotify non accetta più `localhost`**. Sono ammessi solo `https://`, oppure il
+loopback esplicito `http://127.0.0.1:PORT`. Ogni URI va registrato a mano nella
+dashboard di Spotify — non c'è modo di aggirarlo o di lasciarlo vuoto — e deve
+combaciare carattere per carattere con `SPOTIFY_REDIRECT_URI`, slash finale incluso.
+
+Registra entrambi, così sviluppo e produzione convivono:
+
+```
+http://127.0.0.1:3000/api/spotify/callback
+https://<tuo-dominio>.vercel.app/api/spotify/callback
+```
+
+### Due modelli, non uno
+
+Conversazione e memoria girano su `CLAUDE_MODEL_FAST` (Haiku): turni brevi e
+frequenti, dove un errore si corregge nel turno dopo. Consolidamento, meta e
+innesto girano su `CLAUDE_MODEL_DEEP` (Sonnet): girano una volta al giorno ma
+riscrivono il modello appreso, e un asse sbagliato lì resta per settimane.
+Puntando entrambe le variabili sullo stesso modello torni al comportamento
+originale.
+
+Nota sul caching: la soglia minima di prefisso è 4096 token su Haiku e 1024 su
+Sonnet. All'inizio, con pochi assi in memoria, il system prompt sta sotto la
+soglia di Haiku e lo sconto del 90% semplicemente non si applica.
 
 ## Deploy su Vercel
 
