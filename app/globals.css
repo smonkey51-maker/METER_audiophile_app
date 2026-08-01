@@ -9,7 +9,7 @@
    ───────────────────────────────────────────── */
 
 :root {
-  --shell:  #000000;   /* OLED: nero puro, non grigio scurissimo */
+  --shell:  #111113;   /* antracite profondo e desaturato: "moody", non nero assoluto */
   --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
   --recess: rgba(255,255,255,.03);   /* incavo: campi, tab non attive */
   --ink:    #F5F5F7;
@@ -41,7 +41,7 @@
   --r-inner: 20px;
   --ease: cubic-bezier(.22,1,.36,1);
   --spring: cubic-bezier(.34,1.56,.64,1);   /* per i pochi momenti che devono "arrivare" — fogli e comparse, non gli hover */
-  --mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --mono: var(--font-geist-mono), "SF Mono", ui-monospace, Menlo, monospace;
 }
 
 /* Profondità spaziale: due campiture di colore morbide e ferme,
@@ -83,7 +83,7 @@ body {
 html, body {
   margin: 0; padding: 0;
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.011em;
 }

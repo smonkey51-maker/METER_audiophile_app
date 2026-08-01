@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import Ring from "./Ring";
 import { DIMS, EMPTY_MODEL, RIGS, VERDICTS, type Listen, type Model, type Rec, type Verdict } from "@/lib/types";
 
 type Msg = { role: "user" | "agent"; text: string };
 type Op = { type: string; index?: number; claim?: string; confidence?: number; reason?: string };
-type Playback = { isPlaying: boolean; track: string; artist: string; device?: string };
+type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string };
 type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
 
 // Da dove viene ogni voce del registro: la fonte pesa quanto il giudizio,
@@ -212,6 +213,21 @@ export default function Meter() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
+      {/* Sfondo ambientale dalla copertina in ascolto: molto scuro e sfocato,
+         mai un'immagine leggibile. Solo in scuro — in chiaro romperebbe
+         il bianco latte editoriale. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none",
+          backgroundImage: playback?.art ? `url(${playback.art})` : "none",
+          backgroundSize: "cover", backgroundPosition: "center",
+          transform: "scale(1.2)",
+          filter: "blur(90px) saturate(140%) brightness(.5)",
+          opacity: dark && playback?.art ? 0.55 : 0,
+          transition: "opacity 1.1s var(--ease)",
+        }}
+      />
       {/* barra */}
       <div className="bar">
         <div className="bar-inner" style={{ maxWidth: 1120, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
@@ -244,28 +260,19 @@ export default function Meter() {
       </div>
 
       <div className="shell" style={{ maxWidth: 1120, margin: "0 auto" }}>
-        {/* tesi: solo testo, niente indicatore decorativo — il numero di
-            cicli non ha un "pieno" reale da mostrare come progresso. */}
+        {/* tesi: breve e visuale. Il paragrafo analitico completo (model.identity)
+            vive nel tab "modello" — qui nessuno lo leggerebbe comunque. */}
         <section className="rise" style={{ maxWidth: 820, marginBottom: 40 }}>
-          <p className="label" style={{ marginBottom: 12 }}>
-            {model.cycles ? `Modello dopo ${model.cycles} ${model.cycles === 1 ? "ciclo" : "cicli"}` : "Nessun consolidamento"}
+          <p className="label" style={{ marginBottom: 12 }}>Info su di te</p>
+          <p className="warmup" style={{ fontSize: 22, lineHeight: 1.45, fontWeight: 600, letterSpacing: "-0.018em", color: "var(--ink)" }}>
+            {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
           </p>
-          {model.identity ? (
-            <>
-              {/* L'identità non è uno slogan: è un paragrafo analitico, va letto
-                  a corpo normale. La classe "display" resta solo per il testo
-                  breve dello stato vuoto — ingrandire un paragrafo lo rompe. */}
-              <p className="warmup" style={{ fontSize: 20, lineHeight: 1.55, fontWeight: 600, letterSpacing: "-0.015em", color: "var(--ink)" }}>
-                {model.identity}
-              </p>
-              {model.summary && (
-                <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--mute)", marginTop: 14 }}>{model.summary}</p>
-              )}
-            </>
-          ) : (
-            <p className="display warmup">
-              {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
-            </p>
+          {model.axes.length > 0 && (
+            <div className="pop" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18 }}>
+              {model.axes.slice(0, 4).map((a, i) => (
+                <span key={i} className="btn btn--sm" style={{ cursor: "default" }}>{a.claim}</span>
+              ))}
+            </div>
           )}
         </section>
 
@@ -284,11 +291,15 @@ export default function Meter() {
             </div>
             {playback && (
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente">⏮</button>
-                <button className="btn btn--pri btn--sm" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"}>
-                  {playback.isPlaying ? "⏸" : "▶"}
+                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente" style={{ display: "inline-flex", alignItems: "center" }}>
+                  <SkipBack size={15} />
                 </button>
-                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva">⏭</button>
+                <button className="btn btn--pri btn--sm" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ display: "inline-flex", alignItems: "center" }}>
+                  {playback.isPlaying ? <Pause size={15} /> : <Play size={15} />}
+                </button>
+                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva" style={{ display: "inline-flex", alignItems: "center" }}>
+                  <SkipForward size={15} />
+                </button>
               </div>
             )}
           </div>
@@ -461,6 +472,12 @@ export default function Meter() {
 
             {tab === "modello" && (
               <div className="rise">
+                {model.identity && (
+                  <div className="recess" style={{ padding: 22, marginBottom: 18 }}>
+                    <p className="label" style={{ marginBottom: 10 }}>Identità d'ascolto</p>
+                    <p style={{ fontSize: 15.5, lineHeight: 1.6, color: "var(--mute)" }}>{model.identity}</p>
+                  </div>
+                )}
                 {model.axes.length === 0 && <p style={{ color: "var(--mute)", fontSize: 16.5, lineHeight: 1.55 }}>Nessun asse. Importa il profilo, oppure giudica qualche brano.</p>}
                 {model.axes.map((a, i) => (
                   <div key={i} className="block rise" style={{ padding: 22, marginBottom: 10, display: "flex", gap: 18, alignItems: "flex-start", animationDelay: `${i * 45}ms` }}>

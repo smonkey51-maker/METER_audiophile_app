@@ -183,6 +183,7 @@ export async function playbackState(owner = OWNER) {
     track: data.item.name as string,
     artist: (data.item.artists ?? []).map((a: any) => a.name).join(", "),
     device: data.device?.name as string | undefined,
+    art: data.item.album?.images?.[0]?.url as string | undefined,
   };
 }
 
