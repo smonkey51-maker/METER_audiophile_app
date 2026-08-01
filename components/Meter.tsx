@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Check, Download, ExternalLink, Headphones, Moon, Pause, Play,
+  Check, Download, ExternalLink, Headphones, Moon, Music2, Pause, Play,
   Plus, Search, SkipBack, SkipForward, Sparkles, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
@@ -31,17 +31,30 @@ export default function Meter() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
+  const [rigMenuOpen, setRigMenuOpen] = useState(false);
 
-  const toastTimer = useState<{ current: ReturnType<typeof setTimeout> | undefined }>({ current: undefined })[0];
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const rigMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
-  useEffect(() => () => clearTimeout(toastTimer.current), [toastTimer]);
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const flash = useCallback((t: string) => {
     clearTimeout(toastTimer.current);
     setToast(t);
     toastTimer.current = setTimeout(() => setToast(null), 3400);
-  }, [toastTimer]);
+  }, []);
+
+  // Chiude il menu della catena d'ascolto al primo click fuori — è un
+  // popover finto, il browser non lo fa da solo come per una <select>.
+  useEffect(() => {
+    if (!rigMenuOpen) return;
+    function onDoc(e: MouseEvent) {
+      if (rigMenuRef.current && !rigMenuRef.current.contains(e.target as Node)) setRigMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [rigMenuOpen]);
 
   // Spotify torna qui con ?spotify=ok|error dopo il consenso: è l'unico momento
   // in cui l'esito del collegamento è noto, va detto subito o si perde.
@@ -181,12 +194,7 @@ export default function Meter() {
       />
       {/* Il ritratto di Jessica, non la scritta: la firma della pagina. */}
       <div className="brand-mark" title="Jessica AI">
-        <JessicaAvatar />
-        <span
-          className={dreaming || importing ? "led pulse" : "led led--idle"}
-          title={dreaming || importing ? "Al lavoro" : "In attesa"}
-          style={{ position: "absolute", bottom: 2, right: 2, width: 8, height: 8, border: "2px solid var(--shell)" }}
-        />
+        <JessicaAvatar size={126} />
       </div>
 
       {/* Niente più barra: riaggiorno e consolidamento sono automatici (dream
@@ -196,22 +204,34 @@ export default function Meter() {
       <div className="status-row">
         <div className="pill-status seg" role="group" aria-label="Stato e preferenze">
           <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
-            <SpotifyMark size={16} />
+            <SpotifyMark size={48} />
           </a>
           <span className="seg-divider" aria-hidden="true" />
-          <span className="seg-item seg-item--icon" style={{ position: "relative" }}>
-            <Headphones size={14} aria-hidden="true" />
-            <select
-              value={rig} onChange={(e) => setRig(e.target.value)}
-              aria-label="Catena d'ascolto" title={RIGS.find((r) => r.key === rig)?.label}
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, border: 0, cursor: "pointer", appearance: "none" }}
+          <div ref={rigMenuRef} style={{ position: "relative" }}>
+            <button
+              type="button" className="seg-item seg-item--icon" onClick={() => setRigMenuOpen((o) => !o)}
+              aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
+              title={RIGS.find((r) => r.key === rig)?.label}
             >
-              {RIGS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
-            </select>
-          </span>
+              <Headphones size={42} aria-hidden="true" />
+            </button>
+            {rigMenuOpen && (
+              <div className="dropdown" role="listbox" aria-label="Catena d'ascolto">
+                {RIGS.map((r) => (
+                  <button
+                    key={r.key} type="button" role="option" aria-selected={r.key === rig}
+                    className={`dropdown-item${r.key === rig ? " is-active" : ""}`}
+                    onClick={() => { setRig(r.key); setRigMenuOpen(false); }}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <span className="seg-divider" aria-hidden="true" />
           <button className="seg-item seg-item--icon" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
-            {dark ? <Moon size={14} /> : <Sun size={14} />}
+            {dark ? <Moon size={42} /> : <Sun size={42} />}
           </button>
         </div>
       </div>
@@ -227,24 +247,31 @@ export default function Meter() {
           </p>
         </section>
 
-        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
-        <section className="block rise" style={{ padding: 24, marginBottom: 32 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ minWidth: 0 }}>
-              <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
-                {playback?.isPlaying && (
-                  <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
-                )}
-                {playback ? `In ascolto${playback.device ? " su " + playback.device : ""}` : "Ora in ascolto"}
-              </p>
-              <p style={{ fontSize: 17 }}>
-                {playback
-                  ? <><span className="t-display">{playback.track}</span> <span className="t-subdisplay">· {playback.artist}</span></>
-                  : <span className="t-body">Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</span>}
-              </p>
-            </div>
-            {playback && (
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo.
+            Flush come il resto della pagina — solo il web player, quando c'è
+            qualcosa da mostrare, resta una superficie propria. */}
+        <section className="rise" style={{ marginBottom: 32 }}>
+          <div className="section-label"><p className="label">Ora in ascolto</p></div>
+
+          {playback ? (
+            /* Qualcosa è caricato, anche solo in pausa: diventa un web player
+               vero, con la copertina, non più la sola riga di testo. */
+            <div className="webplayer" style={{ marginBottom: 20 }}>
+              <div className="webplayer-art" aria-hidden="true" style={playback.art ? { backgroundImage: `url(${playback.art})` } : undefined}>
+                {!playback.art && <Music2 size={20} style={{ opacity: .4 }} />}
+              </div>
+              <div className="webplayer-info">
+                <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                  {playback.isPlaying && (
+                    <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
+                  )}
+                  <span className="truncate">{`In ascolto${playback.device ? " su " + playback.device : ""}`}</span>
+                </p>
+                <p className="truncate" style={{ fontSize: 17 }}>
+                  <span className="t-display">{playback.track}</span> <span className="t-subdisplay">· {playback.artist}</span>
+                </p>
+              </div>
+              <div className="webplayer-controls">
                 <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente" style={{ display: "inline-flex", alignItems: "center" }}>
                   <SkipBack size={15} />
                 </button>
@@ -255,10 +282,12 @@ export default function Meter() {
                   <SkipForward size={15} />
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <p className="t-body" style={{ fontSize: 17, marginBottom: 20 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
+          )}
 
-          <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+          <div style={{ display: "flex", gap: 8 }}>
             <input className="field" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && runSearch()} placeholder="Cerca un brano su Spotify" />
             <button className="btn btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -267,7 +296,9 @@ export default function Meter() {
             </button>
           </div>
 
-          {searchResults.length > 0 && (
+          {/* Appena si ascolta qualcosa, anche in pausa, la lista dei
+              risultati non serve più sotto i piedi del player. */}
+          {!playback && searchResults.length > 0 && (
             <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
               {searchResults.map((r) => (
                 <div key={r.uri} className="recess" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
