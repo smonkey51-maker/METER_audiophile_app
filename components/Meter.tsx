@@ -6,6 +6,8 @@ import {
   Plus, Search, SkipBack, SkipForward, Sparkles, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
+import JessicaAvatar from "./JessicaAvatar";
+import SpotifyMark from "./SpotifyMark";
 
 type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string };
 type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
@@ -177,29 +179,39 @@ export default function Meter() {
           transition: "opacity 1.1s var(--ease)",
         }}
       />
+      {/* Il ritratto di Jessica, non la scritta: la firma della pagina. */}
+      <div className="brand-mark" title="Jessica AI">
+        <JessicaAvatar />
+        <span
+          className={dreaming || importing ? "led pulse" : "led led--idle"}
+          title={dreaming || importing ? "Al lavoro" : "In attesa"}
+          style={{ position: "absolute", bottom: 2, right: 2, width: 8, height: 8, border: "2px solid var(--shell)" }}
+        />
+      </div>
+
       {/* Niente più barra: riaggiorno e consolidamento sono automatici (dream
           cron, ogni notte), non serve più un frontalino di controlli. Resta
-          solo la pill, sospesa in alto — sticky ma senza sfondo proprio. */}
-      <div style={{ position: "sticky", top: 16, zIndex: 40, maxWidth: 1120, margin: "0 auto", padding: "0 28px", display: "flex", justifyContent: "flex-end" }}>
-        <div className="recess seg seg--xs" role="group" aria-label="Stato e preferenze">
-          <span className="seg-item" style={{ cursor: "default", display: "inline-flex", alignItems: "center", gap: 5 }}>
-            <span
-              className={dreaming || importing ? "led pulse" : "led"}
-              title={dreaming || importing ? "Al lavoro" : "In attesa"}
-              style={{ width: 5, height: 5 }}
-            />
-            Jessica AI
-          </span>
-          <a className="seg-item" href="/api/spotify/login" style={{ textDecoration: "none" }}>Spotify</a>
-          <label className="seg-item" style={{ display: "inline-flex", alignItems: "center", gap: 5, paddingRight: 9 }}>
-            <Headphones size={12} aria-hidden="true" />
-            <select value={rig} onChange={(e) => setRig(e.target.value)} style={{ appearance: "none", background: "transparent", border: 0, color: "inherit", font: "inherit" }} aria-label="Catena d'ascolto">
+          solo la pill di utilità — sticky in alto su desktop, in basso al
+          centro su mobile (vedi .status-row). */}
+      <div className="status-row">
+        <div className="pill-status seg" role="group" aria-label="Stato e preferenze">
+          <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
+            <SpotifyMark size={16} />
+          </a>
+          <span className="seg-divider" aria-hidden="true" />
+          <span className="seg-item seg-item--icon" style={{ position: "relative" }}>
+            <Headphones size={14} aria-hidden="true" />
+            <select
+              value={rig} onChange={(e) => setRig(e.target.value)}
+              aria-label="Catena d'ascolto" title={RIGS.find((r) => r.key === rig)?.label}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, border: 0, cursor: "pointer", appearance: "none" }}
+            >
               {RIGS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
             </select>
-          </label>
+          </span>
           <span className="seg-divider" aria-hidden="true" />
-          <button className="seg-item" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} style={{ display: "inline-flex", alignItems: "center" }}>
-            {dark ? <Moon size={12} /> : <Sun size={12} />}
+          <button className="seg-item seg-item--icon" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
+            {dark ? <Moon size={14} /> : <Sun size={14} />}
           </button>
         </div>
       </div>
