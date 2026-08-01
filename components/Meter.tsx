@@ -8,6 +8,9 @@ import {
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
 import SpotifyMark from "./SpotifyMark";
+import BookIcon from "./BookIcon";
+import CatIcon from "./CatIcon";
+import Wrapped from "./Wrapped";
 
 type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string };
 type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
@@ -39,6 +42,7 @@ export default function Meter() {
   const [searching, setSearching] = useState(false);
   const [rigMenuOpen, setRigMenuOpen] = useState(false);
   const [dbError, setDbError] = useState(false);
+  const [wrappedOpen, setWrappedOpen] = useState(false);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const rigMenuRef = useRef<HTMLDivElement>(null);
@@ -223,6 +227,12 @@ export default function Meter() {
           <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
             <SpotifyMark size={24} />
           </a>
+          <button className="seg-item seg-item--icon" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
+            <BookIcon size={20} />
+          </button>
+          <button className="seg-item seg-item--icon" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra" title="Petra">
+            <CatIcon size={20} />
+          </button>
           <span className="seg-divider" aria-hidden="true" />
           <div ref={rigMenuRef} style={{ position: "relative" }}>
             <button
@@ -455,6 +465,8 @@ export default function Meter() {
           <span className="t-body" style={{ fontSize: 15.5 }}>{toast}</span>
         </div>
       )}
+
+      {wrappedOpen && <Wrapped onClose={() => setWrappedOpen(false)} />}
     </main>
   );
 }

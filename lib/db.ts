@@ -82,3 +82,26 @@ export async function logCycle(n: number, kind: string, changelog: string[], axe
   await sql`insert into cycles (owner_id, n, kind, changelog, axes_after)
             values (${owner}, ${n}, ${kind}, ${JSON.stringify(changelog)}, ${JSON.stringify(axes)})`;
 }
+
+/** Numeri che Spotify non può dare: quanto è successo dentro METER stesso. */
+export async function wrappedStats(owner = OWNER) {
+  const { rows } = await sql`
+    select
+      count(*) filter (where verdict is not null)::int as judged,
+      count(*) filter (where verdict = 'keep')::int as keep,
+      count(*) filter (where verdict = 'maybe')::int as maybe,
+      count(*) filter (where verdict = 'drop')::int as drop,
+      count(*) filter (where source = 'rec')::int as picks
+    from listens where owner_id = ${owner}`;
+
+  const { rows: rigRows } = await sql`
+    select rig, count(*)::int as n from listens
+    where owner_id = ${owner} and rig is not null and verdict is not null
+    group by rig order by n desc limit 1`;
+
+  const r = rows[0];
+  return {
+    judged: r?.judged ?? 0, keep: r?.keep ?? 0, maybe: r?.maybe ?? 0, drop: r?.drop ?? 0,
+    picks: r?.picks ?? 0, topRig: rigRows[0]?.rig as string | undefined,
+  };
+}
