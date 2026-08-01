@@ -185,18 +185,18 @@ html, body {
    si legge subito, come nel sito di riferimento — vetro pieno, ombra,
    bordo — non un incavo quasi invisibile sullo sfondo. */
 .pill-status {
-  display: inline-flex; align-items: center; padding: 15px;
+  display: inline-flex; align-items: center; padding: 8px;
   border-radius: 999px; border: 1px solid var(--hair);
   background: var(--panel), var(--form);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--lift-2);
 }
-.pill-status .seg-item { font-size: 36px; padding: 24px 42px; }
+.pill-status .seg-item { font-size: 18px; padding: 12px 21px; }
 .pill-status .seg-item--icon {
-  padding: 24px; width: 96px; height: 96px;
+  padding: 12px; width: 48px; height: 48px;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.pill-status .seg-divider { margin: 12px 3px; }
+.pill-status .seg-divider { margin: 6px 2px; }
 
 /* Menu a tendina fatto in casa: una <select> nativa non si può vestire
    con lo stesso vetro del resto, il suo popup resta sempre quello del
@@ -255,7 +255,7 @@ html, body {
    come una firma, non nella pill — quella resta solo utilità. */
 .brand-mark {
   position: relative;
-  width: 204px; height: 204px; margin: 4px auto 32px;
+  width: 102px; height: 102px; margin: 4px auto 32px;
   display: grid; place-items: center; color: var(--ink);
   border-radius: 999px; border: 1px solid var(--hair);
   background: var(--panel), var(--form);

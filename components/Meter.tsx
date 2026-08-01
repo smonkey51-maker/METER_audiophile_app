@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Check, Download, ExternalLink, Headphones, Moon, Music2, Pause, Play,
-  Plus, Search, SkipBack, SkipForward, Sparkles, Sun, X,
+  Check, Headphones, Moon, Music2, Pause, Play,
+  Plus, Search, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
@@ -12,29 +12,37 @@ import SpotifyMark from "./SpotifyMark";
 type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string };
 type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
 
+// Prova passiva che il ciclo notturno gira davvero: se non si muove da
+// giorni si vede subito, invece di scoprirlo solo quando qualcosa manca.
+function timeAgo(iso?: string) {
+  if (!iso) return null;
+  const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
+  if (h < 1) return "aggiornato pochi minuti fa";
+  if (h < 24) return `aggiornato ${h}h fa`;
+  const d = Math.floor(h / 24);
+  return `aggiornato ${d}g fa`;
+}
+
 export default function Meter() {
   const [dark, setDark] = useState(true);
   const [model, setModel] = useState<Model>(EMPTY_MODEL);
   const [listens, setListens] = useState<Listen[]>([]);
-  const [pending, setPending] = useState(0);
   const [rig, setRig] = useState<string>("aperte");
   const [ready, setReady] = useState(false);
 
   const [rating, setRating] = useState<{ rec: Partial<Rec> & { id?: number }; verdict: Verdict | null; dims: string[] } | null>(null);
   const [manual, setManual] = useState({ open: false, artist: "", track: "" });
-  const [dreaming, setDreaming] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [gaps, setGaps] = useState<string[]>([]);
-  const [importSummary, setImportSummary] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [playback, setPlayback] = useState<Playback | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [rigMenuOpen, setRigMenuOpen] = useState(false);
+  const [dbError, setDbError] = useState(false);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const rigMenuRef = useRef<HTMLDivElement>(null);
+  const rigTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
@@ -45,16 +53,40 @@ export default function Meter() {
     toastTimer.current = setTimeout(() => setToast(null), 3400);
   }, []);
 
-  // Chiude il menu della catena d'ascolto al primo click fuori — è un
-  // popover finto, il browser non lo fa da solo come per una <select>.
+  // Chiude il menu della catena d'ascolto al primo click fuori o con Esc —
+  // è un popover finto, il browser non lo fa da solo come per una <select>.
   useEffect(() => {
     if (!rigMenuOpen) return;
     function onDoc(e: MouseEvent) {
       if (rigMenuRef.current && !rigMenuRef.current.contains(e.target as Node)) setRigMenuOpen(false);
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") { setRigMenuOpen(false); rigTriggerRef.current?.focus(); }
+    }
     document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [rigMenuOpen]);
+
+  // All'apertura, il focus salta subito sull'opzione attiva: da tastiera
+  // il menu si esplora con le frecce, come una vera listbox.
+  useEffect(() => {
+    if (!rigMenuOpen) return;
+    const items = Array.from(rigMenuRef.current?.querySelectorAll<HTMLButtonElement>(".dropdown-item") ?? []);
+    (items.find((el) => el.getAttribute("aria-selected") === "true") ?? items[0])?.focus();
+  }, [rigMenuOpen]);
+
+  function onRigMenuKeyDown(e: React.KeyboardEvent) {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const items = Array.from(rigMenuRef.current?.querySelectorAll<HTMLButtonElement>(".dropdown-item") ?? []);
+    const idx = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = e.key === "ArrowDown" ? (idx + 1) % items.length : (idx - 1 + items.length) % items.length;
+    items[next]?.focus();
+  }
 
   // Spotify torna qui con ?spotify=ok|error dopo il consenso: è l'unico momento
   // in cui l'esito del collegamento è noto, va detto subito o si perde.
@@ -71,8 +103,17 @@ export default function Meter() {
   }, [flash]);
 
   const refresh = useCallback(async () => {
-    const r = await fetch("/api/state").then((x) => x.json());
-    setModel(r.model); setListens(r.listens ?? []); setPending(r.pending ?? 0);
+    try {
+      const res = await fetch("/api/state");
+      const r = await res.json();
+      if (!res.ok) throw new Error(r.error);
+      setModel(r.model); setListens(r.listens ?? []);
+      setDbError(false);
+    } catch {
+      // Niente più schermata bianca: la pagina resta usabile (anche se
+      // vuota) e lo dice, invece di restare a "carico la memoria" per sempre.
+      setDbError(true);
+    }
   }, []);
 
   useEffect(() => { refresh().finally(() => setReady(true)); }, [refresh]);
@@ -140,30 +181,6 @@ export default function Meter() {
     flash(`${rec.track}: ${VERDICTS.find((v) => v.key === verdict)!.label}`);
   }
 
-  async function consolidate() {
-    if (dreaming || !pending) return;
-    setDreaming(true);
-    try {
-      const r = await fetch("/api/consolidate", { method: "POST" }).then((x) => x.json());
-      await refresh();
-      flash(r.model ? `Consolidato: ${r.model.axes.length} assi attivi.` : "Niente da consolidare.");
-    } catch { flash("Consolidamento fallito."); }
-    finally { setDreaming(false); }
-  }
-
-  async function runImport() {
-    if (importing) return;
-    setImporting(true);
-    try {
-      const r = await fetch("/api/import", { method: "POST" }).then((x) => x.json());
-      if (r.error) { flash("Spotify non autorizzato: collega l'account."); return; }
-      setModel(r.model); setGaps(r.gaps ?? []); setImportSummary(r.model.changelog?.[0] ?? "Profilo Spotify importato.");
-      await refresh();
-      flash("Profilo Spotify importato.");
-    } catch { flash("Importazione fallita."); }
-    finally { setImporting(false); }
-  }
-
   if (!ready) {
     return (
       <main style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
@@ -194,7 +211,7 @@ export default function Meter() {
       />
       {/* Il ritratto di Jessica, non la scritta: la firma della pagina. */}
       <div className="brand-mark" title="Jessica AI">
-        <JessicaAvatar size={126} />
+        <JessicaAvatar size={63} />
       </div>
 
       {/* Niente più barra: riaggiorno e consolidamento sono automatici (dream
@@ -204,24 +221,25 @@ export default function Meter() {
       <div className="status-row">
         <div className="pill-status seg" role="group" aria-label="Stato e preferenze">
           <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
-            <SpotifyMark size={48} />
+            <SpotifyMark size={24} />
           </a>
           <span className="seg-divider" aria-hidden="true" />
           <div ref={rigMenuRef} style={{ position: "relative" }}>
             <button
+              ref={rigTriggerRef}
               type="button" className="seg-item seg-item--icon" onClick={() => setRigMenuOpen((o) => !o)}
               aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
               title={RIGS.find((r) => r.key === rig)?.label}
             >
-              <Headphones size={42} aria-hidden="true" />
+              <Headphones size={21} aria-hidden="true" />
             </button>
             {rigMenuOpen && (
-              <div className="dropdown" role="listbox" aria-label="Catena d'ascolto">
+              <div className="dropdown" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
                 {RIGS.map((r) => (
                   <button
                     key={r.key} type="button" role="option" aria-selected={r.key === rig}
                     className={`dropdown-item${r.key === rig ? " is-active" : ""}`}
-                    onClick={() => { setRig(r.key); setRigMenuOpen(false); }}
+                    onClick={() => { setRig(r.key); setRigMenuOpen(false); rigTriggerRef.current?.focus(); }}
                   >
                     {r.label}
                   </button>
@@ -231,12 +249,22 @@ export default function Meter() {
           </div>
           <span className="seg-divider" aria-hidden="true" />
           <button className="seg-item seg-item--icon" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
-            {dark ? <Moon size={42} /> : <Sun size={42} />}
+            {dark ? <Moon size={21} /> : <Sun size={21} />}
           </button>
         </div>
       </div>
 
       <div className="shell" style={{ maxWidth: 1120, margin: "0 auto" }}>
+        {/* Niente più schermata bianca se il DB è irraggiungibile: lo si
+            dice, con un modo per riprovare, e il resto della pagina
+            resta comunque usabile. */}
+        {dbError && (
+          <section className="block pop" style={{ padding: "16px 22px", marginBottom: 28, maxWidth: 760, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <span className="t-body" style={{ fontSize: 15 }}>Non riesco a raggiungere la memoria di Jessica in questo momento.</span>
+            <button className="btn btn--ghost btn--sm" onClick={refresh}>Riprova</button>
+          </section>
+        )}
+
         {/* tesi: Jessica dice cosa sa di te, sempre in tono scherzoso — il
             paragrafo (model.summary) inizia sempre con "Bubi sei...", lo
             garantisce il prompt che lo genera. */}
@@ -245,6 +273,9 @@ export default function Meter() {
           <p className="warmup t-display" style={{ fontSize: 22, lineHeight: 1.45 }}>
             {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
           </p>
+          {timeAgo(model.updatedAt) && (
+            <p className="label" style={{ marginTop: 12 }}>{timeAgo(model.updatedAt)}</p>
+          )}
         </section>
 
         {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo.
@@ -275,8 +306,8 @@ export default function Meter() {
                 <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente" style={{ display: "inline-flex", alignItems: "center" }}>
                   <SkipBack size={15} />
                 </button>
-                <button className="btn btn--pri btn--sm" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ display: "inline-flex", alignItems: "center" }}>
-                  {playback.isPlaying ? <Pause size={15} /> : <Play size={15} />}
+                <button className="btn btn--pri" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ display: "inline-flex", alignItems: "center", padding: "11px 15px" }}>
+                  {playback.isPlaying ? <Pause size={18} /> : <Play size={18} />}
                 </button>
                 <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva" style={{ display: "inline-flex", alignItems: "center" }}>
                   <SkipForward size={15} />
@@ -287,12 +318,15 @@ export default function Meter() {
             <p className="t-body" style={{ fontSize: 17, marginBottom: 20 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
           )}
 
-          <div style={{ display: "flex", gap: 8 }}>
-            <input className="field" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input className="field" style={{ flex: 1, minWidth: 160 }} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && runSearch()} placeholder="Cerca un brano su Spotify" />
             <button className="btn btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <Search size={14} />
               {searching ? "Cerco…" : "Cerca"}
+            </button>
+            <button className="btn btn--ghost btn--sm" onClick={() => setManual({ open: true, artist: "", track: "" })} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Plus size={14} /> Registra un ascolto
             </button>
           </div>
 
@@ -313,25 +347,6 @@ export default function Meter() {
           )}
         </section>
 
-        {(importSummary || gaps.length > 0) && (
-          <section className="block pop" style={{ padding: 24, marginBottom: 32, maxWidth: 760, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div style={{ minWidth: 0 }}>
-              {importSummary && (
-                <p className="t-body" style={{ fontSize: 16.5, marginBottom: gaps.length > 0 ? 16 : 0 }}>{importSummary}</p>
-              )}
-              {gaps.length > 0 && (
-                <>
-                  <p className="label" style={{ marginBottom: 10 }}>A cui il profilo non risponde</p>
-                  {gaps.map((g, i) => <p key={i} className="t-body" style={{ fontSize: 16.5, marginBottom: 8 }}>{g}</p>)}
-                </>
-              )}
-            </div>
-            <button className="btn btn--ghost btn--sm" onClick={() => { setImportSummary(null); setGaps([]); }} aria-label="Chiudi" style={{ display: "inline-flex", alignItems: "center" }}>
-              <X size={15} />
-            </button>
-          </section>
-        )}
-
         {/* Jessica lavora da sola: ogni notte guarda cosa ascolti e propone
             brani nuovi senza che nessuno glielo chieda. Qui vedi solo il
             risultato, non c'è più una conversazione da tenere in piedi. */}
@@ -341,22 +356,7 @@ export default function Meter() {
             Ogni notte passa in rassegna quello che ascolti e sceglie brani nuovi per conto suo — in totale autonomia, non glielo chiedi tu.
           </p>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
-            <p className="label">Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
-            <div style={{ display: "flex", gap: 6 }}>
-              <button className="btn btn--ghost btn--sm" onClick={() => setManual({ open: true, artist: "", track: "" })} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <Plus size={14} /> Registra un ascolto
-              </button>
-              {pending > 0 && (
-                <button className="btn btn--ghost btn--sm" onClick={consolidate} disabled={dreaming} aria-label="Consolida ora" title="Consolida ora" style={{ display: "inline-flex", alignItems: "center" }}>
-                  <Sparkles size={14} />
-                </button>
-              )}
-              <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing} aria-label="Riaggiorna dal profilo Spotify" title="Riaggiorna dal profilo Spotify" style={{ display: "inline-flex", alignItems: "center" }}>
-                <Download size={14} />
-              </button>
-            </div>
-          </div>
+          <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
 
           {dailyPicks.length === 0 ? (
             <p className="t-body" style={{ fontSize: 15.5, maxWidth: 480 }}>

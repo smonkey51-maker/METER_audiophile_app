@@ -14,6 +14,7 @@ export async function getModel(owner = OWNER): Promise<Model> {
     axes: r.axes ?? [], rules: r.rules ?? [], summary: r.summary ?? "",
     identity: r.identity ?? "", eras: r.eras ?? [], changelog: r.changelog ?? [],
     cycles: r.cycles ?? 0, taste: r.taste ?? [],
+    updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : undefined,
   };
 }
 

@@ -16,6 +16,7 @@ export type Model = {
   changelog: string[];
   cycles: number;
   taste: string[];
+  updatedAt?: string;
 };
 
 export type Listen = {
