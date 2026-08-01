@@ -45,6 +45,7 @@ export default function Meter() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null);
 
   const history = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
   const memHistory = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -81,6 +82,14 @@ export default function Meter() {
   }, []);
 
   useEffect(() => { refresh().finally(() => setReady(true)); }, [refresh]);
+
+  // Solo per personalizzare la tesi in apertura: se Spotify non è collegato
+  // o non risponde, resta null e il saluto torna generico. Non è critico.
+  useEffect(() => {
+    fetch("/api/spotify/profile").then((x) => x.json()).then((r) => {
+      if (r.name) setFirstName(String(r.name).split(" ")[0]);
+    }).catch(() => {});
+  }, []);
 
   const refreshPlayback = useCallback(async () => {
     const r = await fetch("/api/spotify/player").then((x) => x.json()).catch(() => ({ state: null }));
@@ -263,7 +272,7 @@ export default function Meter() {
         {/* tesi: breve e visuale. Il paragrafo analitico completo (model.identity)
             vive nel tab "modello" — qui nessuno lo leggerebbe comunque. */}
         <section className="rise" style={{ maxWidth: 820, marginBottom: 40 }}>
-          <p className="label" style={{ marginBottom: 12 }}>Info su di te</p>
+          <p className="label" style={{ marginBottom: 12 }}>{firstName ? `Info su di te, ${firstName}` : "Info su di te"}</p>
           <p className="warmup t-display" style={{ fontSize: 22, lineHeight: 1.45 }}>
             {model.summary || "Non so ancora niente del tuo ascolto. Importa il profilo Spotify, oppure chiedi un consiglio e giudicalo."}
           </p>
