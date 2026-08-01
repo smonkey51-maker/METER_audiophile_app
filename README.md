@@ -43,6 +43,7 @@ Poi apri `/api/spotify/login` una volta per autorizzare l'account. In locale usa
 | `SPOTIFY_REDIRECT_URI` | deve combaciare *esattamente* con quello registrato nel dashboard |
 | `CRON_SECRET` | stringa casuale; serve sia a Vercel sia ai secret GitHub |
 | `OWNER_ID` | un identificatore qualsiasi, singolo proprietario |
+| `BASIC_AUTH_USER` / `_PASSWORD` | protegge l'intera app (tranne i cron, che usano `CRON_SECRET`); non c'è un sistema di login, quindi senza queste due l'app è pubblica |
 
 ### Il redirect URI di Spotify
 
