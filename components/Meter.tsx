@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Moon, Pause, Play, SkipBack, SkipForward, Sun } from "lucide-react";
-import Ring from "./Ring";
+import {
+  Check, Download, ExternalLink, Headphones, HelpCircle, Moon, Pause, Play,
+  Plus, Search, SkipBack, SkipForward, Sparkles, Sun, X,
+} from "lucide-react";
 import { DIMS, EMPTY_MODEL, RIGS, VERDICTS, type Listen, type Model, type Rec, type Verdict } from "@/lib/types";
 
 type Msg = { role: "user" | "agent"; text: string };
@@ -241,44 +243,30 @@ export default function Meter() {
           transition: "opacity 1.1s var(--ease)",
         }}
       />
-      {/* barra */}
-      <div className="bar">
-        <div className="bar-inner" style={{ maxWidth: 1120, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
-          {/* Marchio: il nome della webapp, statico. Chi lavora è Jessica AI,
-              nella pill qui a fianco — è lì che pulsa il LED d'attività. */}
-          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span className="t-display" style={{ fontSize: 16 }}>
-              METER
-            </span>
+      {/* Niente più barra: riaggiorno e consolidamento sono automatici (dream
+          cron, ogni notte), non serve più un frontalino di controlli. Resta
+          solo la pill, sospesa in alto — sticky ma senza sfondo proprio. */}
+      <div style={{ position: "sticky", top: 16, zIndex: 40, maxWidth: 1120, margin: "0 auto", padding: "0 28px", display: "flex", justifyContent: "flex-end" }}>
+        <div className="recess seg seg--xs" role="group" aria-label="Stato e preferenze">
+          <span className="seg-item" style={{ cursor: "default", display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <span
+              className={busy || dreaming || importing ? "led pulse" : "led"}
+              title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
+              style={{ width: 5, height: 5 }}
+            />
+            Jessica AI
           </span>
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing}>
-              {importing ? "Leggo il profilo…" : model.cycles || model.axes.length ? "Riaggiorna dal profilo" : "Importa da Spotify"}
-            </button>
-            <button className={`btn btn--sm ${pending ? "btn--pri" : ""}`} onClick={consolidate} disabled={!pending || dreaming}>
-              {dreaming ? "Consolido…" : <>Consolida <span className="tnum">{pending}</span></>}
-            </button>
-
-            {/* Pill unica: identità, collegamento Spotify, catena d'ascolto, tema —
-                un solo binario invece di controlli sparsi, pensata soprattutto
-                per il mobile dove prima la barra andava a capo su più righe. */}
-            <div className="recess seg" role="group" aria-label="Stato e preferenze">
-              <span className="seg-item" style={{ cursor: "default", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <span
-                  className={busy || dreaming || importing ? "led pulse" : "led"}
-                  title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
-                />
-                Jessica AI
-              </span>
-              <a className="seg-item" href="/api/spotify/login" style={{ textDecoration: "none" }}>Spotify</a>
-              <select className="seg-item" value={rig} onChange={(e) => setRig(e.target.value)} style={{ appearance: "none" }} aria-label="Catena d'ascolto">
-                {RIGS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
-              </select>
-              <button className="seg-item" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} style={{ display: "inline-flex", alignItems: "center" }}>
-                {dark ? <Moon size={14} /> : <Sun size={14} />}
-              </button>
-            </div>
-          </div>
+          <a className="seg-item" href="/api/spotify/login" style={{ textDecoration: "none" }}>Spotify</a>
+          <label className="seg-item" style={{ display: "inline-flex", alignItems: "center", gap: 5, paddingRight: 9 }}>
+            <Headphones size={12} aria-hidden="true" />
+            <select value={rig} onChange={(e) => setRig(e.target.value)} style={{ appearance: "none", background: "transparent", border: 0, color: "inherit", font: "inherit" }} aria-label="Catena d'ascolto">
+              {RIGS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
+            </select>
+          </label>
+          <span className="seg-divider" aria-hidden="true" />
+          <button className="seg-item" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} style={{ display: "inline-flex", alignItems: "center" }}>
+            {dark ? <Moon size={12} /> : <Sun size={12} />}
+          </button>
         </div>
       </div>
 
@@ -329,7 +317,8 @@ export default function Meter() {
           <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
             <input className="field" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && runSearch()} placeholder="Cerca un brano su Spotify" />
-            <button className="btn btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()}>
+            <button className="btn btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Search size={14} />
               {searching ? "Cerco…" : "Cerca"}
             </button>
           </div>
@@ -362,7 +351,9 @@ export default function Meter() {
                 </>
               )}
             </div>
-            <button className="btn btn--ghost btn--sm" onClick={() => { setImportSummary(null); setGaps([]); }}>Chiudi</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => { setImportSummary(null); setGaps([]); }} aria-label="Chiudi" style={{ display: "inline-flex", alignItems: "center" }}>
+              <X size={15} />
+            </button>
           </section>
         )}
 
@@ -422,14 +413,23 @@ export default function Meter() {
 
             {mode === "curatore" && (
               <div style={{ marginTop: 44 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
                   <p className="label">In valutazione</p>
-                  <button className="btn btn--ghost btn--sm" onClick={() => setManual({ open: true, artist: "", track: "" })}>+ Registra un ascolto</button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {pending > 0 && (
+                      <button className="btn btn--ghost btn--sm" onClick={consolidate} disabled={dreaming} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <Sparkles size={13} /> {dreaming ? "Consolido…" : <>Consolida ora <span className="tnum">{pending}</span></>}
+                      </button>
+                    )}
+                    <button className="btn btn--ghost btn--sm" onClick={() => setManual({ open: true, artist: "", track: "" })} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <Plus size={14} /> Registra un ascolto
+                    </button>
+                  </div>
                 </div>
 
                 {recs.length === 0 && !busy && (
-                  <p className="t-body" style={{ fontSize: 17, maxWidth: 560 }}>
-                    Niente in coda. Il modello impara dalle dimensioni, non dai verdetti: quando giudichi, dichiara <em>cosa</em> ha funzionato o rotto.
+                  <p className="t-body" style={{ fontSize: 15.5, maxWidth: 480 }}>
+                    Coda vuota — chiedi un consiglio qui sopra. Quando giudichi, dì anche <em>su cosa</em>: produzione, dinamica, arrangiamento. È da lì che impara, non dal verdetto.
                   </p>
                 )}
 
@@ -454,7 +454,11 @@ export default function Meter() {
                     <p className="label" style={{ marginTop: 12 }}>Ponte · {r.bridge || "—"}</p>
 
                     <div style={{ display: "flex", gap: 8, marginTop: 22, flexWrap: "wrap" }}>
-                      {r.url && <a className="btn btn--sm" href={r.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "var(--good)" }}>Ascolta</a>}
+                      {r.url && (
+                        <a className="btn btn--sm" href={r.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "var(--good)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          <ExternalLink size={13} /> Ascolta
+                        </a>
+                      )}
                       <button className="btn btn--pri btn--sm" onClick={() => setRating({ rec: r, verdict: null, dims: [] })}>Giudica</button>
                     </div>
                   </article>
@@ -468,12 +472,13 @@ export default function Meter() {
                     </p>
                     <div className="block rows">
                       {unjudged.map((e) => (
-                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-                          <span style={{ fontSize: 16, minWidth: 0 }}>
-                            <span className="t-display" style={{ fontSize: 16 }}>{e.track}</span> <span className="t-subdisplay">· {e.artist}</span>
-                            {e.plays > 1 && <span className="tnum" style={{ color: "var(--accent)", marginLeft: 10, fontSize: 13.5 }}>{e.plays}×</span>}
-                          </span>
-                          <button className="btn btn--sm" onClick={() => setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}>Giudica</button>
+                        <div key={e.id} className="row-tap" role="button" tabIndex={0}
+                          onClick={() => setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}
+                          onKeyDown={(ev) => ev.key === "Enter" && setRating({ rec: { ...e, url: e.spotify_url, id: e.id }, verdict: null, dims: [] })}
+                          style={{ display: "flex", alignItems: "baseline", gap: 10, cursor: "pointer" }}>
+                          <span className="t-display" style={{ fontSize: 16, minWidth: 0 }}>{e.track}</span>
+                          <span className="t-subdisplay" style={{ minWidth: 0 }}>{e.artist}</span>
+                          {e.plays > 1 && <span className="tnum" style={{ color: "var(--faint)", fontSize: 13 }}>{e.plays}×</span>}
                         </div>
                       ))}
                     </div>
@@ -495,22 +500,6 @@ export default function Meter() {
 
             {tab === "modello" && (
               <div className="rise">
-                {model.axes.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Nessun asse. Importa il profilo, oppure giudica qualche brano.</p>}
-                {model.axes.length > 0 && (
-                  <div className="block rows">
-                    {model.axes.map((a, i) => (
-                      <div key={i} style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-                        <Ring value={a.confidence} size={40} />
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <p className="t-body" style={{ fontSize: 16.5 }}>{a.claim}</p>
-                          {a.trace?.length > 0 && <p style={{ fontSize: 14.5, color: "var(--faint)", marginTop: 8, lineHeight: 1.5 }}>{a.trace.join(" · ")}</p>}
-                          <p className="label tnum" style={{ marginTop: 8 }}>{a.confidence.toFixed(2)} · {a.evidence} evidenze</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
                 {model.rules.length > 0 && (
                   <>
                     <div className="section-label" style={{ marginTop: 24 }}><p className="label">Regole assolute</p></div>
@@ -538,9 +527,18 @@ export default function Meter() {
             )}
 
             {tab === "profilo" && (
-              <div className="rise" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {model.taste.map((a) => <span key={a} className="btn btn--sm" style={{ cursor: "default" }}>{a}</span>)}
-                {model.taste.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Profilo vuoto. Importa da Spotify.</p>}
+              <div className="rise">
+                <div className="section-label">
+                  <p className="label">Profilo</p>
+                  <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing} style={{ display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    <Download size={13} />
+                    {importing ? "Leggo il profilo…" : model.taste.length ? "Riaggiorna" : "Importa da Spotify"}
+                  </button>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {model.taste.map((a) => <span key={a} className="btn btn--sm" style={{ cursor: "default" }}>{a}</span>)}
+                  {model.taste.length === 0 && <p className="t-body" style={{ fontSize: 16.5 }}>Profilo vuoto — si riempie da solo ogni notte, o subito col bottone qui sopra.</p>}
+                </div>
               </div>
             )}
 
@@ -611,8 +609,12 @@ export default function Meter() {
 
             <p className="label" style={{ marginBottom: 16 }}>Catena · {RIGS.find((r) => r.key === rig)?.label}</p>
             <div style={{ display: "flex", gap: 8 }}>
-              <button className="btn btn--pri" style={{ flex: 1 }} onClick={commitRating} disabled={!rating.verdict}>Registra</button>
-              <button className="btn btn--ghost" onClick={() => setRating(null)}>Annulla</button>
+              <button className="btn btn--pri" style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={commitRating} disabled={!rating.verdict}>
+                <Check size={15} /> Registra
+              </button>
+              <button className="btn btn--ghost" onClick={() => setRating(null)} aria-label="Annulla" style={{ display: "inline-flex", alignItems: "center" }}>
+                <X size={15} />
+              </button>
             </div>
           </div>
         </div>
