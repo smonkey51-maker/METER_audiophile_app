@@ -170,6 +170,16 @@ html, body {
   color: var(--ink);
 }
 
+/* ── gerarchia tipografica a 4 livelli ──
+   1. Display     — il focus: titolo in riproduzione, headline, un valore.
+   2. Sub-display — il contesto: artista, album.
+   3. Micro-label — metadati tecnici e label d'interfaccia: è .label, sopra.
+   4. Body        — log, descrizioni, output di Claude.
+   La dimensione resta a chi la usa (varia per contesto); qui solo il tono. */
+.t-display    { font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.t-subdisplay { font-weight: 500; letter-spacing: -0.005em; color: var(--mute); }
+.t-body       { font-weight: 400; line-height: 1.6; color: var(--mute); }
+
 /* ── indicatore di stato: un punto, non un LED ── */
 .led {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
