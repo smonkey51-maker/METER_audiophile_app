@@ -161,7 +161,10 @@ async function command(method: "PUT" | "POST", path: string, body: unknown, owne
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (res.status === 204 || res.status === 202) return null;
-  if (!res.ok) throw new Error("spotify: nessun dispositivo attivo o comando rifiutato");
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.error?.message || "spotify: nessun dispositivo attivo o comando rifiutato");
+  }
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
@@ -178,17 +181,38 @@ export async function playbackState(owner = OWNER) {
   };
 }
 
+export async function listDevices(owner = OWNER) {
+  const data = await get("/me/player/devices", owner);
+  return (data?.devices ?? []) as { id: string; name: string; is_active: boolean }[];
+}
+
+/**
+ * Spotify distingue tra dispositivo "disponibile" (aperto) e "attivo"
+ * (selezionato per Spotify Connect): un comando senza device_id fallisce
+ * con NO_ACTIVE_DEVICE anche se hai l'app aperta ma non ci hai mai premuto
+ * play da lì. Recuperare la lista e passare l'id esplicito aggira il problema.
+ */
+async function targetDevice(owner = OWNER) {
+  const devices = await listDevices(owner);
+  if (!devices.length) throw new Error("Nessun dispositivo Spotify raggiungibile: apri l'app e aspetta qualche secondo.");
+  return (devices.find((d) => d.is_active) ?? devices[0]).id;
+}
+
 export async function play(uri?: string, owner = OWNER) {
-  return command("PUT", "/me/player/play", uri ? { uris: [uri] } : undefined, owner);
+  const device = await targetDevice(owner);
+  return command("PUT", `/me/player/play?device_id=${device}`, uri ? { uris: [uri] } : undefined, owner);
 }
 export async function pausePlayback(owner = OWNER) {
-  return command("PUT", "/me/player/pause", undefined, owner);
+  const device = await targetDevice(owner);
+  return command("PUT", `/me/player/pause?device_id=${device}`, undefined, owner);
 }
 export async function nextTrack(owner = OWNER) {
-  return command("POST", "/me/player/next", undefined, owner);
+  const device = await targetDevice(owner);
+  return command("POST", `/me/player/next?device_id=${device}`, undefined, owner);
 }
 export async function previousTrack(owner = OWNER) {
-  return command("POST", "/me/player/previous", undefined, owner);
+  const device = await targetDevice(owner);
+  return command("POST", `/me/player/previous?device_id=${device}`, undefined, owner);
 }
 
 export async function createPlaylist(name: string, uris: string[], owner = OWNER) {
