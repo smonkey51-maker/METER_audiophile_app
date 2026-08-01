@@ -75,7 +75,11 @@ async function get(path: string, owner = OWNER) {
   const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
   if (res.status === 204) return null;
   if (!res.ok) throw new Error(`spotify ${path} → ${res.status}`);
-  return res.json();
+  // Nelle transizioni di stato (subito dopo play/pausa) Spotify a volte
+  // risponde 200 con un corpo vuoto o non-JSON: non è un errore da mostrare.
+  const text = await res.text();
+  if (!text) return null;
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 const trackName = (t: any) => `${(t.artists ?? []).map((a: any) => a.name).join(", ")} — ${t.name}`;
@@ -166,7 +170,8 @@ async function command(method: "PUT" | "POST", path: string, body: unknown, owne
     throw new Error(detail?.error?.message || "spotify: nessun dispositivo attivo o comando rifiutato");
   }
   const text = await res.text();
-  return text ? JSON.parse(text) : null;
+  if (!text) return null;
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 /** Il telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */
