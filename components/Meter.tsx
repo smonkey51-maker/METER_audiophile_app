@@ -160,12 +160,9 @@ export default function Meter() {
               className={busy || dreaming || importing ? "led pulse" : "led"}
               title={busy || dreaming || importing ? "Al lavoro" : "In attesa"}
             />
-            <span style={{ fontFamily: "var(--mono)", fontSize: 15, fontWeight: 600, letterSpacing: ".26em" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-.01em" }}>
               METER
             </span>
-          </span>
-          <span className="ticks" aria-hidden="true" style={{ flex: "0 1 96px", minWidth: 0 }}>
-            {Array.from({ length: 16 }, (_, i) => <i key={i} />)}
           </span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <button className="btn btn--ghost btn--sm" onClick={runImport} disabled={importing}>
@@ -187,7 +184,6 @@ export default function Meter() {
         <section className="rise" style={{ maxWidth: 820, marginBottom: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
           {/* L'indicatore: unico strumento a quadrante della pagina, sempre acceso. */}
           <div style={{ position: "relative", flexShrink: 0, paddingTop: 4, isolation: "isolate" }}>
-            <span className="halo" aria-hidden="true" />
             <Ring value={Math.min(1, model.cycles / 8)} size={112} live={dreaming} accent="var(--accent)" core={false} />
             <span
               className="label tnum"
