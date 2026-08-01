@@ -1,0 +1,23 @@
+# Lo scrobble gira ogni 30 minuti, fuori da Vercel: il piano Hobby ammette
+# un solo cron al giorno per progetto, e mezz'ora è la finestra che serve
+# perché recently-played di Spotify restituisce al massimo 50 brani.
+name: scrobble
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  scrobble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chiama /api/cron/scrobble
+        env:
+          METER_URL: ${{ secrets.METER_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 10 --max-time 60 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$METER_URL/api/cron/scrobble"

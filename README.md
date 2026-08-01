@@ -44,10 +44,12 @@ Poi apri `/api/spotify/login` una volta per autorizzare l'account.
 
 ## Deploy su Vercel
 
-I due cron in `vercel.json` sono la ragione principale per stare su Vercel:
+Due processi girano da soli:
 
 - `/api/cron/scrobble` ogni 30 min — legge `recently-played` e cattura anche ciò che ascolti con l'app chiusa
 - `/api/cron/dream` alle 4:00 — consolida la giornata mentre dormi
+
+Solo il dream è in `vercel.json`: il piano Hobby ammette un cron al giorno per progetto. Lo scrobble gira quindi da GitHub Actions (`.github/workflows/scrobble.yml`), che chiama l'endpoint con `Authorization: Bearer $CRON_SECRET`. Servono due secret nel repo: `METER_URL` (l'origin del deploy, senza slash finale) e `CRON_SECRET` (lo stesso valore impostato tra le env di Vercel). Su un piano Pro puoi rimettere `{ "path": "/api/cron/scrobble", "schedule": "*/30 * * * *" }` in `vercel.json` e disattivare il workflow.
 
 Il system prompt è marcato con `cache_control: ephemeral`: identità, assi e regole non cambiano tra una richiesta e l'altra, quindi in lettura costano il 10%. Su un agente che rilegge la stessa memoria decine di volte al giorno è la voce di costo dominante.
 
