@@ -201,12 +201,15 @@ html, body {
 /* Menu a tendina fatto in casa: una <select> nativa non si può vestire
    con lo stesso vetro del resto, il suo popup resta sempre quello del
    sistema operativo. Questo invece è coerente con .block/.rows. */
+/* Sfondo quasi opaco, non il vetro traslucido di .block: se il browser
+   non applica il backdrop-filter (è successo su alcuni mobile), il testo
+   della pagina sotto non deve trasparire attraverso il menu. */
 .dropdown {
   position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%);
   z-index: 50; min-width: 190px; padding: 6px;
   display: flex; flex-direction: column; gap: 2px;
   border-radius: var(--r-inner); border: 1px solid var(--hair);
-  background: var(--panel), var(--form);
+  background: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--lift-2);
   animation: pop .22s var(--ease) both;
