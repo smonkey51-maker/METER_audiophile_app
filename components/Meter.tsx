@@ -6,6 +6,8 @@ import { DIMS, EMPTY_MODEL, RIGS, VERDICTS, type Listen, type Model, type Rec, t
 
 type Msg = { role: "user" | "agent"; text: string };
 type Op = { type: string; index?: number; claim?: string; confidence?: number; reason?: string };
+type Playback = { isPlaying: boolean; track: string; artist: string; device?: string };
+type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
 
 // Da dove viene ogni voce del registro: la fonte pesa quanto il giudizio,
 // va sempre leggibile, mai dedotta dal contesto.
@@ -38,6 +40,10 @@ export default function Meter() {
   const [gaps, setGaps] = useState<string[]>([]);
   const [importSummary, setImportSummary] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [playback, setPlayback] = useState<Playback | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const history = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
   const memHistory = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -74,6 +80,40 @@ export default function Meter() {
   }, []);
 
   useEffect(() => { refresh().finally(() => setReady(true)); }, [refresh]);
+
+  const refreshPlayback = useCallback(async () => {
+    const r = await fetch("/api/spotify/player").then((x) => x.json()).catch(() => ({ state: null }));
+    setPlayback(r.state ?? null);
+  }, []);
+
+  // Il telecomando non ha eventi push: un poll leggero è l'unico modo per
+  // accorgersi che hanno cambiato brano da un altro dispositivo.
+  useEffect(() => {
+    refreshPlayback();
+    const t = setInterval(refreshPlayback, 15000);
+    return () => clearInterval(t);
+  }, [refreshPlayback]);
+
+  async function playerAction(action: "play" | "pause" | "next" | "previous", uri?: string) {
+    const r = await fetch("/api/spotify/player", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, uri }),
+    }).then((x) => x.json()).catch(() => ({ error: "comando fallito" }));
+    if (r.error) { flash("Comando fallito: apri Spotify su un dispositivo."); return; }
+    setPlayback(r.state ?? null);
+  }
+
+  async function runSearch() {
+    const q = searchQuery.trim();
+    if (!q || searching) return;
+    setSearching(true);
+    try {
+      const r = await fetch(`/api/spotify/search?q=${encodeURIComponent(q)}`).then((x) => x.json());
+      if (r.error) { flash("Ricerca non autorizzata: collega Spotify."); return; }
+      setSearchResults(r.results ?? []);
+    } catch { flash("Ricerca fallita."); }
+    finally { setSearching(false); }
+  }
 
   const kept = useMemo(() => listens.filter((l) => l.verdict === "keep"), [listens]);
   const unjudged = useMemo(() => listens.filter((l) => !l.verdict).slice(0, 8), [listens]);
@@ -230,6 +270,53 @@ export default function Meter() {
               <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--mute)", marginTop: 16 }}>{model.summary}</p>
             )}
           </div>
+        </section>
+
+        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
+        <section className="block rise" style={{ padding: 24, marginBottom: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ minWidth: 0 }}>
+              <p className="label" style={{ marginBottom: 6 }}>
+                {playback ? `In ascolto${playback.device ? " su " + playback.device : ""}` : "Ora in ascolto"}
+              </p>
+              <p style={{ fontSize: 16.5 }}>
+                {playback
+                  ? <>{playback.track} <span style={{ color: "var(--mute)" }}>· {playback.artist}</span></>
+                  : <span style={{ color: "var(--mute)" }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</span>}
+              </p>
+            </div>
+            {playback && (
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente">⏮</button>
+                <button className="btn btn--pri btn--sm" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"}>
+                  {playback.isPlaying ? "⏸" : "▶"}
+                </button>
+                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva">⏭</button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+            <input className="field" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && runSearch()} placeholder="Cerca un brano su Spotify" />
+            <button className="btn btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()}>
+              {searching ? "Cerco…" : "Cerca"}
+            </button>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+              {searchResults.map((r) => (
+                <div key={r.uri} className="recess" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 15.5, minWidth: 0 }}>{r.track} <span style={{ color: "var(--mute)" }}>· {r.artist}</span></span>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <button className="btn btn--sm" onClick={() => playerAction("play", r.uri)}>Riproduci</button>
+                    <button className="btn btn--ghost btn--sm" onClick={() => setRating({ rec: { artist: r.artist, track: r.track, album: r.album, url: r.url }, verdict: null, dims: [] })}>Giudica</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {(importSummary || gaps.length > 0) && (

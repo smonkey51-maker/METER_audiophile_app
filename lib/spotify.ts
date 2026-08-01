@@ -3,7 +3,8 @@ import { OWNER } from "./db";
 
 /**
  * Gli scope: lettura del profilo per l'innesto, cronologia per lo scrobble,
- * scrittura playlist per l'export. Niente di più.
+ * scrittura playlist per l'export, lettura e controllo della riproduzione
+ * per il telecomando. Niente di più.
  */
 export const SCOPES = [
   "user-read-recently-played",
@@ -13,6 +14,8 @@ export const SCOPES = [
   "user-follow-read",
   "playlist-read-private",
   "playlist-modify-private",
+  "user-read-playback-state",
+  "user-modify-playback-state",
 ].join(" ");
 
 const TOKEN_URL = "https://accounts.spotify.com/api/token";
@@ -134,6 +137,58 @@ export async function searchTrack(artist: string, track: string, owner = OWNER) 
   const data = await get(`/search?q=${q}&type=track&limit=1`, owner);
   const t = data?.tracks?.items?.[0];
   return t ? { url: t.external_urls.spotify as string, uri: t.uri as string } : { url: "", uri: "" };
+}
+
+/** Ricerca libera, per la barra di ricerca: fino a 10 brani. */
+export async function searchTracks(query: string, owner = OWNER) {
+  const q = encodeURIComponent(query);
+  const data = await get(`/search?q=${q}&type=track&limit=10`, owner);
+  return (data?.tracks?.items ?? []).map((t: any) => ({
+    artist: (t.artists ?? []).map((a: any) => a.name).join(", "),
+    track: t.name as string,
+    album: t.album?.name as string,
+    url: t.external_urls?.spotify as string,
+    uri: t.uri as string,
+  }));
+}
+
+async function command(method: "PUT" | "POST", path: string, body: unknown, owner = OWNER) {
+  const token = await accessToken(owner);
+  if (!token) throw new Error("spotify: non autorizzato");
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 204 || res.status === 202) return null;
+  if (!res.ok) throw new Error("spotify: nessun dispositivo attivo o comando rifiutato");
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+/** Il telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */
+export async function playbackState(owner = OWNER) {
+  const data = await get("/me/player", owner);
+  if (!data?.item) return null;
+  return {
+    isPlaying: Boolean(data.is_playing),
+    track: data.item.name as string,
+    artist: (data.item.artists ?? []).map((a: any) => a.name).join(", "),
+    device: data.device?.name as string | undefined,
+  };
+}
+
+export async function play(uri?: string, owner = OWNER) {
+  return command("PUT", "/me/player/play", uri ? { uris: [uri] } : undefined, owner);
+}
+export async function pausePlayback(owner = OWNER) {
+  return command("PUT", "/me/player/pause", undefined, owner);
+}
+export async function nextTrack(owner = OWNER) {
+  return command("POST", "/me/player/next", undefined, owner);
+}
+export async function previousTrack(owner = OWNER) {
+  return command("POST", "/me/player/previous", undefined, owner);
 }
 
 export async function createPlaylist(name: string, uris: string[], owner = OWNER) {
