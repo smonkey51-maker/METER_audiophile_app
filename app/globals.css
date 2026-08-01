@@ -1,115 +1,239 @@
 /* ─────────────────────────────────────────────
-   METER — sistema visivo
-   Riferimento: KEF. Forma monolitica, nessun bordo,
-   separazione per solo tono, un accento saturo,
-   un unico elemento concentrico come fuoco.
+   METER — sistema visivo "strumento"
+   L'app non è una pagina: è un apparecchio acceso.
+   Fondo macchina, pannelli fresati, un LED arancio
+   come unica sorgente di luce. Ogni numero è monospace,
+   perché su uno strumento i numeri non si muovono.
    ───────────────────────────────────────────── */
 
 :root {
-  /* Mineral White */
-  --shell:  #EDEBE7;   /* campo */
-  --form:   #F8F7F4;   /* blocco in rilievo */
-  --recess: #E2DFD9;   /* incavo */
-  --ink:    #1A1917;
-  --mute:   #6E6A63;
-  --faint:  #A19C93;
-  --accent: #D1421F;   /* Racing Red */
-  --on-accent: #FFFFFF;
-  --good:   #2C7A4B;
-  --lift-1: 0 1px 2px rgba(26,25,23,.04), 0 6px 20px rgba(26,25,23,.05);
-  --lift-2: 0 2px 6px rgba(26,25,23,.06), 0 18px 48px rgba(26,25,23,.10);
-  --r-block: 26px;
-  --r-inner: 18px;
+  /* Carbon — il default. Lo strumento è acceso al buio. */
+  --shell:  #0B0B0A;   /* fondo macchina */
+  --form:   #1D1C19;   /* pannello in rilievo */
+  --recess: #070706;   /* incavo fresato */
+  --ink:    #F6F4EE;
+  --mute:   #9A9488;
+  --faint:  #635E55;
+  --accent: #FF4A1C;   /* LED arancio */
+  --on-accent: #150703;
+  --good:   #3FD98A;
+
+  /* La luce del LED, in tre intensità. È l'unico "effetto" del sistema:
+     tutto il resto è geometria. */
+  --glow-1: 0 0 8px  color-mix(in srgb, var(--accent) 55%, transparent);
+  --glow-2: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent),
+            0 0 44px color-mix(in srgb, var(--accent) 22%, transparent);
+
+  /* Rilievo: una luce alta sul bordo superiore, un'ombra sotto.
+     È ciò che fa leggere il pannello come metallo e non come rettangolo. */
+  --lift-1: inset 0 1px 0 rgba(255,255,255,.10),
+            inset 0 0 0 1px rgba(255,255,255,.035),
+            0 2px 4px rgba(0,0,0,.65), 0 14px 34px rgba(0,0,0,.55);
+  --lift-2: inset 0 1px 0 rgba(255,255,255,.14),
+            inset 0 0 0 1px rgba(255,255,255,.05),
+            0 3px 8px rgba(0,0,0,.7), 0 30px 74px rgba(0,0,0,.65);
+  --carve:  inset 0 2px 5px rgba(0,0,0,.85), inset 0 -1px 0 rgba(255,255,255,.06);
+
+  /* Il metallo non è mai un colore piatto: la luce cade dall'alto. */
+  --panel: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,0) 42%);
+
+  --hair: rgba(255,255,255,.09);   /* filo di griglia */
+  --r-block: 18px;
+  --r-inner: 12px;
   --ease: cubic-bezier(.32,.72,0,1);
+  --mono: "SF Mono", "JetBrains Mono", "IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
 
-[data-theme="dark"] {
-  /* Carbon Black */
-  --shell:  #121210;
-  --form:   #1D1D1A;
-  --recess: #0B0B0A;
-  --ink:    #F3F1ED;
-  --mute:   #999489;
-  --faint:  #6B675F;
-  --accent: #FF5A32;
-  --on-accent: #17110E;
-  --good:   #45C97D;
-  --lift-1: 0 1px 2px rgba(0,0,0,.4);
-  --lift-2: 0 18px 48px rgba(0,0,0,.55);
+/* Il fondo non è nero piatto: è una stanza buia con l'apparecchio acceso.
+   Un alone caldo in alto, freddo in basso — dà profondità senza gradienti vistosi. */
+body {
+  background:
+    radial-gradient(120% 70% at 50% -12%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 62%),
+    radial-gradient(90% 55% at 50% 108%, rgba(70,90,120,.10), transparent 60%),
+    var(--shell);
+  background-attachment: fixed;
+}
+
+[data-theme="light"] {
+  /* Daylight — lo stesso apparecchio sotto la luce del laboratorio.
+     Alluminio spazzolato, non carta. */
+  --shell:  #DEDCD6;
+  --form:   #EFEDE7;
+  --recess: #CBC8C1;
+  --ink:    #16150F;
+  --mute:   #6A655C;
+  --faint:  #97928A;
+  --accent: #D63A12;
+  --on-accent: #FFFFFF;
+  --good:   #1E7A4B;
+  --glow-1: 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent);
+  --glow-2: 0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
+  --panel: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,0) 45%);
+  --lift-1: inset 0 1px 0 rgba(255,255,255,.8),
+            0 1px 2px rgba(20,18,14,.10), 0 8px 22px rgba(20,18,14,.09);
+  --lift-2: inset 0 1px 0 rgba(255,255,255,.9),
+            0 2px 6px rgba(20,18,14,.13), 0 26px 60px rgba(20,18,14,.16);
+  --carve:  inset 0 1px 3px rgba(20,18,14,.16), inset 0 -1px 0 rgba(255,255,255,.7);
+  --hair: rgba(20,18,14,.07);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
   margin: 0; padding: 0;
-  background: var(--shell);
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.011em;
 }
 
-/* ── blocchi: nessun bordo, mai. Solo tono e ombra. ── */
-.block   { background: var(--form);   border-radius: var(--r-block); box-shadow: var(--lift-1); }
-.recess  { background: var(--recess); border-radius: var(--r-inner); }
+/* La griglia del pannello. Sta dietro a tutto, non si nota finché non la cerchi,
+   ed è ciò che dice "strumento" prima di qualsiasi altro dettaglio. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(var(--hair) 1px, transparent 1px) 0 0 / 100% 88px,
+    linear-gradient(90deg, var(--hair) 1px, transparent 1px) 0 0 / 88px 100%;
+  mask-image: radial-gradient(ellipse 150% 120% at 50% 0%, #000 5%, rgba(0,0,0,.45) 45%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 150% 120% at 50% 0%, #000 5%, rgba(0,0,0,.45) 45%, transparent 90%);
+}
+body > * { position: relative; z-index: 1; }
+
+/* ── pannelli: rilievo per luce e ombra, mai per bordo ── */
+.block   {
+  background: var(--panel), var(--form);
+  border-radius: var(--r-block); box-shadow: var(--lift-1);
+}
+.recess  { background: var(--recess); border-radius: var(--r-inner); box-shadow: var(--carve); }
 .flush   { background: transparent; }
 
-/* ── controlli ── */
+/* ── controlli: tasti di un apparecchio ── */
 .btn {
-  border: 0; border-radius: 999px; cursor: pointer;
+  position: relative; border: 0; border-radius: 999px; cursor: pointer;
   font: inherit; font-size: 15px; font-weight: 500; letter-spacing: -0.01em;
   padding: 11px 20px;
-  background: var(--recess); color: var(--ink);
-  transition: transform .2s var(--ease), background .2s var(--ease), opacity .2s var(--ease);
+  background: var(--panel), var(--form); color: var(--ink);
+  box-shadow: var(--lift-1);
+  transition: transform .18s var(--ease), background .2s var(--ease),
+              box-shadow .2s var(--ease), opacity .2s var(--ease);
 }
-.btn:hover:not(:disabled) { transform: translateY(-1px); }
-.btn:active:not(:disabled) { transform: scale(.97); }
-.btn:disabled { opacity: .35; cursor: not-allowed; }
-.btn--pri   { background: var(--accent); color: var(--on-accent); }
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--lift-2); }
+.btn:active:not(:disabled) { transform: translateY(0) scale(.975); box-shadow: var(--carve); }
+.btn:disabled { opacity: .3; cursor: not-allowed; box-shadow: none; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Il tasto primario è l'unico acceso: colore pieno e alone, come un LED sotto vetro. */
+.btn--pri {
+  background: var(--accent); color: var(--on-accent); font-weight: 600;
+  box-shadow: var(--lift-1), var(--glow-1);
+}
+.btn--pri:hover:not(:disabled) { box-shadow: var(--lift-2), var(--glow-2); }
+
 .btn--solid { background: var(--ink); color: var(--shell); }
-.btn--ghost { background: transparent; color: var(--mute); }
-.btn--sm    { font-size: 13.5px; padding: 8px 15px; }
+.btn--ghost { background: transparent; color: var(--mute); box-shadow: none; }
+.btn--ghost:hover:not(:disabled) { color: var(--ink); background: var(--form); box-shadow: var(--lift-1); }
+.btn--sm    { font-size: 13px; padding: 8px 15px; }
 
 .field {
   border: 0; outline: 0; border-radius: 999px;
   background: var(--recess); color: var(--ink);
+  box-shadow: var(--carve);
   font: inherit; font-size: 16px; padding: 14px 20px; width: 100%;
+  transition: box-shadow .2s var(--ease);
 }
 .field::placeholder { color: var(--faint); }
+.field:focus { box-shadow: var(--carve), 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent), var(--glow-1); }
 
-.label { font-size: 12.5px; font-weight: 500; color: var(--faint); letter-spacing: 0; }
-.tnum  { font-variant-numeric: tabular-nums; }
-
-.display {
-  font-size: clamp(26px, 3.6vw, 42px);
-  line-height: 1.16; letter-spacing: -0.03em; font-weight: 500;
+/* Le etichette sono serigrafate sul pannello: piccole, spaziate, mai gridate. */
+.label {
+  font-family: var(--mono);
+  font-size: 10.5px; font-weight: 500; color: var(--faint);
+  letter-spacing: .13em; text-transform: uppercase;
 }
 
-/* ── barra: materiale, non linea ── */
+/* Ogni numero è monospace e tabulare: su uno strumento le cifre non ballano. */
+.tnum { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+
+/* Retroilluminato: la luce cade dall'alto anche sul testo, come su un display. */
+.display {
+  font-size: clamp(30px, 4.4vw, 52px);
+  line-height: 1.08; letter-spacing: -0.038em; font-weight: 500;
+  text-wrap: balance;
+  background: linear-gradient(177deg, var(--ink) 52%, color-mix(in srgb, var(--ink) 80%, var(--shell)));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+
+/* ── il LED di stato: piccolo, acceso, con alone ── */
+.led {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); box-shadow: var(--glow-1); flex-shrink: 0;
+}
+.led--idle { background: var(--faint); box-shadow: none; }
+
+/* ── barra: frontalino dell'apparecchio ── */
 .bar {
   position: sticky; top: 0; z-index: 40;
-  background: color-mix(in srgb, var(--shell) 76%, transparent);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  background: color-mix(in srgb, var(--shell) 82%, transparent);
+  backdrop-filter: saturate(160%) blur(20px);
+  -webkit-backdrop-filter: saturate(160%) blur(20px);
+  box-shadow: 0 1px 0 var(--hair);
 }
+
+/* Tacche di scala, come su una manopola graduata. Decorative. */
+.ticks {
+  height: 10px; display: flex; align-items: flex-end; gap: 5px; overflow: hidden;
+}
+.ticks i {
+  width: 1px; background: var(--faint); opacity: .5;
+  height: 4px; display: block;
+}
+.ticks i:nth-child(5n + 1) { height: 9px; opacity: .8; }
 
 /* ── movimento ── */
 @keyframes rise  { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
 @keyframes pop   { from { opacity: 0; transform: scale(.97) }       to { opacity: 1; transform: none } }
 @keyframes sheet { from { opacity: 0; transform: translateY(26px) scale(.985) } to { opacity: 1; transform: none } }
 @keyframes veil  { from { opacity: 0 } to { opacity: 1 } }
-@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
 @keyframes sweep { to { stroke-dashoffset: var(--dash-to) } }
+@keyframes scan  { from { transform: rotate(-90deg) } to { transform: rotate(270deg) } }
 
-.rise  { animation: rise .5s var(--ease) both }
-.pop   { animation: pop .32s var(--ease) both }
-.sheet { animation: sheet .44s var(--ease) both }
-.pulse { animation: pulse 1.3s infinite ease-in-out }
+/* L'arco che gira: lento, non nervoso. Sei secondi a giro. */
+.scan { animation: scan 6s linear infinite; }
+
+/* L'alone dietro l'indicatore: la luce che il pannello riflette. */
+.halo {
+  position: absolute; inset: -34%; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 26%, transparent), transparent 68%);
+  filter: blur(14px);
+}
+/* Alla luce del giorno un alone acceso non si vedrebbe: resta un velo. */
+[data-theme="light"] .halo { opacity: .35; }
+
+/* Il pulse non è un fade: è un LED che respira, con l'alone che si allarga. */
+@keyframes pulse {
+  0%, 100% { opacity: 1;  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 70%, transparent)) }
+  50%      { opacity: .45; filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 90%, transparent)) }
+}
+
+/* Accensione: la luce che sale e si assesta, come un filamento.
+   Niente text-shadow — sul testo ritagliato in gradiente non si vedrebbe. */
+@keyframes warmup {
+  0%   { opacity: 0; filter: blur(7px) brightness(2.2) }
+  55%  { opacity: 1; filter: blur(1px) brightness(1.25) }
+  100% { opacity: 1; filter: none }
+}
+
+.rise   { animation: rise .5s var(--ease) both }
+.pop    { animation: pop .32s var(--ease) both }
+.sheet  { animation: sheet .44s var(--ease) both }
+.pulse  { animation: pulse 1.6s infinite ease-in-out }
+.warmup { animation: warmup 1.1s var(--ease) both }
 
 .scrim {
   position: fixed; inset: 0; z-index: 60; padding: 20px;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,.3); backdrop-filter: blur(12px);
+  background: rgba(0,0,0,.62); backdrop-filter: blur(14px);
   animation: veil .28s ease both;
 }
 
@@ -120,7 +244,7 @@ html, body {
 .scroll::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 99px; opacity: .4 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .pop, .sheet, .pulse { animation: none }
+  .rise, .pop, .sheet, .pulse, .warmup { animation: none }
   .btn:hover:not(:disabled) { transform: none }
   circle { animation: none !important }
 }
