@@ -185,23 +185,77 @@ html, body {
    si legge subito, come nel sito di riferimento — vetro pieno, ombra,
    bordo — non un incavo quasi invisibile sullo sfondo. */
 .pill-status {
-  display: inline-flex; align-items: center; padding: 5px;
+  display: inline-flex; align-items: center; padding: 15px;
   border-radius: 999px; border: 1px solid var(--hair);
   background: var(--panel), var(--form);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--lift-1);
+  box-shadow: var(--lift-2);
 }
-.pill-status .seg-item { font-size: 12px; padding: 8px 14px; }
+.pill-status .seg-item { font-size: 36px; padding: 24px 42px; }
 .pill-status .seg-item--icon {
-  padding: 8px; width: 32px; height: 32px;
+  padding: 24px; width: 96px; height: 96px;
   display: inline-flex; align-items: center; justify-content: center;
+}
+.pill-status .seg-divider { margin: 12px 3px; }
+
+/* Menu a tendina fatto in casa: una <select> nativa non si può vestire
+   con lo stesso vetro del resto, il suo popup resta sempre quello del
+   sistema operativo. Questo invece è coerente con .block/.rows. */
+.dropdown {
+  position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+  z-index: 50; min-width: 190px; padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  border-radius: var(--r-inner); border: 1px solid var(--hair);
+  background: var(--panel), var(--form);
+  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--lift-2);
+  animation: pop .22s var(--ease) both;
+}
+.dropdown-item {
+  border: 0; border-radius: 12px; cursor: pointer; text-align: left;
+  font: inherit; font-size: 14px; letter-spacing: -0.005em;
+  padding: 10px 14px; background: transparent; color: var(--mute);
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.dropdown-item:hover, .dropdown-item:focus-visible { background: var(--recess); color: var(--ink); outline: none; }
+.dropdown-item.is-active { background: var(--form); color: var(--ink); font-weight: 600; box-shadow: var(--lift-1); }
+
+@media (max-width: 640px) {
+  /* La pill è fissa in basso su mobile: il menu deve aprirsi verso
+     l'alto, altrimenti finisce fuori dallo schermo. */
+  .dropdown { top: auto; bottom: calc(100% + 12px); }
+}
+
+/* Web player: appare al posto della sola riga di testo quando qualcosa
+   è caricato, anche solo in pausa — rettangolare, bordi smussati, con
+   la copertina dell'album invece di una semplice etichetta. */
+.webplayer {
+  display: flex; align-items: center; gap: 18px;
+  border-radius: var(--r-inner); padding: 14px;
+  background: var(--recess); box-shadow: var(--carve);
+}
+.webplayer-art {
+  width: 64px; height: 64px; flex-shrink: 0; border-radius: 14px;
+  background: var(--form) center/cover no-repeat;
+  box-shadow: var(--lift-1);
+  display: grid; place-items: center; color: var(--mute);
+}
+.webplayer-info { min-width: 0; flex: 1; }
+.webplayer-controls { display: flex; gap: 8px; flex-shrink: 0; }
+.truncate { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+@media (max-width: 640px) {
+  /* Copertina, testo e controlli non stanno su una riga sola in uno
+     schermo stretto: i controlli scendono, non stringono il testo. */
+  .webplayer { flex-wrap: wrap; }
+  .webplayer-controls { flex-basis: 100%; justify-content: flex-end; }
 }
 
 /* Marchio di Jessica: un ritratto a tratto, sospeso in cima alla pagina
    come una firma, non nella pill — quella resta solo utilità. */
 .brand-mark {
   position: relative;
-  width: 68px; height: 68px; margin: 4px auto 32px;
+  width: 204px; height: 204px; margin: 4px auto 32px;
   display: grid; place-items: center; color: var(--ink);
   border-radius: 999px; border: 1px solid var(--hair);
   background: var(--panel), var(--form);
