@@ -373,7 +373,7 @@ export default function Meter() {
               Niente di nuovo ancora — Jessica propone al ciclo notturno. Nel frattempo registra un ascolto che vuoi farle conoscere.
             </p>
           ) : (
-            <div className="block rows">
+            <div className="recess rows">
               {dailyPicks.map((e) => (
                 <div key={e.id} className="row-tap" role="button" tabIndex={0}
                   onClick={() => openRating({ ...e, url: e.spotify_url, id: e.id })}
