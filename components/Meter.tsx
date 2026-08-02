@@ -335,7 +335,16 @@ export default function Meter() {
               <Search size={14} />
               {searching ? "Cerco…" : "Cerca"}
             </button>
-            <button className="btn btn--ghost btn--sm" onClick={() => setManual({ open: true, artist: "", track: "" })} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <button
+              className="btn btn--ghost btn--sm"
+              onClick={() => {
+                // C'è già qualcosa in ascolto: non serve chiedere cosa
+                // registrare, si passa dritti al giudizio.
+                if (playback) openRating({ artist: playback.artist, track: playback.track });
+                else setManual({ open: true, artist: "", track: "" });
+              }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+            >
               <Plus size={14} /> Registra un ascolto
             </button>
           </div>
