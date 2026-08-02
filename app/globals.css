@@ -108,7 +108,7 @@ html, body {
 /* Contenitore con righe interne: una lista non è N card ripetute, è UN
    contenitore diviso da fili sottili — meno rumore, più leggibile. */
 .rows > * {
-  padding: 16px 22px;
+  padding: 18px 24px;
   border-bottom: 1px solid var(--hair);
 }
 .rows > *:last-child { border-bottom: 0; }
@@ -130,7 +130,7 @@ html, body {
 .btn {
   position: relative; border: 1px solid var(--hair); border-radius: 999px; cursor: pointer;
   font: inherit; font-size: 15px; font-weight: 500; letter-spacing: -0.01em;
-  padding: 11px 20px;
+  padding: 12px 22px;
   background: var(--panel), var(--form); color: var(--ink);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--lift-1);
@@ -157,7 +157,7 @@ html, body {
 .btn--solid { background: var(--ink); color: var(--shell); border-color: transparent; }
 .btn--ghost { background: transparent; border-color: transparent; color: var(--mute); box-shadow: none; backdrop-filter: none; }
 .btn--ghost:hover:not(:disabled) { color: var(--ink); background: var(--form); border-color: var(--hair); box-shadow: var(--lift-1); backdrop-filter: var(--blur); }
-.btn--sm    { font-size: 13px; padding: 8px 15px; }
+.btn--sm    { font-size: 13px; padding: 9px 16px; }
 
 /* Controllo segmentato: un solo binario, mai pillole separate. Ogni
    segmento non ha bordo né vetro propri — solo quello attivo prende
@@ -232,13 +232,18 @@ html, body {
 /* Web player: appare al posto della sola riga di testo quando qualcosa
    è caricato, anche solo in pausa — rettangolare, bordi smussati, con
    la copertina dell'album invece di una semplice etichetta. */
+/* Non più un incavo nella pagina ma un widget che galleggia sopra —
+   come il mini-player agganciato in fondo nel riferimento: vetro pieno,
+   ombra vera, copertina grande, non una riga di testo con un'icona. */
 .webplayer {
-  display: flex; align-items: center; gap: 18px;
-  border-radius: var(--r-inner); padding: 14px;
-  background: var(--recess); box-shadow: var(--carve);
+  display: flex; align-items: center; gap: 20px;
+  border-radius: var(--r-block); padding: 18px 22px;
+  background: var(--panel), var(--form);
+  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--lift-2);
 }
 .webplayer-art {
-  width: 64px; height: 64px; flex-shrink: 0; border-radius: 14px;
+  width: 76px; height: 76px; flex-shrink: 0; border-radius: 18px;
   background: var(--form) center/cover no-repeat;
   box-shadow: var(--lift-1);
   display: grid; place-items: center; color: var(--mute);
@@ -271,7 +276,7 @@ html, body {
   background: var(--recess); color: var(--ink);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   box-shadow: var(--carve);
-  font: inherit; font-size: 16px; padding: 14px 20px; width: 100%;
+  font: inherit; font-size: 16px; padding: 16px 22px; width: 100%;
   transition: box-shadow .3s var(--ease), border-color .3s var(--ease);
 }
 .field::placeholder { color: var(--faint); }
