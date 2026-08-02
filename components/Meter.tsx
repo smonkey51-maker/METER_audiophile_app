@@ -278,7 +278,7 @@ export default function Meter() {
         {/* tesi: Jessica dice cosa sa di te, sempre in tono scherzoso — il
             paragrafo (model.summary) inizia sempre con "Bubi sei...", lo
             garantisce il prompt che lo genera. */}
-        <section className="rise" style={{ maxWidth: 820, marginBottom: 40 }}>
+        <section className="rise" style={{ maxWidth: 820, marginBottom: 46 }}>
           <p className="label" style={{ marginBottom: 12, color: "var(--mute)" }}>Cosa sa Jessica?</p>
           <p className="warmup t-display" style={{ fontSize: 22, lineHeight: 1.45 }}>
             {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
@@ -291,7 +291,7 @@ export default function Meter() {
         {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo.
             Flush come il resto della pagina — solo il web player, quando c'è
             qualcosa da mostrare, resta una superficie propria. */}
-        <section className="rise" style={{ marginBottom: 32 }}>
+        <section className="rise" style={{ marginBottom: 36 }}>
           <div className="section-label"><p className="label">Ora in ascolto</p></div>
 
           {playback ? (
@@ -299,7 +299,7 @@ export default function Meter() {
                vero, con la copertina, non più la sola riga di testo. */
             <div className="webplayer" style={{ marginBottom: 20 }}>
               <div className="webplayer-art" aria-hidden="true" style={playback.art ? { backgroundImage: `url(${playback.art})` } : undefined}>
-                {!playback.art && <Music2 size={20} style={{ opacity: .4 }} />}
+                {!playback.art && <Music2 size={26} style={{ opacity: .4 }} />}
               </div>
               <div className="webplayer-info">
                 <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
