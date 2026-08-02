@@ -143,6 +143,18 @@ export async function searchTrack(artist: string, track: string, owner = OWNER) 
   return t ? { url: t.external_urls.spotify as string, uri: t.uri as string } : { url: "", uri: "" };
 }
 
+/**
+ * Solo la copertina, per la tracklist dei consigli — non salvata in DB
+ * (richiederebbe una colonna in più), recuperata al volo quando la riga
+ * compare in pagina.
+ */
+export async function trackArt(artist: string, track: string, owner = OWNER) {
+  const q = encodeURIComponent(`artist:${artist} track:${track}`);
+  const data = await get(`/search?q=${q}&type=track&limit=1`, owner);
+  const t = data?.tracks?.items?.[0];
+  return (t?.album?.images?.[1]?.url ?? t?.album?.images?.[0]?.url ?? null) as string | null;
+}
+
 /** Ricerca libera, per la barra di ricerca: fino a 10 brani. */
 export async function searchTracks(query: string, owner = OWNER) {
   const q = encodeURIComponent(query);

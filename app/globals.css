@@ -9,7 +9,7 @@
    ───────────────────────────────────────────── */
 
 :root {
-  --shell:  #111113;   /* antracite profondo e desaturato: "moody", non nero assoluto */
+  --shell:  #0A0908;   /* quasi nero OLED, con un'ombra di calore — non il grigio cyberpunk di prima */
   --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
   --recess: rgba(255,255,255,.03);   /* incavo: campi, tab non attive */
   --ink:    #F5F5F7;
@@ -18,6 +18,7 @@
   --accent: #FF6A3D;   /* arancione hi-fi: l'unico colore vivido, riservato ai dettagli critici */
   --on-accent: #1A0800;
   --good:   #32D74B;
+  --night:  #1E2A55;   /* blu notte profondo: il freddo del cielo, non del neon */
 
   /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
      alto del vetro. Nessun colore nell'ombra, nessun bagliore. */
@@ -44,13 +45,15 @@
   --mono: var(--font-geist-mono), "SF Mono", ui-monospace, Menlo, monospace;
 }
 
-/* Profondità spaziale: due campiture di colore morbide e ferme,
-   niente griglia tecnica. È lo sfondo dietro il vetro, non un pattern. */
+/* Un cielo notturno con un punto caldo, non un mix di segnali tecnici:
+   ambra in alto a sinistra come luce riflessa da un vinile, blu profondo
+   dall'altra parte, un filo d'ambra bassa come brace invece del verde
+   "stato" di prima. Impercettibile finché non manca. */
 body {
   background:
-    radial-gradient(60% 50% at 12% -6%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 68%),
-    radial-gradient(55% 46% at 96% 8%, color-mix(in srgb, #5C7CFF 12%, transparent), transparent 66%),
-    radial-gradient(70% 60% at 50% 118%, color-mix(in srgb, var(--good) 6%, transparent), transparent 70%),
+    radial-gradient(65% 55% at 14% -8%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 68%),
+    radial-gradient(62% 52% at 100% 2%, color-mix(in srgb, var(--night) 60%, transparent), transparent 70%),
+    radial-gradient(80% 65% at 50% 122%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 74%),
     var(--shell);
   background-attachment: fixed;
 }
@@ -252,6 +255,48 @@ html, body {
 .webplayer-controls { display: flex; gap: 8px; flex-shrink: 0; }
 .truncate { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
+/* Il colore della copertina che sfonda dietro la card, sfocatissimo —
+   Canvas/Ambient, non un'illustrazione. Solo dietro il web player, non
+   tutta la pagina (quello c'è già, più discreto, sul body). */
+.webplayer-glow {
+  position: absolute; inset: -30px;
+  background-size: cover; background-position: center;
+  filter: blur(50px) saturate(160%) brightness(.75);
+  opacity: .5; z-index: 0; border-radius: var(--r-block);
+  pointer-events: none;
+}
+[data-theme="light"] .webplayer-glow { opacity: .3; filter: blur(50px) saturate(140%) brightness(1.1); }
+.webplayer { position: relative; z-index: 1; }
+
+/* Gli assi di gusto: pensieri distinti di Jessica, uno scorrimento
+   orizzontale invece di un blocco verticale — così restano leggibili
+   come frasi singole, non righe di una lista. */
+.carousel {
+  display: flex; gap: 14px; overflow-x: auto; padding: 2px 2px 10px;
+  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.carousel::-webkit-scrollbar { display: none; }
+.carousel-card {
+  flex: 0 0 auto; scroll-snap-align: start;
+  width: min(78vw, 300px); padding: 22px;
+}
+.confidence-track {
+  flex: 1; height: 3px; border-radius: 99px; background: var(--hair); overflow: hidden;
+}
+.confidence-fill { height: 100%; background: var(--accent); border-radius: 99px; }
+
+/* Tracklist d'autore: numero sottile, copertina, niente altro rumore. */
+.tracklist-n {
+  font-family: var(--mono); font-size: 12px; color: var(--faint);
+  width: 18px; flex-shrink: 0; text-align: right; font-variant-numeric: tabular-nums;
+}
+.tracklist-art {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px;
+  background: var(--form) center/cover no-repeat;
+  display: grid; place-items: center; color: var(--mute);
+}
+
 @media (max-width: 640px) {
   /* Copertina, testo e controlli non stanno su una riga sola in uno
      schermo stretto: i controlli scendono, non stringono il testo. */
@@ -269,6 +314,13 @@ html, body {
   background: var(--panel), var(--form);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--lift-1);
+  animation: presence 6s ease-in-out infinite;
+}
+/* Un respiro, non una spia: Jessica è "presente" a prescindere da cosa
+   sta facendo — niente più punto acceso/spento legato al caricamento. */
+@keyframes presence {
+  0%, 100% { box-shadow: var(--lift-1), 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+  50%      { box-shadow: var(--lift-1), 0 0 26px 3px color-mix(in srgb, var(--accent) 16%, transparent); }
 }
 
 .field {
@@ -280,6 +332,24 @@ html, body {
   transition: box-shadow .3s var(--ease), border-color .3s var(--ease);
 }
 .field::placeholder { color: var(--faint); }
+
+/* Il trigger del comando rapido: sembra il campo di ricerca di prima,
+   ma è un bottone inerte — apre il vero campo in un foglio sopra. */
+.palette-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  text-align: left; cursor: pointer; color: var(--faint);
+}
+.palette-trigger:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--hair)); }
+.palette-trigger > span:first-child { min-width: 0; }
+.kbd {
+  font-family: var(--mono); font-size: 11px; color: var(--faint);
+  border: 1px solid var(--hair); border-radius: 6px; padding: 3px 7px;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  /* Niente tastiera fisica su mobile: il suggerimento ⌘K non serve. */
+  .kbd { display: none; }
+}
 .field:focus {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--hair));
   box-shadow: var(--carve), 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
@@ -312,6 +382,14 @@ html, body {
 .t-display    { font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
 .t-subdisplay { font-weight: 500; letter-spacing: -0.005em; color: var(--mute); }
 .t-body       { font-weight: 400; line-height: 1.6; color: var(--mute); }
+
+/* Il pensiero di Jessica, non un dato: l'unico posto dove il serif
+   sostituisce Geist. Un diario di bordo, non una dashboard. */
+.t-quote {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic; font-weight: 400; letter-spacing: 0;
+  color: var(--ink);
+}
 
 /* ── indicatore di stato: un punto, non un LED ── */
 .led {
@@ -447,6 +525,6 @@ html, body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .pop, .sheet, .pulse, .warmup, .eq i { animation: none }
+  .rise, .pop, .sheet, .pulse, .warmup, .eq i, .brand-mark { animation: none }
   .btn:hover:not(:disabled) { transform: none }
 }
