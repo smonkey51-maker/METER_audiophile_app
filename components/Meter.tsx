@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Check, Headphones, Moon, Music2, Pause, Play,
   Plus, Search, SkipBack, SkipForward, Sun, X,
@@ -15,15 +15,16 @@ import Wrapped from "./Wrapped";
 type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string };
 type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
 
-// Prova passiva che il ciclo notturno gira davvero: se non si muove da
-// giorni si vede subito, invece di scoprirlo solo quando qualcosa manca.
-function timeAgo(iso?: string) {
+// Prova passiva che il ciclo notturno gira davvero (se non si muove da
+// giorni si vede subito), ma detta come presenza e non come timestamp
+// di sistema — è la frase sotto il ritratto, non un log.
+function presencePhrase(iso?: string) {
   if (!iso) return null;
   const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
-  if (h < 1) return "aggiornato pochi minuti fa";
-  if (h < 24) return `aggiornato ${h}h fa`;
-  const d = Math.floor(h / 24);
-  return `aggiornato ${d}g fa`;
+  if (h < 1) return "Jessica è con te in questo momento";
+  if (h < 24) return "Jessica ha ascoltato con te oggi";
+  if (h < 72) return "Jessica aspetta il prossimo ascolto";
+  return "Jessica aspetta di riprendere ad ascoltare con te";
 }
 
 export default function Meter() {
@@ -43,10 +44,12 @@ export default function Meter() {
   const [rigMenuOpen, setRigMenuOpen] = useState(false);
   const [dbError, setDbError] = useState(false);
   const [wrappedOpen, setWrappedOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const rigMenuRef = useRef<HTMLDivElement>(null);
   const rigTriggerRef = useRef<HTMLButtonElement>(null);
+  const paletteInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
@@ -106,6 +109,25 @@ export default function Meter() {
     }
   }, [flash]);
 
+  // ⌘K / Ctrl+K apre il comando rapido da qualunque punto della pagina,
+  // come una vera command palette — non solo cliccando sul trigger.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+      if (e.key === "Escape") setPaletteOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    if (paletteOpen) paletteInputRef.current?.focus();
+    else { setSearchQuery(""); setSearchResults([]); }
+  }, [paletteOpen]);
+
   const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/state");
@@ -159,10 +181,22 @@ export default function Meter() {
   // Jessica propone da sola ogni notte: qui compaiono solo i suoi consigli,
   // non più gli ascolti passivi rilevati da Spotify — quelli li assorbe già
   // in silenzio il ciclo di consolidamento.
-  const dailyPicks = listens
+  const dailyPicks = useMemo(() => listens
     .filter((l) => !l.verdict && l.source === "rec")
     .sort((a, b) => b.plays - a.plays)
-    .slice(0, 8);
+    .slice(0, 8), [listens]);
+
+  // Le copertine non sono in DB (richiederebbe una colonna in più): si
+  // recuperano al volo quando un consiglio compare, una tantum per riga.
+  const [artByPick, setArtByPick] = useState<Record<number, string | null>>({});
+  useEffect(() => {
+    const missing = dailyPicks.filter((p) => p.id != null && !(p.id in artByPick));
+    missing.forEach(async (p) => {
+      const art = await fetch(`/api/spotify/art?artist=${encodeURIComponent(p.artist)}&track=${encodeURIComponent(p.track)}`)
+        .then((x) => x.json()).then((r) => r.art ?? null).catch(() => null);
+      setArtByPick((m) => ({ ...m, [p.id!]: art }));
+    });
+  }, [dailyPicks, artByPick]);
 
   function openRating(e: Partial<Rec> & { id?: number }) {
     setRating({ rec: e, verdict: null, dims: [] });
@@ -205,7 +239,7 @@ export default function Meter() {
         aria-hidden="true"
         style={{
           position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none",
-          backgroundImage: playback?.art ? `url(${playback.art})` : "none",
+          backgroundImage: playback?.art ? `url("${playback.art}")` : "none",
           backgroundSize: "cover", backgroundPosition: "center",
           transform: "scale(1.2)",
           filter: "blur(90px) saturate(140%) brightness(.5)",
@@ -213,9 +247,15 @@ export default function Meter() {
           transition: "opacity 1.1s var(--ease)",
         }}
       />
-      {/* Il ritratto di Jessica, non la scritta: la firma della pagina. */}
-      <div className="brand-mark" title="Jessica AI">
-        <JessicaAvatar size={63} />
+      {/* Il ritratto di Jessica, non la scritta: la firma della pagina.
+          Sotto, un indicatore di presenza — non un timestamp di sistema. */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 4 }}>
+        <div className="brand-mark" title="Jessica AI">
+          <JessicaAvatar size={63} />
+        </div>
+        {presencePhrase(model.updatedAt) && (
+          <p className="label" style={{ textAlign: "center" }}>{presencePhrase(model.updatedAt)}</p>
+        )}
       </div>
 
       {/* Niente più barra: riaggiorno e consolidamento sono automatici (dream
@@ -277,15 +317,13 @@ export default function Meter() {
 
         {/* tesi: Jessica dice cosa sa di te, sempre in tono scherzoso — il
             paragrafo (model.summary) inizia sempre con "Bubi sei...", lo
-            garantisce il prompt che lo genera. */}
-        <section className="rise" style={{ maxWidth: 820, marginBottom: 46 }}>
-          <p className="label" style={{ marginBottom: 12, color: "var(--mute)" }}>Cosa sa Jessica?</p>
-          <p className="warmup t-display" style={{ fontSize: 22, lineHeight: 1.45 }}>
+            garantisce il prompt che lo genera. Una citazione, non un dato:
+            l'unico posto (con "Opinioni") dove entra il serif. */}
+        <section className="rise" style={{ maxWidth: 760, margin: "0 auto 56px", textAlign: "center" }}>
+          <p className="label" style={{ marginBottom: 18, color: "var(--mute)" }}>Cosa sa Jessica?</p>
+          <p className="warmup t-quote" style={{ fontSize: "clamp(26px, 4vw, 34px)", lineHeight: 1.4 }}>
             {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
           </p>
-          {timeAgo(model.updatedAt) && (
-            <p className="label" style={{ marginTop: 12 }}>{timeAgo(model.updatedAt)}</p>
-          )}
         </section>
 
         {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo.
@@ -296,32 +334,39 @@ export default function Meter() {
 
           {playback ? (
             /* Qualcosa è caricato, anche solo in pausa: diventa un web player
-               vero, con la copertina, non più la sola riga di testo. */
-            <div className="webplayer" style={{ marginBottom: 20 }}>
-              <div className="webplayer-art" aria-hidden="true" style={playback.art ? { backgroundImage: `url(${playback.art})` } : undefined}>
-                {!playback.art && <Music2 size={26} style={{ opacity: .4 }} />}
-              </div>
-              <div className="webplayer-info">
-                <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
-                  {playback.isPlaying && (
-                    <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
-                  )}
-                  <span className="truncate">{`In ascolto${playback.device ? " su " + playback.device : ""}`}</span>
-                </p>
-                <p className="truncate" style={{ fontSize: 17 }}>
-                  <span className="t-display">{playback.track}</span> <span className="t-subdisplay">· {playback.artist}</span>
-                </p>
-              </div>
-              <div className="webplayer-controls">
-                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente" style={{ display: "inline-flex", alignItems: "center" }}>
-                  <SkipBack size={15} />
-                </button>
-                <button className="btn btn--pri" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ display: "inline-flex", alignItems: "center", padding: "11px 15px" }}>
-                  {playback.isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                </button>
-                <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva" style={{ display: "inline-flex", alignItems: "center" }}>
-                  <SkipForward size={15} />
-                </button>
+               vero, con la copertina, non più la sola riga di testo — e un
+               bagliore sfocato della cover dietro, come una luce che rimbalza
+               dal vinile invece di un semplice riquadro. */
+            <div style={{ position: "relative", marginBottom: 20 }}>
+              {playback.art && (
+                <div aria-hidden="true" className="webplayer-glow" style={{ backgroundImage: `url("${playback.art}")` }} />
+              )}
+              <div className="webplayer">
+                <div className="webplayer-art" aria-hidden="true" style={playback.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
+                  {!playback.art && <Music2 size={26} style={{ opacity: .4 }} />}
+                </div>
+                <div className="webplayer-info">
+                  <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                    {playback.isPlaying && (
+                      <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
+                    )}
+                    <span className="truncate">{`In ascolto${playback.device ? " su " + playback.device : ""}`}</span>
+                  </p>
+                  <p className="truncate" style={{ fontSize: 17 }}>
+                    <span className="t-display">{playback.track}</span> <span className="t-subdisplay">· {playback.artist}</span>
+                  </p>
+                </div>
+                <div className="webplayer-controls">
+                  <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente" style={{ display: "inline-flex", alignItems: "center" }}>
+                    <SkipBack size={15} />
+                  </button>
+                  <button className="btn btn--pri" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ display: "inline-flex", alignItems: "center", padding: "11px 15px" }}>
+                    {playback.isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                  </button>
+                  <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva" style={{ display: "inline-flex", alignItems: "center" }}>
+                    <SkipForward size={15} />
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -329,11 +374,14 @@ export default function Meter() {
           )}
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input className="field" style={{ flex: 1, minWidth: 160 }} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && runSearch()} placeholder="Cerca un brano su Spotify" />
-            <button className="btn btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <Search size={14} />
-              {searching ? "Cerco…" : "Cerca"}
+            {/* Non più una barra sempre aperta: un trigger, come un
+                comando rapido. ⌘K la apre da ovunque nella pagina. */}
+            <button className="field palette-trigger" style={{ flex: 1, minWidth: 160 }} onClick={() => setPaletteOpen(true)}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <Search size={15} style={{ opacity: .6, flexShrink: 0 }} />
+                <span className="truncate">Cerca un brano su Spotify</span>
+              </span>
+              <span className="kbd">⌘K</span>
             </button>
             <button
               className="btn btn--ghost btn--sm"
@@ -348,22 +396,6 @@ export default function Meter() {
               <Plus size={14} /> Registra un ascolto
             </button>
           </div>
-
-          {/* Appena si ascolta qualcosa, anche in pausa, la lista dei
-              risultati non serve più sotto i piedi del player. */}
-          {!playback && searchResults.length > 0 && (
-            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-              {searchResults.map((r) => (
-                <div key={r.uri} className="recess" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 15.5, minWidth: 0 }}><span className="t-display" style={{ fontSize: 15.5 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                    <button className="btn btn--sm" onClick={() => playerAction("play", r.uri)}>Riproduci</button>
-                    <button className="btn btn--ghost btn--sm" onClick={() => openRating({ artist: r.artist, track: r.track, album: r.album, url: r.url })}>Giudica</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </section>
 
         {/* Jessica lavora da sola: ogni notte guarda cosa ascolti e propone
@@ -375,6 +407,23 @@ export default function Meter() {
             Ogni notte passa in rassegna quello che ascolti e sceglie brani nuovi per conto suo — in totale autonomia, non glielo chiedi tu.
           </p>
 
+          {/* Le analisi vere, quelle che Spotify non può fare: gli assi di
+              gusto che consolida nei cicli notturni. Un carosello perché
+              sono pensieri distinti, non una lista da scorrere in verticale. */}
+          {model.axes.length > 0 && (
+            <div className="carousel" style={{ marginBottom: 32 }}>
+              {model.axes.map((a, i) => (
+                <div key={i} className="block carousel-card">
+                  <p className="t-quote" style={{ fontSize: 19, lineHeight: 1.45 }}>&ldquo;{a.claim}&rdquo;</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 18 }}>
+                    <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(a.confidence * 100)}%` }} /></div>
+                    <span className="label" style={{ flexShrink: 0 }}>{Math.round(a.confidence * 100)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
 
           {dailyPicks.length === 0 ? (
@@ -383,14 +432,20 @@ export default function Meter() {
             </p>
           ) : (
             <div className="recess rows">
-              {dailyPicks.map((e) => (
-                <div key={e.id} className="row-tap" role="button" tabIndex={0}
+              {dailyPicks.map((e, i) => (
+                <div key={e.id} className="row-tap tracklist-row" role="button" tabIndex={0}
                   onClick={() => openRating({ ...e, url: e.spotify_url, id: e.id })}
                   onKeyDown={(ev) => ev.key === "Enter" && openRating({ ...e, url: e.spotify_url, id: e.id })}
-                  style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, flexWrap: "wrap", cursor: "pointer" }}>
-                  <span style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0, flex: "1 1 auto" }}>
-                    <span className="t-display truncate" style={{ fontSize: 16, maxWidth: 220 }}>{e.track}</span>
-                    <span className="t-subdisplay truncate" style={{ maxWidth: 160 }}>{e.artist}</span>
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, cursor: "pointer" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: "1 1 auto" }}>
+                    <span className="tracklist-n">{i + 1}</span>
+                    <span className="tracklist-art" aria-hidden="true" style={e.id != null && artByPick[e.id] ? { backgroundImage: `url("${artByPick[e.id]}")` } : undefined}>
+                      {!(e.id != null && artByPick[e.id]) && <Music2 size={16} style={{ opacity: .35 }} />}
+                    </span>
+                    <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
+                      <span className="t-display truncate" style={{ fontSize: 16, maxWidth: 220 }}>{e.track}</span>
+                      <span className="t-subdisplay truncate" style={{ fontSize: 13.5, maxWidth: 220 }}>{e.artist}</span>
+                    </span>
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                     {/* Ascoltarlo non deve aprire anche il giudizio: la riga
@@ -406,7 +461,7 @@ export default function Meter() {
                     )}
                     {/* Il bridge dovrebbe essere una parola o due (lo dice il prompt), ma
                         se Jessica esagera non deve mai spingersi sopra al titolo. */}
-                    {e.bridge && <span className="label truncate" style={{ maxWidth: 160 }}>{e.bridge}</span>}
+                    {e.bridge && <span className="label truncate" style={{ maxWidth: 140 }}>{e.bridge}</span>}
                   </span>
                 </div>
               ))}
@@ -480,6 +535,53 @@ export default function Meter() {
                 <button className="btn btn--ghost" onClick={() => setManual({ open: false, artist: "", track: "" })}>Annulla</button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* comando rapido: cerca un brano, riproducilo o giudicalo — o registra
+          quello che non trova, senza chiudere e riaprire un altro foglio. */}
+      {paletteOpen && (
+        <div className="scrim" onClick={(e) => e.target === e.currentTarget && setPaletteOpen(false)}>
+          <div className="block sheet" style={{ maxWidth: 560, width: "100%", padding: 24 }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                ref={paletteInputRef} className="field" style={{ flex: 1 }}
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                placeholder="Cerca un brano su Spotify"
+              />
+              <button className="btn btn--pri btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <Search size={14} />
+                {searching ? "Cerco…" : "Cerca"}
+              </button>
+              <button className="btn btn--ghost" onClick={() => setPaletteOpen(false)} aria-label="Chiudi" style={{ display: "inline-flex", alignItems: "center" }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            {searchResults.length > 0 && (
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8, maxHeight: "50vh", overflowY: "auto" }}>
+                {searchResults.map((r) => (
+                  <div key={r.uri} className="recess" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 15.5, minWidth: 0 }}><span className="t-display" style={{ fontSize: 15.5 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
+                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <button className="btn btn--sm" onClick={() => { playerAction("play", r.uri); setPaletteOpen(false); }}>Riproduci</button>
+                      <button className="btn btn--ghost btn--sm" onClick={() => { openRating({ artist: r.artist, track: r.track, album: r.album, url: r.url }); setPaletteOpen(false); }}>Giudica</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!searching && searchQuery.trim() && searchResults.length === 0 && (
+              <p className="t-body" style={{ fontSize: 15, marginTop: 16 }}>
+                Nessun risultato.{" "}
+                <button className="btn btn--ghost btn--sm" onClick={() => { setManual({ open: true, artist: "", track: "" }); setPaletteOpen(false); }}>
+                  Registra manualmente
+                </button>
+              </p>
+            )}
           </div>
         </div>
       )}
