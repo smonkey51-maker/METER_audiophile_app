@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, Headphones, Moon, Music2, Pause, Play,
+  Check, ChevronLeft, ChevronRight, Headphones, Moon, Music2, Pause, Play,
   Plus, Search, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
@@ -45,6 +45,7 @@ export default function Meter() {
   const [dbError, setDbError] = useState(false);
   const [wrappedOpen, setWrappedOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [axisIndex, setAxisIndex] = useState(0);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const rigMenuRef = useRef<HTMLDivElement>(null);
@@ -408,21 +409,40 @@ export default function Meter() {
           </p>
 
           {/* Le analisi vere, quelle che Spotify non può fare: gli assi di
-              gusto che consolida nei cicli notturni. Un carosello perché
-              sono pensieri distinti, non una lista da scorrere in verticale. */}
-          {model.axes.length > 0 && (
-            <div className="carousel" style={{ marginBottom: 32 }}>
-              {model.axes.map((a, i) => (
-                <div key={i} className="block carousel-card">
-                  <p className="t-quote" style={{ fontSize: 19, lineHeight: 1.45 }}>&ldquo;{a.claim}&rdquo;</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 18 }}>
-                    <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(a.confidence * 100)}%` }} /></div>
-                    <span className="label" style={{ flexShrink: 0 }}>{Math.round(a.confidence * 100)}%</span>
-                  </div>
+              gusto che consolida nei cicli notturni. Uno alla volta, da
+              sfogliare — sono pensieri distinti, non righe di una lista. */}
+          {model.axes.length > 0 && (() => {
+            // Se un ciclo notturno pota gli assi, l'indice sfogliato può
+            // restare fuori range: si aggancia all'ultimo rimasto.
+            const safeIndex = Math.min(axisIndex, model.axes.length - 1);
+            const axis = model.axes[safeIndex];
+            return (
+            <div style={{ marginBottom: 32, maxWidth: 480 }}>
+              <div className="block carousel-card" key={safeIndex}>
+                <p className="t-quote" style={{ fontSize: 19, lineHeight: 1.45 }}>&ldquo;{axis.claim}&rdquo;</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 18 }}>
+                  <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(axis.confidence * 100)}%` }} /></div>
+                  <span className="label" style={{ flexShrink: 0 }}>{Math.round(axis.confidence * 100)}%</span>
                 </div>
-              ))}
+              </div>
+              {model.axes.length > 1 && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: 14 }}>
+                  <button className="btn btn--ghost btn--sm" aria-label="Pensiero precedente" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) - 1 + model.axes.length) % model.axes.length)} style={{ display: "inline-flex", alignItems: "center", padding: 6 }}>
+                    <ChevronLeft size={16} />
+                  </button>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {model.axes.map((_, i) => (
+                      <button key={i} className={`axis-dot${i === safeIndex ? " is-active" : ""}`} aria-label={`Pensiero ${i + 1}`} onClick={() => setAxisIndex(i)} />
+                    ))}
+                  </div>
+                  <button className="btn btn--ghost btn--sm" aria-label="Pensiero successivo" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) + 1) % model.axes.length)} style={{ display: "inline-flex", alignItems: "center", padding: 6 }}>
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+            );
+          })()}
 
           <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
 
@@ -432,13 +452,20 @@ export default function Meter() {
             </p>
           ) : (
             <div className="recess rows">
-              {dailyPicks.map((e, i) => (
+              {dailyPicks.map((e, i) => {
+                const judge = () => openRating({ ...e, url: e.spotify_url, id: e.id });
+                const primary = () => (e.spotify_id ? playerAction("play", e.spotify_id) : judge());
+                return (
                 <div key={e.id} className="row-tap tracklist-row" role="button" tabIndex={0}
-                  onClick={() => openRating({ ...e, url: e.spotify_url, id: e.id })}
-                  onKeyDown={(ev) => ev.key === "Enter" && openRating({ ...e, url: e.spotify_url, id: e.id })}
+                  aria-label={e.spotify_id ? `Riproduci ${e.track}` : `Giudica ${e.track}`}
+                  onClick={primary}
+                  onKeyDown={(ev) => ev.key === "Enter" && primary()}
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, cursor: "pointer" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: "1 1 auto" }}>
-                    <span className="tracklist-n">{i + 1}</span>
+                    <span className="tracklist-n-wrap">
+                      <span className="tracklist-n">{i + 1}</span>
+                      {e.spotify_id && <Play size={12} className="tracklist-play-hint" />}
+                    </span>
                     <span className="tracklist-art" aria-hidden="true" style={e.id != null && artByPick[e.id] ? { backgroundImage: `url("${artByPick[e.id]}")` } : undefined}>
                       {!(e.id != null && artByPick[e.id]) && <Music2 size={16} style={{ opacity: .35 }} />}
                     </span>
@@ -448,23 +475,22 @@ export default function Meter() {
                     </span>
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                    {/* Ascoltarlo non deve aprire anche il giudizio: la riga
-                        resta cliccabile per quello, il tasto ferma la propagazione. */}
-                    {e.spotify_id && (
-                      <button
-                        className="btn btn--ghost btn--sm" aria-label={`Riproduci ${e.track}`} title="Riproduci"
-                        onClick={(ev) => { ev.stopPropagation(); playerAction("play", e.spotify_id); }}
-                        style={{ display: "inline-flex", alignItems: "center", padding: 6 }}
-                      >
-                        <Play size={13} />
-                      </button>
-                    )}
                     {/* Il bridge dovrebbe essere una parola o due (lo dice il prompt), ma
                         se Jessica esagera non deve mai spingersi sopra al titolo. */}
                     {e.bridge && <span className="label truncate" style={{ maxWidth: 140 }}>{e.bridge}</span>}
+                    {/* Il giudizio resta possibile ma non è più l'azione
+                        principale della riga: ferma la propagazione. */}
+                    <button
+                      className="btn btn--ghost btn--sm" aria-label={`Giudica ${e.track}`} title="Giudica"
+                      onClick={(ev) => { ev.stopPropagation(); judge(); }}
+                      style={{ display: "inline-flex", alignItems: "center", padding: 6 }}
+                    >
+                      <Check size={13} />
+                    </button>
                   </span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>

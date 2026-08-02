@@ -268,29 +268,34 @@ html, body {
 [data-theme="light"] .webplayer-glow { opacity: .3; filter: blur(50px) saturate(140%) brightness(1.1); }
 .webplayer { position: relative; z-index: 1; }
 
-/* Gli assi di gusto: pensieri distinti di Jessica, uno scorrimento
-   orizzontale invece di un blocco verticale — così restano leggibili
-   come frasi singole, non righe di una lista. */
-.carousel {
-  display: flex; gap: 14px; overflow-x: auto; padding: 2px 2px 10px;
-  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.carousel::-webkit-scrollbar { display: none; }
-.carousel-card {
-  flex: 0 0 auto; scroll-snap-align: start;
-  width: min(78vw, 300px); padding: 22px;
-}
+/* Gli assi di gusto: pensieri distinti di Jessica, uno alla volta da
+   sfogliare — non righe di una lista, non uno scorrimento continuo. */
+.carousel-card { width: 100%; padding: 26px; animation: pop .3s var(--ease) both; }
 .confidence-track {
   flex: 1; height: 3px; border-radius: 99px; background: var(--hair); overflow: hidden;
 }
 .confidence-fill { height: 100%; background: var(--accent); border-radius: 99px; }
+.axis-dot {
+  width: 6px; height: 6px; border-radius: 99px; border: 0; padding: 0;
+  background: var(--hair); cursor: pointer;
+  transition: background .3s var(--ease), transform .3s var(--ease);
+}
+.axis-dot.is-active { background: var(--accent); transform: scale(1.3); }
 
 /* Tracklist d'autore: numero sottile, copertina, niente altro rumore. */
+.tracklist-n-wrap { position: relative; width: 18px; height: 16px; flex-shrink: 0; }
 .tracklist-n {
+  position: absolute; inset: 0;
   font-family: var(--mono); font-size: 12px; color: var(--faint);
-  width: 18px; flex-shrink: 0; text-align: right; font-variant-numeric: tabular-nums;
+  text-align: right; font-variant-numeric: tabular-nums;
+  transition: opacity .2s var(--ease);
 }
+.tracklist-play-hint {
+  position: absolute; inset: 0; margin: auto; color: var(--ink);
+  opacity: 0; transition: opacity .2s var(--ease);
+}
+.row-tap:hover .tracklist-n, .row-tap:focus-visible .tracklist-n { opacity: 0; }
+.row-tap:hover .tracklist-play-hint, .row-tap:focus-visible .tracklist-play-hint { opacity: 1; }
 .tracklist-art {
   width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px;
   background: var(--form) center/cover no-repeat;
