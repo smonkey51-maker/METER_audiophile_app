@@ -21,6 +21,7 @@ Scheda per ogni brano:
 - dynamics: ampiezza dinamica in due parole (es. "ampia, non compressa" / "brickwall")
 - production: carattere della registrazione in tre parole (es. "presa diretta, riverbero naturale")
 - era: anno o periodo, con metodo di registrazione se rilevante
+- bridge: l'aggancio col gusto dell'ascoltatore, MASSIMO 3 PAROLE (es. "polimetria", "dinamica ampia", "come King Crimson") — è un'etichetta, non una frase
 
 Proponi da 2 a 4 brani nuovi, mai già presenti nel modello. SOLO JSON valido, niente markdown:
 {"recs":[{"artist":"","track":"","album":"","meter":"","dynamics":"","production":"","era":"","bridge":"","why":"","learned":""}]}`;

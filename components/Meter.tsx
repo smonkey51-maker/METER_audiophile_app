@@ -378,12 +378,14 @@ export default function Meter() {
                 <div key={e.id} className="row-tap" role="button" tabIndex={0}
                   onClick={() => openRating({ ...e, url: e.spotify_url, id: e.id })}
                   onKeyDown={(ev) => ev.key === "Enter" && openRating({ ...e, url: e.spotify_url, id: e.id })}
-                  style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, cursor: "pointer" }}>
-                  <span style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0 }}>
-                    <span className="t-display" style={{ fontSize: 16 }}>{e.track}</span>
-                    <span className="t-subdisplay">{e.artist}</span>
+                  style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, flexWrap: "wrap", cursor: "pointer" }}>
+                  <span style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0, flex: "1 1 auto" }}>
+                    <span className="t-display truncate" style={{ fontSize: 16, maxWidth: 220 }}>{e.track}</span>
+                    <span className="t-subdisplay truncate" style={{ maxWidth: 160 }}>{e.artist}</span>
                   </span>
-                  {e.bridge && <span className="label" style={{ flexShrink: 0 }}>{e.bridge}</span>}
+                  {/* Il bridge dovrebbe essere una parola o due (lo dice il prompt), ma
+                      se Jessica esagera non deve mai spingersi sopra al titolo. */}
+                  {e.bridge && <span className="label truncate" style={{ flexShrink: 0, maxWidth: 180 }}>{e.bridge}</span>}
                 </div>
               ))}
             </div>

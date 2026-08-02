@@ -29,10 +29,13 @@ Proponi brani nuovi che non compaiono sopra.`;
   for (const r of (parsed.recs ?? []).slice(0, 4)) {
     try {
       const hit = await searchTrack(r.artist, r.track);
+      // "bridge" è pensato come un'etichetta corta accanto al titolo in
+      // interfaccia: anche se il prompt lo chiede, un modello può ignorarlo
+      // e restituire una frase — non deve mai rompere il layout della riga.
       const id = await upsertListen({
         artist: r.artist, track: r.track, album: r.album, spotify_url: hit?.url,
         meter: r.meter, dynamics: r.dynamics, production: r.production, era: r.era,
-        bridge: r.bridge, source: "rec",
+        bridge: r.bridge?.slice(0, 40), source: "rec",
       });
       ids.push(id);
     } catch { /* un brano non trovato non blocca gli altri */ }
