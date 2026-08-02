@@ -392,9 +392,22 @@ export default function Meter() {
                     <span className="t-display truncate" style={{ fontSize: 16, maxWidth: 220 }}>{e.track}</span>
                     <span className="t-subdisplay truncate" style={{ maxWidth: 160 }}>{e.artist}</span>
                   </span>
-                  {/* Il bridge dovrebbe essere una parola o due (lo dice il prompt), ma
-                      se Jessica esagera non deve mai spingersi sopra al titolo. */}
-                  {e.bridge && <span className="label truncate" style={{ flexShrink: 0, maxWidth: 180 }}>{e.bridge}</span>}
+                  <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                    {/* Ascoltarlo non deve aprire anche il giudizio: la riga
+                        resta cliccabile per quello, il tasto ferma la propagazione. */}
+                    {e.spotify_id && (
+                      <button
+                        className="btn btn--ghost btn--sm" aria-label={`Riproduci ${e.track}`} title="Riproduci"
+                        onClick={(ev) => { ev.stopPropagation(); playerAction("play", e.spotify_id); }}
+                        style={{ display: "inline-flex", alignItems: "center", padding: 6 }}
+                      >
+                        <Play size={13} />
+                      </button>
+                    )}
+                    {/* Il bridge dovrebbe essere una parola o due (lo dice il prompt), ma
+                        se Jessica esagera non deve mai spingersi sopra al titolo. */}
+                    {e.bridge && <span className="label truncate" style={{ maxWidth: 160 }}>{e.bridge}</span>}
+                  </span>
                 </div>
               ))}
             </div>

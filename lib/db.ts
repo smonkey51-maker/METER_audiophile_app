@@ -65,7 +65,7 @@ export async function upsertListen(l: Partial<Listen>, owner = OWNER) {
   const { rows: ins } = await sql`
     insert into listens (owner_id, artist, track, album, spotify_url, spotify_id, verdict, dims,
                          rig, meter, dynamics, production, era, bridge, source, plays, played_at)
-    values (${owner}, ${l.artist!}, ${l.track!}, ${l.album ?? null}, ${l.spotify_url ?? null}, ${null},
+    values (${owner}, ${l.artist!}, ${l.track!}, ${l.album ?? null}, ${l.spotify_url ?? null}, ${l.spotify_id ?? null},
             ${l.verdict ?? null}, ${JSON.stringify(l.dims ?? [])}, ${l.rig ?? null}, ${l.meter ?? null},
             ${l.dynamics ?? null}, ${l.production ?? null}, ${l.era ?? null}, ${l.bridge ?? null},
             ${l.source ?? "rec"}, ${l.plays ?? 1}, ${l.played_at ?? null})

@@ -34,6 +34,7 @@ Proponi brani nuovi che non compaiono sopra.`;
       // e restituire una frase — non deve mai rompere il layout della riga.
       const id = await upsertListen({
         artist: r.artist, track: r.track, album: r.album, spotify_url: hit?.url,
+        spotify_id: hit?.uri || undefined,
         meter: r.meter, dynamics: r.dynamics, production: r.production, era: r.era,
         bridge: r.bridge?.slice(0, 40), source: "rec",
       });

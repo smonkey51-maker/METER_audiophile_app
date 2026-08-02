@@ -25,6 +25,7 @@ export type Listen = {
   track: string;
   album?: string;
   spotify_url?: string;
+  spotify_id?: string;
   verdict: Verdict | null;
   dims: string[];
   rig?: string;
