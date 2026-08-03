@@ -9,10 +9,10 @@
    ───────────────────────────────────────────── */
 
 :root {
-  --shell:  #17120D;   /* quasi nero, ma legno bruciato non OLED cyberpunk — la stanza scura dei riferimenti, non un monitor */
-  --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
+  --shell:  #161618;   /* grafite scuro Apple Music, non più il nero legnoso: il vetro sopra (--form) resta lo stesso, solo la base cambia */
+  --form:   rgba(255,255,255,.06);   /* vetro delle superfici: composto sopra --shell dà ~#212124, la card elevata di Apple Music */
   --recess: rgba(255,255,255,.03);   /* incavo: campi, tab non attive */
-  --ink:    #F5F5F7;
+  --ink:    #FFFFFF;   /* bianco pieno, come da specifica */
   --mute:   #A1A1A6;
   --faint:  #8A8A90;   /* contrasto ~5.5:1 su --shell: sotto era ~3.7:1, illeggibile per testo così piccolo */
   --accent: #E0449E;   /* fucsia: l'unico colore vivido, riservato ai dettagli critici */
@@ -76,10 +76,11 @@ body {
   transition: --wash-a 1.1s var(--ease), --wash-b 1.1s var(--ease);
 }
 
-/* Editoriale: non "scuro invertito", ma un'altra stanza — bianco latte,
-   ampio, da rivista d'arte. Meno saturazione ovunque tranne l'accento. */
+/* Editoriale: non "scuro invertito", ma un'altra stanza — bianco pieno
+   come da specifica Apple Music, non più il crema caldo. Meno saturazione
+   ovunque tranne l'accento. */
 [data-theme="light"] {
-  --shell:  #F3ECDF;   /* bianco latte scaldato verso la parete crema dei riferimenti, non più un bianco da rivista fredda */
+  --shell:  #FFFFFF;
   --form:   rgba(255,255,255,.6);
   --recess: rgba(20,18,14,.035);
   --ink:    #1C1B18;
