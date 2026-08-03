@@ -17,8 +17,10 @@
   --faint:  #8A8A90;   /* contrasto ~5.5:1 su --shell: sotto era ~3.7:1, illeggibile per testo così piccolo */
   --accent: #E0449E;   /* fucsia: l'unico colore vivido, riservato ai dettagli critici */
   --on-accent: #23081A;
-  --good:   #8FAE7D;   /* verde salvia, non semaforico */
-  --night:  #7C6BA8;   /* lilla profondo: il freddo della sera, non del neon */
+  --good:   #8FAE7D;   /* verde salvia: il verdetto "tenuto", non semaforico */
+  --on-good: #16210F;
+  --night:  #7C6BA8;   /* lilla profondo: il verdetto "in dubbio", il freddo della sera non del neon */
+  --on-night: #FFFFFF;
 
   /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
      alto del vetro. Nessun colore nell'ombra, nessun bagliore. */
@@ -70,7 +72,9 @@ body {
   --accent: #B62D82;
   --on-accent: #FFFFFF;
   --good:   #5F7A4A;
+  --on-good: #FFFFFF;
   --night:  #B9A6D9;
+  --on-night: #241C3B;
   /* Tre strati — vicino, medio, lontano — invece di uno solo: è quello
      che fa sembrare la carta sospesa e non solo scontornata. */
   --lift-1: 0 1px 1px rgba(20,18,14,.03), 0 4px 10px rgba(20,18,14,.04),

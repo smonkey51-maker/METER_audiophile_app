@@ -505,12 +505,20 @@ export default function Meter() {
             <p className="t-subdisplay" style={{ fontSize: 15.5, marginTop: 2 }}>{rating.rec.artist}</p>
 
             <div style={{ display: "flex", gap: 8, margin: "26px 0" }}>
-              {VERDICTS.map((v) => (
-                <button key={v.key} className="btn btn--sm" title={v.hint} style={{ flex: 1, background: rating.verdict === v.key ? "var(--accent)" : "var(--recess)", color: rating.verdict === v.key ? "var(--on-accent)" : "var(--ink)" }}
-                  onClick={() => setRating((r) => r && { ...r, verdict: v.key })}>
-                  {v.label}
-                </button>
-              ))}
+              {VERDICTS.map((v) => {
+                const on = rating.verdict === v.key;
+                // Un colore per verdetto, non uno per "selezionato": salvia per
+                // ciò che resta, lilla per ciò che resta in dubbio, niente
+                // colore per ciò che si scarta — solo una superficie neutra.
+                const bg = !on ? "var(--recess)" : v.key === "keep" ? "var(--good)" : v.key === "maybe" ? "var(--night)" : "var(--form)";
+                const fg = !on ? "var(--ink)" : v.key === "keep" ? "var(--on-good)" : v.key === "maybe" ? "var(--on-night)" : "var(--ink)";
+                return (
+                  <button key={v.key} className="btn btn--sm" title={v.hint} style={{ flex: 1, background: bg, color: fg }}
+                    onClick={() => setRating((r) => r && { ...r, verdict: v.key })}>
+                    {v.label}
+                  </button>
+                );
+              })}
             </div>
 
             <p className="label">Su cosa</p>
