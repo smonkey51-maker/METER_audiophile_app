@@ -22,6 +22,8 @@
   --night:  #7C6BA8;   /* lilla profondo: il verdetto "in dubbio", il freddo della sera non del neon */
   --on-night: #FFFFFF;
   --wood:   #C9A874;   /* legno di rovere, dai riferimenti fotografici: materia calda, mai un colore di stato */
+  --wash-a: var(--good);   /* il respiro del gradiente del body: di default salvia, ma diventa il colore dominante della copertina in ascolto (impostato da JS) */
+  --wash-b: var(--night);  /* di default viola, stesso meccanismo */
 
   /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
      alto del vetro. Nessun colore nell'ombra, nessun bagliore. */
@@ -48,22 +50,30 @@
   --mono: var(--font-geist-mono), "SF Mono", ui-monospace, Menlo, monospace;
 }
 
-/* Non più un cielo con un punto caldo, ma un unico respiro che gira: verde
-   salvia in alto a sinistra, che scivola in diagonale fino al viola in
-   basso a destra — una sola transizione, non due colori affiancati. Un
-   terzo bagliore di legno al centro scalda l'aria, come la parete a doghe
-   dei riferimenti — non un blob riconoscibile, solo materia sotto la luce.
-   Impercettibile finché non manca. */
+/* Registrate come <color>: solo così il browser può animare il valore
+   della custom property invece di scattare da un tono all'altro quando
+   cambia brano. */
+@property --wash-a { syntax: '<color>'; inherits: true; initial-value: #8FAE7D; }
+@property --wash-b { syntax: '<color>'; inherits: true; initial-value: #7C6BA8; }
+
+/* Non più un cielo con un punto caldo, ma un unico respiro che gira: da
+   --wash-a in alto a sinistra a --wash-b in basso a destra — di default
+   salvia e viola, ma quando c'è un ascolto attivo JS li sostituisce con
+   i due toni dominanti della copertina, così la stanza cambia colore col
+   brano. Un terzo bagliore di legno al centro scalda l'aria, indipendente
+   dalla copertina — resta la materia di METER. Impercettibile finché non
+   manca. */
 body {
   background:
-    radial-gradient(75% 65% at 4% -8%, color-mix(in srgb, var(--good) 22%, transparent), transparent 62%),
-    radial-gradient(85% 75% at 100% 108%, color-mix(in srgb, var(--night) 50%, transparent), transparent 66%),
+    radial-gradient(75% 65% at 4% -8%, color-mix(in srgb, var(--wash-a) 22%, transparent), transparent 62%),
+    radial-gradient(85% 75% at 100% 108%, color-mix(in srgb, var(--wash-b) 50%, transparent), transparent 66%),
     radial-gradient(60% 50% at 38% 46%, color-mix(in srgb, var(--wood) 10%, transparent), transparent 70%),
     linear-gradient(135deg,
-      color-mix(in srgb, var(--good) 6%, transparent),
-      color-mix(in srgb, var(--night) 8%, transparent)),
+      color-mix(in srgb, var(--wash-a) 6%, transparent),
+      color-mix(in srgb, var(--wash-b) 8%, transparent)),
     var(--shell);
   background-attachment: fixed;
+  transition: --wash-a 1.1s var(--ease), --wash-b 1.1s var(--ease);
 }
 
 /* Editoriale: non "scuro invertito", ma un'altra stanza — bianco latte,
