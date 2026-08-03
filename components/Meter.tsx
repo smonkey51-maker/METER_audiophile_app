@@ -6,7 +6,6 @@ import {
   Plus, Search, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
-import { extractPalette } from "@/lib/color";
 import JessicaAvatar from "./JessicaAvatar";
 import SpotifyMark from "./SpotifyMark";
 import BookIcon from "./BookIcon";
@@ -55,23 +54,6 @@ export default function Meter() {
 
   useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
-
-  // Lo sfondo della pagina prende i colori della copertina in ascolto —
-  // non solo il bagliore dietro il player, tutta l'aria della stanza.
-  // Ricade sul gradiente statico salvia→viola se manca l'ascolto o
-  // l'immagine non si può leggere (CORS, rete).
-  useEffect(() => {
-    const art = playback?.art;
-    if (!art) { document.documentElement.style.removeProperty("--wash-a"); document.documentElement.style.removeProperty("--wash-b"); return; }
-    let cancelled = false;
-    extractPalette(art).then((wash) => {
-      if (cancelled) return;
-      const root = document.documentElement.style;
-      if (wash) { root.setProperty("--wash-a", wash[0]); root.setProperty("--wash-b", wash[1]); }
-      else { root.removeProperty("--wash-a"); root.removeProperty("--wash-b"); }
-    });
-    return () => { cancelled = true; };
-  }, [playback?.art]);
 
   const flash = useCallback((t: string) => {
     clearTimeout(toastTimer.current);
