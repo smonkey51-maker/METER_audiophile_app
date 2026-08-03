@@ -5,7 +5,6 @@ import { X } from "lucide-react";
 import { RIGS } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
 import AvatarNico from "./AvatarNico";
-import AvatarPartner from "./AvatarPartner";
 
 type WrappedData = {
   spotify: {
@@ -47,7 +46,7 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
         body: (
           <>
             <JessicaAvatar size={56} />
-            <p className="t-display" style={{ fontSize: 26, marginTop: 20 }}>Quello che sa di te, in una carrellata.</p>
+            <p className="t-display" style={{ fontSize: 26, marginTop: 20 }}>Quello che so di te, in una carrellata.</p>
             <p className="t-body" style={{ fontSize: 15.5, marginTop: 10 }}>Un misto di Spotify e di quello che hai insegnato a Jessica.</p>
           </>
         ),
@@ -124,7 +123,7 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
     });
     list.push({
       eyebrow: "— Jessica",
-      body: <AvatarPartner size={120} />,
+      body: <JessicaAvatar size={120} />,
     });
 
     return list;

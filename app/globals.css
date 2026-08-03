@@ -233,6 +233,13 @@ html, body {
   .dropdown { top: auto; bottom: calc(100% + 12px); }
 }
 
+/* Ritratti fotografici a tratto: tracciato scuro su sfondo trasparente,
+   esattamente come i riferimenti — non ridisegnati. In dark mode si
+   invertono i canali RGB (l'alpha non cambia): il nero diventa bianco,
+   niente asset separato per i due temi. */
+.line-photo { filter: invert(1); }
+[data-theme="light"] .line-photo { filter: none; }
+
 /* Web player: appare al posto della sola riga di testo quando qualcosa
    è caricato, anche solo in pausa — rettangolare, bordi smussati, con
    la copertina dell'album invece di una semplice etichetta. */
