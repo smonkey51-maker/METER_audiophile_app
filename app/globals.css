@@ -15,10 +15,10 @@
   --ink:    #F5F5F7;
   --mute:   #A1A1A6;
   --faint:  #8A8A90;   /* contrasto ~5.5:1 su --shell: sotto era ~3.7:1, illeggibile per testo così piccolo */
-  --accent: #FF6A3D;   /* arancione hi-fi: l'unico colore vivido, riservato ai dettagli critici */
-  --on-accent: #1A0800;
-  --good:   #32D74B;
-  --night:  #1E2A55;   /* blu notte profondo: il freddo del cielo, non del neon */
+  --accent: #E0449E;   /* fucsia: l'unico colore vivido, riservato ai dettagli critici */
+  --on-accent: #23081A;
+  --good:   #8FAE7D;   /* verde salvia, non semaforico */
+  --night:  #7C6BA8;   /* lilla profondo: il freddo della sera, non del neon */
 
   /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
      alto del vetro. Nessun colore nell'ombra, nessun bagliore. */
@@ -45,10 +45,10 @@
   --mono: var(--font-geist-mono), "SF Mono", ui-monospace, Menlo, monospace;
 }
 
-/* Un cielo notturno con un punto caldo, non un mix di segnali tecnici:
-   ambra in alto a sinistra come luce riflessa da un vinile, blu profondo
-   dall'altra parte, un filo d'ambra bassa come brace invece del verde
-   "stato" di prima. Impercettibile finché non manca. */
+/* Un cielo al crepuscolo, non un mix di segnali tecnici: fucsia in alto
+   a sinistra come luce riflessa da un vinile, lilla profondo dall'altra
+   parte, un filo di fucsia basso come brace. Impercettibile finché non
+   manca. */
 body {
   background:
     radial-gradient(65% 55% at 14% -8%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 68%),
@@ -67,9 +67,10 @@ body {
   --ink:    #1C1B18;
   --mute:   #716C63;
   --faint:  #A19B8F;
-  --accent: #E8501A;
+  --accent: #B62D82;
   --on-accent: #FFFFFF;
-  --good:   #1E7A4B;
+  --good:   #5F7A4A;
+  --night:  #B9A6D9;
   /* Tre strati — vicino, medio, lontano — invece di uno solo: è quello
      che fa sembrare la carta sospesa e non solo scontornata. */
   --lift-1: 0 1px 1px rgba(20,18,14,.03), 0 4px 10px rgba(20,18,14,.04),
