@@ -9,8 +9,8 @@
    ───────────────────────────────────────────── */
 
 :root {
-  --shell:  #161618;   /* grafite scuro Apple Music, non più il nero legnoso: il vetro sopra (--form) resta lo stesso, solo la base cambia */
-  --form:   rgba(255,255,255,.06);   /* vetro delle superfici: composto sopra --shell dà ~#212124, la card elevata di Apple Music */
+  --shell:  #000000;   /* nero pieno, come da specifica: non più il grafite */
+  --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
   --recess: rgba(255,255,255,.03);   /* incavo: campi, tab non attive */
   --ink:    #FFFFFF;   /* bianco pieno, come da specifica */
   --mute:   #A1A1A6;
