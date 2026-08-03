@@ -47,15 +47,17 @@
   --mono: var(--font-geist-mono), "SF Mono", ui-monospace, Menlo, monospace;
 }
 
-/* Un cielo al crepuscolo, non un mix di segnali tecnici: fucsia in alto
-   a sinistra come luce riflessa da un vinile, lilla profondo dall'altra
-   parte, un filo di fucsia basso come brace. Impercettibile finché non
-   manca. */
+/* Non più un cielo con un punto caldo, ma un unico respiro che gira: verde
+   salvia in alto a sinistra, che scivola in diagonale fino al viola in
+   basso a destra — una sola transizione, non due colori affiancati.
+   Impercettibile finché non manca. */
 body {
   background:
-    radial-gradient(65% 55% at 14% -8%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 68%),
-    radial-gradient(62% 52% at 100% 2%, color-mix(in srgb, var(--night) 60%, transparent), transparent 70%),
-    radial-gradient(80% 65% at 50% 122%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 74%),
+    radial-gradient(75% 65% at 4% -8%, color-mix(in srgb, var(--good) 22%, transparent), transparent 62%),
+    radial-gradient(85% 75% at 100% 108%, color-mix(in srgb, var(--night) 50%, transparent), transparent 66%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--good) 6%, transparent),
+      color-mix(in srgb, var(--night) 8%, transparent)),
     var(--shell);
   background-attachment: fixed;
 }
