@@ -9,7 +9,7 @@
    ───────────────────────────────────────────── */
 
 :root {
-  --shell:  #0A0908;   /* quasi nero OLED, con un'ombra di calore — non il grigio cyberpunk di prima */
+  --shell:  #17120D;   /* quasi nero, ma legno bruciato non OLED cyberpunk — la stanza scura dei riferimenti, non un monitor */
   --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
   --recess: rgba(255,255,255,.03);   /* incavo: campi, tab non attive */
   --ink:    #F5F5F7;
@@ -21,6 +21,7 @@
   --on-good: #16210F;
   --night:  #7C6BA8;   /* lilla profondo: il verdetto "in dubbio", il freddo della sera non del neon */
   --on-night: #FFFFFF;
+  --wood:   #C9A874;   /* legno di rovere, dai riferimenti fotografici: materia calda, mai un colore di stato */
 
   /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
      alto del vetro. Nessun colore nell'ombra, nessun bagliore. */
@@ -49,12 +50,15 @@
 
 /* Non più un cielo con un punto caldo, ma un unico respiro che gira: verde
    salvia in alto a sinistra, che scivola in diagonale fino al viola in
-   basso a destra — una sola transizione, non due colori affiancati.
+   basso a destra — una sola transizione, non due colori affiancati. Un
+   terzo bagliore di legno al centro scalda l'aria, come la parete a doghe
+   dei riferimenti — non un blob riconoscibile, solo materia sotto la luce.
    Impercettibile finché non manca. */
 body {
   background:
     radial-gradient(75% 65% at 4% -8%, color-mix(in srgb, var(--good) 22%, transparent), transparent 62%),
     radial-gradient(85% 75% at 100% 108%, color-mix(in srgb, var(--night) 50%, transparent), transparent 66%),
+    radial-gradient(60% 50% at 38% 46%, color-mix(in srgb, var(--wood) 10%, transparent), transparent 70%),
     linear-gradient(135deg,
       color-mix(in srgb, var(--good) 6%, transparent),
       color-mix(in srgb, var(--night) 8%, transparent)),
@@ -65,7 +69,7 @@ body {
 /* Editoriale: non "scuro invertito", ma un'altra stanza — bianco latte,
    ampio, da rivista d'arte. Meno saturazione ovunque tranne l'accento. */
 [data-theme="light"] {
-  --shell:  #FAF9F6;
+  --shell:  #F3ECDF;   /* bianco latte scaldato verso la parete crema dei riferimenti, non più un bianco da rivista fredda */
   --form:   rgba(255,255,255,.6);
   --recess: rgba(20,18,14,.035);
   --ink:    #1C1B18;
@@ -77,6 +81,7 @@ body {
   --on-good: #FFFFFF;
   --night:  #B9A6D9;
   --on-night: #241C3B;
+  --wood:   #A9834F;
   /* Tre strati — vicino, medio, lontano — invece di uno solo: è quello
      che fa sembrare la carta sospesa e non solo scontornata. */
   --lift-1: 0 1px 1px rgba(20,18,14,.03), 0 4px 10px rgba(20,18,14,.04),
@@ -254,7 +259,8 @@ html, body {
 }
 .webplayer-art {
   width: 76px; height: 76px; flex-shrink: 0; border-radius: 18px;
-  background: var(--form) center/cover no-repeat;
+  background: radial-gradient(120% 120% at 30% 15%, color-mix(in srgb, var(--wood) 22%, transparent), transparent 72%),
+              var(--form) center/cover no-repeat;
   box-shadow: var(--lift-1);
   display: grid; place-items: center; color: var(--mute);
 }
@@ -305,7 +311,8 @@ html, body {
 .row-tap:hover .tracklist-play-hint, .row-tap:focus-visible .tracklist-play-hint { opacity: 1; }
 .tracklist-art {
   width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px;
-  background: var(--form) center/cover no-repeat;
+  background: radial-gradient(120% 120% at 30% 15%, color-mix(in srgb, var(--wood) 22%, transparent), transparent 72%),
+              var(--form) center/cover no-repeat;
   display: grid; place-items: center; color: var(--mute);
 }
 
