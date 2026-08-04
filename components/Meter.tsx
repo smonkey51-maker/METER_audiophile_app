@@ -233,21 +233,6 @@ export default function Meter() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* Sfondo ambientale dalla copertina in ascolto: molto scuro e sfocato,
-         mai un'immagine leggibile. Solo in scuro — in chiaro romperebbe
-         il bianco latte editoriale. */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none",
-          backgroundImage: playback?.art ? `url("${playback.art}")` : "none",
-          backgroundSize: "cover", backgroundPosition: "center",
-          transform: "scale(1.2)",
-          filter: "blur(90px) saturate(140%) brightness(.5)",
-          opacity: dark && playback?.art ? 0.55 : 0,
-          transition: "opacity 1.1s var(--ease)",
-        }}
-      />
       {/* Il ritratto di Jessica, non la scritta: la firma della pagina.
           Sotto, un indicatore di presenza — non un timestamp di sistema. */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 4 }}>
@@ -335,13 +320,8 @@ export default function Meter() {
 
           {playback ? (
             /* Qualcosa è caricato, anche solo in pausa: diventa un web player
-               vero, con la copertina, non più la sola riga di testo — e un
-               bagliore sfocato della cover dietro, come una luce che rimbalza
-               dal vinile invece di un semplice riquadro. */
-            <div style={{ position: "relative", marginBottom: 20 }}>
-              {playback.art && (
-                <div aria-hidden="true" className="webplayer-glow" style={{ backgroundImage: `url("${playback.art}")` }} />
-              )}
+               vero, con la copertina, non più la sola riga di testo. */
+            <div style={{ marginBottom: 20 }}>
               <div className="webplayer">
                 <div className="webplayer-art" aria-hidden="true" style={playback.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
                   {!playback.art && <Music2 size={26} style={{ opacity: .4 }} />}
