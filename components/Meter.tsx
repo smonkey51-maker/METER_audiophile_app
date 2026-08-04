@@ -21,10 +21,10 @@ type SearchHit = { artist: string; track: string; album?: string; url: string; u
 function presencePhrase(iso?: string) {
   if (!iso) return null;
   const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
-  if (h < 1) return "Jessica è con te in questo momento";
-  if (h < 24) return "Jessica ha ascoltato con te oggi";
-  if (h < 72) return "Jessica aspetta il prossimo ascolto";
-  return "Jessica aspetta di riprendere ad ascoltare con te";
+  if (h < 1) return "Sono con te in questo momento";
+  if (h < 24) return "Ho ascoltato con te oggi";
+  if (h < 72) return "Aspetto il prossimo ascolto";
+  return "Aspetto di riprendere ad ascoltare con te";
 }
 
 export default function Meter() {
@@ -321,7 +321,7 @@ export default function Meter() {
             garantisce il prompt che lo genera. Una citazione, non un dato:
             l'unico posto (con "Opinioni") dove entra il serif. */}
         <section className="rise" style={{ maxWidth: 760, margin: "0 auto 56px", textAlign: "center" }}>
-          <p className="label" style={{ marginBottom: 18, color: "var(--mute)" }}>Cosa sa Jessica?</p>
+          <p className="label" style={{ marginBottom: 18, color: "var(--mute)" }}>Cosa so di te?</p>
           <p className="warmup t-quote" style={{ fontSize: "clamp(26px, 4vw, 34px)", lineHeight: 1.4 }}>
             {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
           </p>
@@ -403,9 +403,9 @@ export default function Meter() {
             brani nuovi senza che nessuno glielo chieda. Qui vedi solo il
             risultato, non c'è più una conversazione da tenere in piedi. */}
         <section style={{ marginTop: 8 }}>
-          <div className="section-label"><p className="label">Opinioni di Jessica sulla tua musica</p></div>
+          <div className="section-label"><p className="label">Le mie opinioni sulla tua musica</p></div>
           <p className="t-body" style={{ fontSize: 15.5, maxWidth: 640, marginBottom: 28 }}>
-            Ogni notte passa in rassegna quello che ascolti e sceglie brani nuovi per conto suo — in totale autonomia, non glielo chiedi tu.
+            Ogni notte passo in rassegna quello che ascolti e scelgo brani nuovi per conto mio — in totale autonomia, non me lo chiedi tu.
           </p>
 
           {/* Le analisi vere, quelle che Spotify non può fare: gli assi di
@@ -448,7 +448,7 @@ export default function Meter() {
 
           {dailyPicks.length === 0 ? (
             <p className="t-body" style={{ fontSize: 15.5, maxWidth: 480 }}>
-              Niente di nuovo ancora — Jessica propone al ciclo notturno. Nel frattempo registra un ascolto che vuoi farle conoscere.
+              Niente di nuovo ancora — propongo al ciclo notturno. Nel frattempo registra un ascolto che vuoi farmi conoscere.
             </p>
           ) : (
             <div className="recess rows">
