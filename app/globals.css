@@ -188,10 +188,14 @@ html, body {
 /* La pill di stato: a differenza di .recess dev'essere una superficie che
    si legge subito, come nel sito di riferimento — vetro pieno, ombra,
    bordo — non un incavo quasi invisibile sullo sfondo. */
+/* Sfondo quasi opaco come .dropdown, non il vetro traslucido di .block:
+   la pill è fissa sopra il contenuto durante lo scroll, e se il browser
+   non applica il backdrop-filter (successo su alcuni mobile) il testo
+   della pagina sotto non deve trasparire attraverso di lei. */
 .pill-status {
   display: inline-flex; align-items: center; padding: 8px;
   border-radius: 999px; border: 1px solid var(--hair);
-  background: var(--panel), var(--form);
+  background: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--lift-2);
 }
@@ -321,14 +325,18 @@ html, body {
 
 /* Marchio di Jessica: un ritratto a tratto, sospeso in cima alla pagina
    come una firma, non nella pill — quella resta solo utilità. */
+/* Un anello di nozze, non solo una cornice: oro caldo con un filo di luce
+   in alto e un'ombra sotto, come una fede vera vista di taglio. */
 .brand-mark {
   position: relative;
   width: 102px; height: 102px; margin: 4px auto 32px;
   display: grid; place-items: center; color: var(--ink);
-  border-radius: 999px; border: 1px solid var(--hair);
+  border-radius: 999px; border: 2.5px solid #C9A227;
   background: var(--panel), var(--form);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--lift-1);
+  box-shadow: var(--lift-1),
+    inset 0 1.5px 1px rgba(255,241,196,.65),
+    inset 0 -1.5px 1px rgba(90,64,10,.4);
   animation: presence 6s ease-in-out infinite;
 }
 /* Un respiro, non una spia: Jessica è "presente" a prescindere da cosa

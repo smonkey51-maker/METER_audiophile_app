@@ -47,7 +47,7 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
           <>
             <JessicaAvatar size={56} />
             <p className="t-display" style={{ fontSize: 26, marginTop: 20 }}>Quello che so di te, in una carrellata.</p>
-            <p className="t-body" style={{ fontSize: 15.5, marginTop: 10 }}>Un misto di Spotify e di quello che hai insegnato a Jessica.</p>
+            <p className="t-body" style={{ fontSize: 15.5, marginTop: 10 }}>Un misto di Spotify e di quello che mi hai insegnato.</p>
           </>
         ),
       },
@@ -92,7 +92,7 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
     if (data.model.axes.length > 0) {
       const top = [...data.model.axes].sort((a, b) => b.confidence - a.confidence)[0];
       list.push({
-        eyebrow: "Cosa ha imparato Jessica",
+        eyebrow: "Cosa ho imparato",
         body: (
           <>
             <p className="t-display" style={{ fontSize: 40 }}>{data.model.axes.length}</p>
@@ -108,7 +108,7 @@ export default function Wrapped({ onClose }: { onClose: () => void }) {
       body: (
         <>
           <p className="t-display" style={{ fontSize: 40 }}>{data.stats.picks}</p>
-          <p className="t-body" style={{ fontSize: 15.5, marginTop: 4 }}>brani proposti da Jessica senza che glielo chiedessi</p>
+          <p className="t-body" style={{ fontSize: 15.5, marginTop: 4 }}>brani che ti ho proposto senza che me lo chiedessi</p>
           {data.stats.topRig && (
             <p className="t-body" style={{ fontSize: 15.5, marginTop: 18 }}>Catena preferita: <span className="t-subdisplay">{rigLabel(data.stats.topRig)}</span></p>
           )}
