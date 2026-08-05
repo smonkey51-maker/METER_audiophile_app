@@ -95,6 +95,11 @@ html, body {
 }
 
 /* ── superfici: si distinguono per tono, mai per un bordo disegnato ── */
+/* Niente distorsione qui: provata e tolta. Su un foglio con testo vero
+   (es. il modulo "Registra un ascolto") il filtro SVG lavava il
+   contrasto del testo anche a colore/opacità calcolati correttamente —
+   un bug di compositing, non di cascata. Resta solo sul brand-mark,
+   dove dentro il vetro non c'è testo da leggere. */
 .block {
   background: var(--panel), var(--form);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
@@ -321,12 +326,24 @@ html, body {
   width: 102px; height: 102px; margin: 4px auto 32px;
   display: grid; place-items: center; color: var(--ink);
   border-radius: 999px; border: 2.5px solid #C9A227;
-  background: var(--panel), var(--form);
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  isolation: isolate;
   box-shadow: var(--lift-1),
     inset 0 1.5px 1px rgba(255,241,196,.65),
     inset 0 -1.5px 1px rgba(90,64,10,.4);
   animation: presence 6s ease-in-out infinite;
+}
+/* Vetro a due strati: la tinta sopra, la sfocatura+distorsione sotto e
+   dietro — così il ritratto resta nitido, solo il vetro intorno ondula. */
+.brand-mark::before {
+  content: ""; position: absolute; inset: 0; border-radius: 999px;
+  background: var(--panel), var(--form);
+  pointer-events: none;
+}
+.brand-mark::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 999px;
+  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  filter: url(#glass-distortion); -webkit-filter: url(#glass-distortion);
+  pointer-events: none;
 }
 /* Un respiro, non una spia: Jessica è "presente" a prescindere da cosa
    sta facendo — niente più punto acceso/spento legato al caricamento. */
