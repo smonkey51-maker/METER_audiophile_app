@@ -233,19 +233,6 @@ export default function Meter() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* Filtro di distorsione per il vetro "liquido": ondula leggermente
-          ciò che il backdrop-filter sfoca dietro le superfici di vetro,
-          invece di un blur piatto. Definito una sola volta, richiamato da
-          --liquid-distort nel CSS. */}
-      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-        <defs>
-          <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves={2} seed={92} result="noise" />
-            <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
-            <feDisplacementMap in="SourceGraphic" in2="blurred" scale="28" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
       {/* Il ritratto di Jessica, non la scritta: la firma della pagina.
           Sotto, un indicatore di presenza — non un timestamp di sistema. */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 4 }}>
