@@ -17,9 +17,9 @@
   --faint:  #8A8A90;   /* contrasto ~5.5:1 su --shell: sotto era ~3.7:1, illeggibile per testo così piccolo */
   --accent: #E0449E;   /* fucsia: l'unico colore vivido, riservato ai dettagli critici */
   --on-accent: #23081A;
-  --good:   #8FAE7D;   /* verde salvia: il verdetto "tenuto", non semaforico */
-  --on-good: #16210F;
-  --night:  #7C6BA8;   /* lilla profondo: il verdetto "in dubbio", il freddo della sera non del neon */
+  --good:   #35A579;   /* smeraldo: il verdetto "tenuto", non più salvia — preso dal paesaggio, non dal semaforo */
+  --on-good: #07160F;
+  --night:  #4D7FC7;   /* blu profondo: il verdetto "in dubbio", lo stesso freddo della sera, non più lilla */
   --on-night: #FFFFFF;
   --wood:   #C9A874;   /* legno di rovere, dai riferimenti fotografici: solo per le copertine non ancora caricate, mai sullo sfondo della pagina */
 
@@ -66,10 +66,10 @@ body {
   --faint:  #A19B8F;
   --accent: #B62D82;
   --on-accent: #FFFFFF;
-  --good:   #5F7A4A;
+  --good:   #0E6B49;
   --on-good: #FFFFFF;
-  --night:  #B9A6D9;
-  --on-night: #241C3B;
+  --night:  #AEC9EA;
+  --on-night: #16314F;
   --wood:   #A9834F;
   /* Tre strati — vicino, medio, lontano — invece di uno solo: è quello
      che fa sembrare la carta sospesa e non solo scontornata. */
@@ -94,19 +94,70 @@ html, body {
   letter-spacing: -0.011em;
 }
 
-/* ── superfici: si distinguono per tono, mai per un bordo disegnato ── */
-/* Niente distorsione qui: provata e tolta. Su un foglio con testo vero
-   (es. il modulo "Registra un ascolto") il filtro SVG lavava il
-   contrasto del testo anche a colore/opacità calcolati correttamente —
-   un bug di compositing, non di cascata. Resta solo sul brand-mark,
-   dove dentro il vetro non c'è testo da leggere. */
-.block {
-  background: var(--panel), var(--form);
+/* ── il vetro: due strati sotto il contenuto, non un fondo dipinto ──
+   Una superficie di vetro non è un colore traslucido: è una lastra che
+   sfoca *e piega* ciò che ha dietro. Perciò la tinta e la rifrazione
+   vivono in due pseudo-elementi a z-index negativo, e l'elemento stesso
+   resta senza fondo. Il contenuto in flusso normale sta sopra entrambi
+   senza bisogno di uno z-index proprio.
+
+   `z-index: 0` e non `isolation: isolate`: servono entrambi a chiudere
+   il contesto di impilamento — così i due strati negativi restano dentro
+   la superficie invece di scivolare dietro alla pagina — ma isolate crea
+   anche un *backdrop root*, e allora il backdrop-filter dello strato di
+   sotto non avrebbe più niente da sfocare: il vetro perderebbe il blur.
+   Il solo z-index no.
+
+   --lg-tint  la tinta della lastra (default: la luce in alto + il vetro)
+   --lg-r     il raggio, per ritagliare la rifrazione che il filtro
+              spinge oltre il bordo
+   --lg-map   la mappa di rifrazione, o `none` per la sola sfocatura
+   Dove il browser non applica un filtro SVG al backdrop (Safari,
+   Firefox) resta il blur: il vetro perde la piega, non la trasparenza. */
+/* Le superfici che sono vetro — più .glass, per il markup nuovo. Non i
+   bottoni né i segmenti: su una capsula di 40px la piega si leggerebbe
+   come una sbavatura, non come spessore. */
+.glass, .block, .pill-status, .dropdown, .webplayer, .brand-mark {
+  position: relative; z-index: 0;
+  background: transparent;
+}
+.glass::before, .glass::after,
+.block::before, .block::after,
+.pill-status::before, .pill-status::after,
+.dropdown::before, .dropdown::after,
+.webplayer::before, .webplayer::after,
+.brand-mark::before, .brand-mark::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: inherit; pointer-events: none;
+}
+.glass::before, .block::before, .pill-status::before, .dropdown::before,
+.webplayer::before, .brand-mark::before {
+  z-index: -1; background: var(--lg-tint, var(--panel), var(--form));
+}
+.glass::after, .block::after, .pill-status::after, .dropdown::after,
+.webplayer::after, .brand-mark::after {
+  z-index: -2;
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  filter: var(--lg-map, url(#lg-refract));
+  -webkit-filter: var(--lg-map, url(#lg-refract));
+  clip-path: inset(0 round var(--lg-r, var(--r-block)));
+}
+
+/* ── superfici: si distinguono per tono, mai per un bordo disegnato ── */
+/* La distorsione era stata provata e tolta da qui: applicata
+   direttamente sull'elemento, lavava il contrasto del testo vero dentro
+   (es. il modulo "Registra un ascolto") — un bug di compositing. Non è
+   più lo stesso rischio: il filtro ora vive solo sullo strato ::after,
+   dietro al contenuto, che resta in flusso normale sopra e non lo
+   attraversa mai. Verificato in browser reale su .block e .dropdown
+   con testo vero: nessun lavaggio di contrasto. */
+.block {
   border-radius: var(--r-block);
   box-shadow: var(--lift-1);
   transition: box-shadow .45s var(--ease), transform .45s var(--ease), background .45s var(--ease);
 }
+/* .flush è la variante senza superficie: niente vetro da rifrangere. */
+.block.flush::before, .block.flush::after { content: none; }
 .recess {
   background: var(--recess);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -202,8 +253,9 @@ html, body {
 .pill-status {
   display: inline-flex; align-items: center; padding: 8px;
   border-radius: 999px; border: 1px solid var(--hair);
-  background: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  --lg-tint: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
+  --lg-r: 999px;
+  --lg-map: url(#lg-refract-fine);
   box-shadow: var(--lift-2);
 }
 .pill-status .seg-item { font-size: 18px; padding: 12px 21px; }
@@ -224,8 +276,9 @@ html, body {
   z-index: 50; min-width: 190px; padding: 6px;
   display: flex; flex-direction: column; gap: 2px;
   border-radius: var(--r-inner); border: 1px solid var(--hair);
-  background: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  --lg-tint: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
+  --lg-r: var(--r-inner);
+  --lg-map: url(#lg-refract-fine);
   box-shadow: var(--lift-2);
   animation: pop .35s var(--spring) both;
 }
@@ -260,8 +313,6 @@ html, body {
 .webplayer {
   display: flex; align-items: center; gap: 20px;
   border-radius: var(--r-block); padding: 18px 22px;
-  background: var(--panel), var(--form);
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--lift-2);
 }
 .webplayer-art {
@@ -326,25 +377,18 @@ html, body {
   width: 102px; height: 102px; margin: 4px auto 32px;
   display: grid; place-items: center; color: var(--ink);
   border-radius: 999px; border: 2.5px solid #C9A227;
-  isolation: isolate;
+  --lg-r: 999px;
   box-shadow: var(--lift-1),
     inset 0 1.5px 1px rgba(255,241,196,.65),
     inset 0 -1.5px 1px rgba(90,64,10,.4);
   animation: presence 6s ease-in-out infinite;
 }
-/* Vetro a due strati: la tinta sopra, la sfocatura+distorsione sotto e
-   dietro — così il ritratto resta nitido, solo il vetro intorno ondula. */
-.brand-mark::before {
-  content: ""; position: absolute; inset: 0; border-radius: 999px;
-  background: var(--panel), var(--form);
-  pointer-events: none;
-}
-.brand-mark::after {
-  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 999px;
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  filter: url(#glass-distortion); -webkit-filter: url(#glass-distortion);
-  pointer-events: none;
-}
+/* I due strati (tinta + sfocatura/rifrazione) sono già quelli condivisi
+   dichiarati sopra per .glass/.block/.pill-status/.dropdown/.webplayer:
+   .brand-mark è nella stessa lista, non serve una coppia ::before/::after
+   propria — bastava il filtro giusto, #lg-refract al posto del vecchio
+   #glass-distortion locale a Meter.tsx (rimosso: duplicava lo stesso
+   effetto con un secondo <svg><defs>). */
 /* Un respiro, non una spia: Jessica è "presente" a prescindere da cosa
    sta facendo — niente più punto acceso/spento legato al caricamento. */
 @keyframes presence {
