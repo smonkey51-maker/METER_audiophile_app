@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, ChevronLeft, ChevronRight, Headphones, Moon, Music2, Pause, Play,
+  Check, ChevronLeft, ChevronRight, Headphones, Moon, Music2, MessageSquare, Pause, Play,
   Plus, Search, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
@@ -266,7 +266,7 @@ export default function Meter() {
           <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
             <SpotifyMark size={24} />
           </a>
-          <button className="seg-item seg-item--icon" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
+          <button className="seg-item seg-item--icon seg-item--feature" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
             <BookIcon size={20} />
           </button>
           <button className="seg-item seg-item--icon" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra" title="Petra">
@@ -447,21 +447,27 @@ export default function Meter() {
             <div className="recess rows">
               {dailyPicks.map((e, i) => {
                 const judge = () => openRating({ ...e, url: e.spotify_url, id: e.id });
-                const primary = () => (e.spotify_id ? playerAction("play", e.spotify_id) : judge());
+                const canPlay = !!e.spotify_id;
                 return (
-                <div key={e.id} className="row-tap tracklist-row" role="button" tabIndex={0}
-                  aria-label={e.spotify_id ? `Riproduci ${e.track}` : `Giudica ${e.track}`}
-                  onClick={primary}
-                  onKeyDown={(ev) => ev.key === "Enter" && primary()}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, cursor: "pointer" }}>
+                <div key={e.id} className="tracklist-row"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14 }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: "1 1 auto" }}>
-                    <span className="tracklist-n-wrap">
-                      <span className="tracklist-n">{i + 1}</span>
-                      {e.spotify_id && <Play size={12} className="tracklist-play-hint" />}
-                    </span>
-                    <span className="tracklist-art" aria-hidden="true" style={e.id != null && artByPick[e.id] ? { backgroundImage: `url("${artByPick[e.id]}")` } : undefined}>
-                      {!(e.id != null && artByPick[e.id]) && <Music2 size={16} style={{ opacity: .35 }} />}
-                    </span>
+                    {/* Un solo bersaglio per "avvia l'ascolto": la copertina
+                        stessa è il pulsante play, non una riga che decide da
+                        sola cosa succede al tap. Disattivato (non assente)
+                        quando non c'è ancora un brano Spotify da avviare, così
+                        la differenza si vede subito, non si scopre a tentoni. */}
+                    <button
+                      type="button" className="tracklist-art-btn" disabled={!canPlay}
+                      aria-label={canPlay ? `Avvia ${e.track}` : `${e.track}: non ancora trovato su Spotify`}
+                      title={canPlay ? "Avvia l'ascolto" : "Non ancora trovato su Spotify"}
+                      onClick={() => canPlay && playerAction("play", e.spotify_id)}
+                    >
+                      <span className="tracklist-art" aria-hidden="true" style={e.id != null && artByPick[e.id] ? { backgroundImage: `url("${artByPick[e.id]}")` } : undefined}>
+                        {!(e.id != null && artByPick[e.id]) && <Music2 size={16} style={{ opacity: .35 }} />}
+                      </span>
+                      <span className="tracklist-play-overlay" aria-hidden="true"><Play size={15} fill="currentColor" /></span>
+                    </button>
                     <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
                       <span className="t-display truncate" style={{ fontSize: 16, maxWidth: 220 }}>{e.track}</span>
                       <span className="t-subdisplay truncate" style={{ fontSize: 13.5, maxWidth: 220 }}>{e.artist}</span>
@@ -471,14 +477,15 @@ export default function Meter() {
                     {/* Il bridge dovrebbe essere una parola o due (lo dice il prompt), ma
                         se Jessica esagera non deve mai spingersi sopra al titolo. */}
                     {e.bridge && <span className="label truncate" style={{ maxWidth: 140 }}>{e.bridge}</span>}
-                    {/* Il giudizio resta possibile ma non è più l'azione
-                        principale della riga: ferma la propagazione. */}
+                    {/* Il secondo bersaglio, altrettanto esplicito: non più
+                        una sola icona ghost, ma un pulsante con etichetta —
+                        si legge "commenta", non si intuisce da un'iconcina. */}
                     <button
-                      className="btn btn--ghost btn--sm" aria-label={`Giudica ${e.track}`} title="Giudica"
-                      onClick={(ev) => { ev.stopPropagation(); judge(); }}
-                      style={{ display: "inline-flex", alignItems: "center", padding: 6 }}
+                      className="btn btn--ghost btn--sm" aria-label={`Commenta ${e.track}`} title="Commenta questo consiglio"
+                      onClick={judge}
+                      style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                     >
-                      <Check size={13} />
+                      <MessageSquare size={13} /> Commenta
                     </button>
                   </span>
                 </div>
