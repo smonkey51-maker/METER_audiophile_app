@@ -180,13 +180,6 @@ html, body {
 }
 .rows > *:last-child { border-bottom: 0; }
 
-/* Riga cliccabile: l'azione è la riga stessa, non un bottone ripetuto
-   su ognuna — un tono al passaggio basta a dirlo. Il tap risponde con un
-   piccolo rimbalzo, non solo un cambio di tono. */
-.row-tap { transition: background .2s var(--ease), transform .4s var(--spring); }
-.row-tap:hover, .row-tap:focus-visible { background: var(--recess); outline: none; }
-.row-tap:active { transform: scale(.985); }
-
 /* Etichetta di sezione con un filo che la prolunga fino al bordo. */
 .section-label {
   display: flex; align-items: center; gap: 14px;
@@ -351,26 +344,32 @@ html, body {
 }
 .axis-dot.is-active { background: var(--accent); transform: scale(1.3); }
 
-/* Tracklist d'autore: numero sottile, copertina, niente altro rumore. */
-.tracklist-n-wrap { position: relative; width: 18px; height: 16px; flex-shrink: 0; }
-.tracklist-n {
-  position: absolute; inset: 0;
-  font-family: var(--mono); font-size: 12px; color: var(--faint);
-  text-align: right; font-variant-numeric: tabular-nums;
-  transition: opacity .2s var(--ease);
+/* Tracklist d'autore: copertina, niente altro rumore — e ora la
+   copertina stessa È il pulsante "avvia l'ascolto", non un'area che
+   sembra decorativa finché non ci si accorge che l'intera riga risponde
+   al tap. L'icona play resta visibile di continuo, non solo al passaggio
+   del mouse: su schermo touch "al passaggio" non esiste. */
+.tracklist-art-btn {
+  position: relative; border: 0; padding: 0; background: transparent; cursor: pointer;
+  border-radius: 9px; flex-shrink: 0;
 }
-.tracklist-play-hint {
-  position: absolute; inset: 0; margin: auto; color: var(--ink);
-  opacity: 0; transition: opacity .2s var(--ease);
-}
-.row-tap:hover .tracklist-n, .row-tap:focus-visible .tracklist-n { opacity: 0; }
-.row-tap:hover .tracklist-play-hint, .row-tap:focus-visible .tracklist-play-hint { opacity: 1; }
+.tracklist-art-btn:disabled { cursor: default; }
+.tracklist-art-btn:disabled .tracklist-art { opacity: .5; }
+.tracklist-art-btn:disabled .tracklist-play-overlay { opacity: 0; }
 .tracklist-art {
   width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px;
   background: radial-gradient(120% 120% at 30% 15%, color-mix(in srgb, var(--wood) 22%, transparent), transparent 72%),
               var(--form) center/cover no-repeat;
   display: grid; place-items: center; color: var(--mute);
 }
+.tracklist-play-overlay {
+  position: absolute; inset: 0; border-radius: 9px;
+  display: grid; place-items: center; color: #FFFFFF;
+  background: rgba(0,0,0,.32);
+  opacity: .85; transition: opacity .2s var(--ease), background .2s var(--ease);
+}
+.tracklist-art-btn:hover .tracklist-play-overlay,
+.tracklist-art-btn:focus-visible .tracklist-play-overlay { opacity: 1; background: rgba(0,0,0,.48); }
 
 @media (max-width: 640px) {
   /* Copertina, testo e controlli non stanno su una riga sola in uno
