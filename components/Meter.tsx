@@ -253,7 +253,7 @@ export default function Meter() {
           <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
             <SpotifyMark size={24} />
           </a>
-          <button className="seg-item seg-item--icon" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
+          <button className="seg-item seg-item--icon seg-item--feature" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
             <BookIcon size={20} />
           </button>
           <button className="seg-item seg-item--icon" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra" title="Petra">

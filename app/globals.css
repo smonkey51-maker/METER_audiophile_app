@@ -15,12 +15,17 @@
   --ink:    #FFFFFF;   /* bianco pieno, come da specifica */
   --mute:   #A1A1A6;
   --faint:  #8A8A90;   /* contrasto ~5.5:1 su --shell: sotto era ~3.7:1, illeggibile per testo così piccolo */
-  --accent: #E0449E;   /* fucsia: l'unico colore vivido, riservato ai dettagli critici */
-  --on-accent: #23081A;
-  --good:   #35A579;   /* smeraldo: il verdetto "tenuto", non più salvia — preso dal paesaggio, non dal semaforo */
-  --on-good: #07160F;
-  --night:  #4D7FC7;   /* blu profondo: il verdetto "in dubbio", lo stesso freddo della sera, non più lilla */
+  /* Non più una tavolozza inventata: i colori di sistema Apple
+     (systemOrange/Green/Blue/Purple, valori sRGB dark), ognuno con lo
+     stesso ruolo che ha in iOS/macOS — non decorazione, semantica. */
+  --accent: #FF9F0A;   /* systemOrange: l'unico colore acceso di continuo — pulsante primario, equalizzatore, fiducia */
+  --on-accent: #FFFFFF;
+  --good:   #30D158;   /* systemGreen: il verdetto "tenuto" — positivo, conclusivo */
+  --on-good: #FFFFFF;
+  --night:  #0A84FF;   /* systemBlue: il verdetto "in dubbio" — interattivo, non definitivo, il blu di default di ogni controllo */
   --on-night: #FFFFFF;
+  --feature: #BF5AF2;  /* systemPurple: la sola superficie "creativa" — riservato al Wrapped */
+  --on-feature: #FFFFFF;
   --wood:   #C9A874;   /* legno di rovere, dai riferimenti fotografici: solo per le copertine non ancora caricate, mai sullo sfondo della pagina */
 
   /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
@@ -64,12 +69,14 @@ body {
   --ink:    #1C1B18;
   --mute:   #716C63;
   --faint:  #A19B8F;
-  --accent: #B62D82;
+  --accent: #FF9500;   /* systemOrange (light) */
   --on-accent: #FFFFFF;
-  --good:   #0E6B49;
+  --good:   #34C759;   /* systemGreen (light) */
   --on-good: #FFFFFF;
-  --night:  #AEC9EA;
-  --on-night: #16314F;
+  --night:  #007AFF;   /* systemBlue (light) */
+  --on-night: #FFFFFF;
+  --feature: #AF52DE;  /* systemPurple (light) */
+  --on-feature: #FFFFFF;
   --wood:   #A9834F;
   /* Tre strati — vicino, medio, lontano — invece di uno solo: è quello
      che fa sembrare la carta sospesa e non solo scontornata. */
@@ -263,6 +270,10 @@ html, body {
   padding: 12px; width: 48px; height: 48px;
   display: inline-flex; align-items: center; justify-content: center;
 }
+/* Il Wrapped è la sola superficie "creativa" dell'app: l'icona prende
+   il viola di sistema, non il colore neutro delle altre utility. */
+.seg-item--feature { color: var(--feature); }
+.seg-item--feature.is-active { color: var(--on-feature); background: var(--feature); }
 .pill-status .seg-divider { margin: 6px 2px; }
 
 /* Menu a tendina fatto in casa: una <select> nativa non si può vestire
