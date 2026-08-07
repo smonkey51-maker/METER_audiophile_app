@@ -226,6 +226,19 @@ html, body {
 }
 .btn--pri:hover:not(:disabled) { box-shadow: var(--lift-2), var(--glow-2); }
 
+/* Il morph play/pausa: due icone nello stesso punto, una entra mentre
+   l'altra esce ruotando — mai le due assenti insieme, mai uno scatto. */
+.play-morph { position: relative; width: 18px; height: 18px; display: inline-block; }
+.play-morph-icon {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  opacity: 1; transform: scale(1) rotate(0deg);
+  transition: opacity .32s var(--spring), transform .32s var(--spring);
+}
+.play-morph-icon.is-out { opacity: 0; transform: scale(.35) rotate(35deg); }
+@media (prefers-reduced-motion: reduce) {
+  .play-morph-icon, .play-morph-icon.is-out { transition: opacity .15s linear; transform: none; }
+}
+
 .btn--solid { background: var(--ink); color: var(--shell); border-color: transparent; }
 .btn--ghost { background: transparent; border-color: transparent; color: var(--mute); box-shadow: none; backdrop-filter: none; }
 .btn--ghost:hover:not(:disabled) { color: var(--ink); background: var(--form); border-color: var(--hair); box-shadow: var(--lift-1); backdrop-filter: var(--blur); }
@@ -551,6 +564,19 @@ html, body {
   background: color-mix(in srgb, var(--shell) 55%, transparent);
   backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
   animation: veil .32s ease both;
+}
+
+/* Il foglio di giudizio apre/chiude dentro una View Transition (JS, vedi
+   withMorph in Meter.tsx): qui si intona solo il ritmo a quello del resto
+   della pagina, invece del mezzo secondo lineare di default. Dove il
+   browser non supporta le View Transitions questa regola non fa nulla —
+   niente da correggere, il .sheet/.veil esistenti bastano da soli. */
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: .4s;
+  animation-timing-function: var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 
 .cols { display: grid; gap: 20px; grid-template-columns: minmax(0,1fr); }
