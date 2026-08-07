@@ -8,6 +8,16 @@
    dissolve, mai un lampo.
    ───────────────────────────────────────────── */
 
+/* Serve perché --ambient possa transizionare come farebbe un colore
+   qualunque: senza @property un custom property cambia di scatto, non
+   sfuma. Dove il browser non la supporta (Firefox), il velo cambia di
+   colpo invece che in dissolvenza — mai un errore, solo meno morbido. */
+@property --ambient {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
 :root {
   --shell:  #000000;   /* nero pieno, come da specifica: non più il grafite */
   --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
@@ -318,6 +328,13 @@ html, body {
   display: flex; align-items: center; gap: 20px;
   border-radius: var(--r-block); padding: 18px 22px;
   box-shadow: var(--lift-2);
+  /* Il vetro prende la tinta di ciò che sta suonando: un velo debole
+     (14%) del colore medio della copertina, mescolato alla tinta di
+     vetro normale — mai forte abbastanza da competere col testo sopra.
+     --ambient arriva da JS (Meter.tsx), un rgb() o "transparent". */
+  --lg-tint: radial-gradient(135% 160% at 16% 0%, color-mix(in srgb, var(--ambient, transparent) 14%, transparent), transparent 68%),
+             var(--panel), var(--form);
+  transition: --ambient .8s var(--ease);
 }
 .webplayer-art {
   width: 96px; height: 96px; flex-shrink: 0; border-radius: 22px;
