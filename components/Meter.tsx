@@ -231,8 +231,26 @@ export default function Meter() {
     });
   }, [dailyPicks, artByPick]);
 
+  // Il foglio di giudizio non deve più comparire e sparire di scatto: dove
+  // il browser lo permette (View Transitions API) il cambio di DOM viene
+  // incorniciato in una dissolvenza morbida invece di un salto istantaneo
+  // — e rispetta chi ha chiesto meno movimento, saltando la transizione
+  // invece di ignorare la preferenza.
+  function withMorph(fn: () => void) {
+    const d = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (typeof d.startViewTransition === "function" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      d.startViewTransition(fn);
+    } else {
+      fn();
+    }
+  }
+
   function openRating(e: Partial<Rec> & { id?: number }) {
-    setRating({ rec: e, verdict: null, dims: [] });
+    withMorph(() => setRating({ rec: e, verdict: null, dims: [] }));
+  }
+
+  function closeRating() {
+    withMorph(() => setRating(null));
   }
 
   async function commitRating() {
@@ -247,7 +265,7 @@ export default function Meter() {
         source: rec.id ? "rec" : "manual",
       }),
     });
-    setRating(null);
+    closeRating();
     await refresh();
     flash(`${rec.track}: ${VERDICTS.find((v) => v.key === verdict)!.label}`);
   }
@@ -373,8 +391,14 @@ export default function Meter() {
                   <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente" style={{ display: "inline-flex", alignItems: "center" }}>
                     <SkipBack size={15} />
                   </button>
-                  <button className="btn btn--pri" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ display: "inline-flex", alignItems: "center", padding: "11px 15px" }}>
-                    {playback.isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                  <button className="btn btn--pri" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ padding: "11px 15px" }}>
+                    {/* Non uno scambio secco di icona: le due si passano il
+                        posto, una si ritira ruotando mentre l'altra arriva
+                        dallo stesso punto — un morph, non un salto. */}
+                    <span className="play-morph">
+                      <span className={`play-morph-icon${playback.isPlaying ? "" : " is-out"}`}><Pause size={18} /></span>
+                      <span className={`play-morph-icon${playback.isPlaying ? " is-out" : ""}`}><Play size={18} /></span>
+                    </span>
                   </button>
                   <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva" style={{ display: "inline-flex", alignItems: "center" }}>
                     <SkipForward size={15} />
@@ -517,7 +541,7 @@ export default function Meter() {
 
       {/* foglio di giudizio */}
       {rating && (
-        <div className="scrim" onClick={(e) => e.target === e.currentTarget && setRating(null)}>
+        <div className="scrim" onClick={(e) => e.target === e.currentTarget && closeRating()}>
           <div className="block sheet" style={{ maxWidth: 470, width: "100%", padding: 30 }}>
             <p className="label">Giudizio</p>
             <p className="t-display" style={{ fontSize: 22, marginTop: 6 }}>{rating.rec.track}</p>
@@ -561,7 +585,7 @@ export default function Meter() {
               <button className="btn btn--pri" style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={commitRating} disabled={!rating.verdict}>
                 <Check size={15} /> Registra
               </button>
-              <button className="btn btn--ghost" onClick={() => setRating(null)} aria-label="Annulla" style={{ display: "inline-flex", alignItems: "center" }}>
+              <button className="btn btn--ghost" onClick={closeRating} aria-label="Annulla" style={{ display: "inline-flex", alignItems: "center" }}>
                 <X size={15} />
               </button>
             </div>
