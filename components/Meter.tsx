@@ -38,6 +38,7 @@ export default function Meter() {
   const [manual, setManual] = useState({ open: false, artist: "", track: "" });
   const [toast, setToast] = useState<string | null>(null);
   const [playback, setPlayback] = useState<Playback | null>(null);
+  const [ambient, setAmbient] = useState("transparent");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
@@ -157,6 +158,37 @@ export default function Meter() {
     const t = setInterval(refreshPlayback, 15000);
     return () => clearInterval(t);
   }, [refreshPlayback]);
+
+  // Il vero materiale di vetro non ha un colore proprio: prende quello di
+  // ciò che ha dietro. Qui non c'è uno sfondo da rifrangere in tempo
+  // reale, ma il senso è lo stesso — il vetro del web player si intona
+  // alla copertina che sta suonando. Nessun colore medio è sbagliato
+  // abbastanza da rompere la lettura: resta solo un velo dietro il vetro,
+  // mai il testo sopra.
+  useEffect(() => {
+    const art = playback?.art;
+    if (!art) { setAmbient("transparent"); return; }
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (cancelled) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 12; canvas.height = 12;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, 12, 12);
+        const { data } = ctx.getImageData(0, 0, 12, 12);
+        let r = 0, g = 0, b = 0, n = 0;
+        for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
+        if (n && !cancelled) setAmbient(`rgb(${Math.round(r / n)} ${Math.round(g / n)} ${Math.round(b / n)})`);
+      } catch { if (!cancelled) setAmbient("transparent"); } // tela "sporca" (CORS): niente velo, non un errore visibile
+    };
+    img.onerror = () => { if (!cancelled) setAmbient("transparent"); };
+    img.src = art;
+    return () => { cancelled = true; };
+  }, [playback?.art]);
 
   async function playerAction(action: "play" | "pause" | "next" | "previous", uri?: string) {
     const r = await fetch("/api/spotify/player", {
@@ -322,8 +354,8 @@ export default function Meter() {
             /* Qualcosa è caricato, anche solo in pausa: diventa un web player
                vero, con la copertina, non più la sola riga di testo. */
             <div style={{ marginBottom: 20 }}>
-              <div className="webplayer">
-                <div className="webplayer-art" aria-hidden="true" style={playback.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
+              <div className="webplayer" style={{ "--ambient": ambient } as React.CSSProperties}>
+                <div key={playback.art ?? playback.track} className="webplayer-art pop" aria-hidden="true" style={playback.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
                   {!playback.art && <Music2 size={26} style={{ opacity: .4 }} />}
                 </div>
                 <div className="webplayer-info">
