@@ -206,10 +206,20 @@ html, body {
   background: var(--panel), var(--form); color: var(--ink);
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--lift-1);
-  transition: transform .45s var(--spring), background .35s var(--ease),
-              box-shadow .35s var(--ease), opacity .3s var(--ease), border-color .35s var(--ease);
+  /* Ogni bottone dell'app passa da qui: 450ms per il rimbalzo al tap era
+     un feedback pigro, non tattile — la finestra corretta per la
+     risposta di un pulsante è 100-160ms, non mezzo secondo. Le altre
+     proprietà restano sotto ai 300ms invece di sconfinare a 350. */
+  transition: transform .15s var(--spring), background .22s var(--ease),
+              box-shadow .22s var(--ease), opacity .22s var(--ease), border-color .22s var(--ease);
 }
-.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--lift-2); }
+/* Il sollevamento al passaggio del mouse resta un'esclusiva del mouse:
+   su touch :hover non si spegne al dito che si alza, e il bottone
+   resterebbe "sollevato" finché non si tocca altrove — un difetto,
+   non un dettaglio, su un'app usata soprattutto da telefono. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--lift-2); }
+}
 .btn:active:not(:disabled) { transform: translateY(0) scale(.96); box-shadow: var(--carve); }
 .btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -307,7 +317,21 @@ html, body {
   --lg-r: var(--r-inner);
   --lg-map: url(#lg-refract-fine);
   box-shadow: var(--lift-2);
-  animation: pop .35s var(--spring) both;
+  /* Nasce dal bordo vicino al bottone che l'ha aperto, non dal proprio
+     centro: un popover che si apre "dal nulla" al centro non racconta
+     da dove è arrivato. Capovolto su mobile, dove il menu si apre verso
+     l'alto (vedi sotto).
+     Keyframes proprie, non la .pop condivisa: quella arriva a
+     `transform: none`, che avrebbe cancellato il translateX(-50%) che
+     centra il menu sotto al bottone — il menu si è sempre aperto
+     spostato a destra invece che centrato, un bug passato inosservato
+     finché non si è verificata la posizione reale dopo l'animazione. */
+  transform-origin: top center;
+  animation: dropdown-pop .35s var(--spring) both;
+}
+@keyframes dropdown-pop {
+  from { opacity: 0; transform: translateX(-50%) scale(.95); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1); }
 }
 .dropdown-item {
   border: 0; border-radius: 12px; cursor: pointer; text-align: left;
@@ -321,7 +345,7 @@ html, body {
 @media (max-width: 640px) {
   /* La pill è fissa in basso su mobile: il menu deve aprirsi verso
      l'alto, altrimenti finisce fuori dallo schermo. */
-  .dropdown { top: auto; bottom: calc(100% + 12px); }
+  .dropdown { top: auto; bottom: calc(100% + 12px); transform-origin: bottom center; }
 }
 
 /* Ritratti fotografici a tratto: tracciato scuro su sfondo trasparente,
@@ -651,6 +675,6 @@ html, body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .pop, .sheet, .pulse, .warmup, .eq i, .brand-mark { animation: none }
+  .rise, .pop, .sheet, .pulse, .warmup, .eq i, .brand-mark, .dropdown { animation: none }
   .btn:hover:not(:disabled) { transform: none }
 }
