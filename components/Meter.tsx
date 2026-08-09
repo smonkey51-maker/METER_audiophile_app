@@ -283,6 +283,19 @@ export default function Meter() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
+      {/* Filtro di distorsione per il vetro "liquido": ondula leggermente
+          ciò che il backdrop-filter sfoca dietro le superfici di vetro,
+          invece di un blur piatto. Definito una sola volta, richiamato da
+          --liquid-distort nel CSS. */}
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+        <defs>
+          <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves={2} seed={92} result="noise" />
+            <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
+            <feDisplacementMap in="SourceGraphic" in2="blurred" scale="28" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
       {/* Il ritratto di Jessica, non la scritta: la firma della pagina.
           Sotto, un indicatore di presenza — non un timestamp di sistema. */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 4 }}>
@@ -407,7 +420,31 @@ export default function Meter() {
               </div>
             </div>
           ) : (
-            <p className="t-body" style={{ fontSize: 17, marginBottom: 20 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
+            /* Stessa sagoma del web player attivo: se cambiasse altezza al primo
+               play, tutto sotto — la tracklist — si sposterebbe sotto al dito
+               proprio mentre si prova a toccare la riga successiva. */
+            <div style={{ marginBottom: 20 }}>
+              <div className="webplayer">
+                <div className="webplayer-art" aria-hidden="true"><Music2 size={26} style={{ opacity: .4 }} /></div>
+                <div className="webplayer-info">
+                  <p className="t-body" style={{ fontSize: 17 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
+                </div>
+                {/* Stessi tre tasti, disattivati: sotto i 640px vanno a
+                    capo su una riga propria — se mancassero qui, la sagoma
+                    tornerebbe a cambiare altezza proprio su mobile. */}
+                <div className="webplayer-controls" style={{ opacity: .35 }}>
+                  <button className="btn btn--ghost btn--sm" disabled aria-hidden="true" tabIndex={-1} style={{ display: "inline-flex", alignItems: "center" }}>
+                    <SkipBack size={15} />
+                  </button>
+                  <button className="btn btn--pri" disabled aria-hidden="true" tabIndex={-1} style={{ display: "inline-flex", alignItems: "center", padding: "11px 15px" }}>
+                    <Play size={18} />
+                  </button>
+                  <button className="btn btn--ghost btn--sm" disabled aria-hidden="true" tabIndex={-1} style={{ display: "inline-flex", alignItems: "center" }}>
+                    <SkipForward size={15} />
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
