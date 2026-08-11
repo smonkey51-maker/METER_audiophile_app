@@ -134,24 +134,23 @@ html, body {
 /* Le superfici che sono vetro — più .glass, per il markup nuovo. Non i
    bottoni né i segmenti: su una capsula di 40px la piega si leggerebbe
    come una sbavatura, non come spessore. */
-.glass, .block, .pill-status, .dropdown, .webplayer, .brand-mark {
+.glass, .block, .dropdown, .webplayer, .brand-mark {
   position: relative; z-index: 0;
   background: transparent;
 }
 .glass::before, .glass::after,
 .block::before, .block::after,
-.pill-status::before, .pill-status::after,
 .dropdown::before, .dropdown::after,
 .webplayer::before, .webplayer::after,
 .brand-mark::before, .brand-mark::after {
   content: ""; position: absolute; inset: 0;
   border-radius: inherit; pointer-events: none;
 }
-.glass::before, .block::before, .pill-status::before, .dropdown::before,
+.glass::before, .block::before, .dropdown::before,
 .webplayer::before, .brand-mark::before {
   z-index: -1; background: var(--lg-tint, var(--panel), var(--form));
 }
-.glass::after, .block::after, .pill-status::after, .dropdown::after,
+.glass::after, .block::after, .dropdown::after,
 .webplayer::after, .brand-mark::after {
   z-index: -2;
   backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
@@ -254,53 +253,68 @@ html, body {
 .btn--ghost:hover:not(:disabled) { color: var(--ink); background: var(--form); border-color: var(--hair); box-shadow: var(--lift-1); backdrop-filter: var(--blur); }
 .btn--sm    { font-size: 13px; padding: 9px 16px; }
 
-/* Controllo segmentato: un solo binario, mai pillole separate. Ogni
-   segmento non ha bordo né vetro propri — solo quello attivo prende
-   una superficie, gli altri restano piatti dentro la stessa traccia. */
-.seg { display: inline-flex; padding: 4px; }
-.seg-item {
-  position: relative; border: 0; border-radius: 999px; cursor: pointer;
-  font: inherit; font-size: 13px; font-weight: 500; letter-spacing: -0.01em;
-  padding: 8px 15px; background: transparent; color: var(--mute);
-  transition: color .3s var(--ease), background .3s var(--ease), box-shadow .3s var(--ease);
-}
-.seg-item.is-active { background: var(--form); color: var(--ink); box-shadow: var(--lift-1); }
-.seg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-
-/* Variante minuscola: solo per la pill di stato in alto, non tocca il
-   toggle Consiglia/Interroga né i tab modello/profilo/registro. */
-.seg--xs { padding: 3px; }
-.seg--xs .seg-item { font-size: 11px; padding: 5px 9px; }
-
-/* Il filo che separa il gruppo informativo dall'azione icona-sola, come
-   nel riferimento: IT/EN/FR da una parte, luna dall'altra. */
-.seg-divider { width: 1px; align-self: stretch; background: var(--hair); margin: 4px 1px; }
-
-/* La pill di stato: a differenza di .recess dev'essere una superficie che
-   si legge subito, come nel sito di riferimento — vetro pieno, ombra,
-   bordo — non un incavo quasi invisibile sullo sfondo. */
-/* Sfondo quasi opaco come .dropdown, non il vetro traslucido di .block:
-   la pill è fissa sopra il contenuto durante lo scroll, e se il browser
-   non applica il backdrop-filter (successo su alcuni mobile) il testo
-   della pagina sotto non deve trasparire attraverso di lei. */
+/* La pill di stato, presa 1:1 dal riferimento (navbar-pill): stessa
+   capsula in vetro smerigliato piatto, senza la rifrazione liquida
+   condivisa dal resto dell'app — qui di proposito, non è un'omissione.
+   Valori fissi, non parametrizzati sul tema: il riferimento è un solo
+   disegno, non uno che si adatta al chiaro/scuro. */
 .pill-status {
-  display: inline-flex; align-items: center; padding: 8px;
-  border-radius: 999px; border: 1px solid var(--hair);
-  --lg-tint: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
-  --lg-r: 999px;
-  --lg-map: url(#lg-refract-fine);
-  box-shadow: var(--lift-2);
+  position: relative;
+  display: inline-flex; align-items: center; gap: 36px;
+  padding: 5px 24px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.025);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 25px 50px rgba(0,0,0,0.6);
 }
-.pill-status .seg-item { font-size: 18px; padding: 12px 21px; }
-.pill-status .seg-item--icon {
-  padding: 12px; width: 48px; height: 48px;
+
+/* Ogni icona della pill porta lo stesso trattamento "attivo" del
+   riferimento — cerchio in vetro smerigliato, bagliore blu sotto, punto
+   luminoso — non solo quella che sarebbe "la pagina corrente" in una
+   tab bar: qui non esiste un concetto simile, quindi tutte uguali. */
+.pill-icon {
+  position: relative; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 0; padding: 0; background: transparent; cursor: pointer;
+  /* Il solo scostamento dal riferimento: bianco fisso sparirebbe in
+     tema chiaro. La capsula resta letterale, l'icona resta leggibile. */
+  color: var(--ink);
 }
-/* Il Wrapped è la sola superficie "creativa" dell'app: l'icona prende
-   il viola di sistema, non il colore neutro delle altre utility. */
-.seg-item--feature { color: var(--feature); }
-.seg-item--feature.is-active { color: var(--on-feature); background: var(--feature); }
-.pill-status .seg-divider { margin: 6px 2px; }
+.pill-icon::before {
+  content: ""; position: absolute; z-index: 0;
+  left: 50%; bottom: -6px; transform: translateX(-50%);
+  width: 56px; height: 32px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(70,120,255,0.45) 0%, rgba(70,120,255,0.15) 55%, transparent 80%);
+  filter: blur(10px);
+}
+.pill-icon::after {
+  content: ""; position: absolute; z-index: 1; inset: 0; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset;
+}
+.pill-icon > svg, .pill-icon > img { position: relative; z-index: 2; width: 26px; height: 26px; }
+.pill-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pill-icon-dot {
+  position: absolute; z-index: 2; bottom: -9px; left: 50%; transform: translateX(-50%);
+  width: 12px; height: 4px; border-radius: 2px;
+  background: #DFE8FF;
+  box-shadow: 0 0 12px 4px rgba(90,140,255,0.9);
+}
+
+/* Stessa pill, in scala: alle dimensioni del riferimento cinque cerchi
+   da 64px con 36px di respiro non stanno su uno schermo da telefono —
+   non è un ridisegno, solo lo stesso disegno più piccolo. */
+@media (max-width: 640px) {
+  .pill-status { gap: 14px; padding: 4px 14px; }
+  .pill-icon { width: 48px; height: 48px; }
+  .pill-icon::before { width: 42px; height: 24px; bottom: -5px; }
+  .pill-icon > svg, .pill-icon > img { width: 20px !important; height: 20px !important; }
+  .pill-icon-dot { width: 10px; height: 3px; bottom: -7px; }
+}
 
 /* Menu a tendina fatto in casa: una <select> nativa non si può vestire
    con lo stesso vetro del resto, il suo popup resta sempre quello del

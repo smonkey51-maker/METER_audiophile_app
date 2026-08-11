@@ -331,25 +331,28 @@ export default function Meter() {
           solo la pill di utilità — sticky in alto su desktop, in basso al
           centro su mobile (vedi .status-row). */}
       <div className="status-row">
-        <div className="pill-status seg" role="group" aria-label="Stato e preferenze">
-          <a className="seg-item seg-item--icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
-            <SpotifyMark size={24} />
+        <div className="pill-status" role="group" aria-label="Stato e preferenze">
+          <a className="pill-icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
+            <SpotifyMark size={26} />
+            <span className="pill-icon-dot" aria-hidden="true" />
           </a>
-          <button className="seg-item seg-item--icon seg-item--feature" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
-            <BookIcon size={20} />
+          <button className="pill-icon" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
+            <BookIcon size={26} />
+            <span className="pill-icon-dot" aria-hidden="true" />
           </button>
-          <button className="seg-item seg-item--icon" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra" title="Petra">
-            <CatIcon size={20} />
+          <button className="pill-icon" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra" title="Petra">
+            <CatIcon size={26} />
+            <span className="pill-icon-dot" aria-hidden="true" />
           </button>
-          <span className="seg-divider" aria-hidden="true" />
           <div ref={rigMenuRef} style={{ position: "relative" }}>
             <button
               ref={rigTriggerRef}
-              type="button" className="seg-item seg-item--icon" onClick={() => setRigMenuOpen((o) => !o)}
+              type="button" className="pill-icon" onClick={() => setRigMenuOpen((o) => !o)}
               aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
               title={RIGS.find((r) => r.key === rig)?.label}
             >
-              <Headphones size={21} aria-hidden="true" />
+              <Headphones size={26} aria-hidden="true" />
+              <span className="pill-icon-dot" aria-hidden="true" />
             </button>
             {rigMenuOpen && (
               <div className="dropdown" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
@@ -365,9 +368,9 @@ export default function Meter() {
               </div>
             )}
           </div>
-          <span className="seg-divider" aria-hidden="true" />
-          <button className="seg-item seg-item--icon" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
-            {dark ? <Moon size={21} /> : <Sun size={21} />}
+          <button className="pill-icon" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
+            {dark ? <Moon size={26} /> : <Sun size={26} />}
+            <span className="pill-icon-dot" aria-hidden="true" />
           </button>
         </div>
       </div>
