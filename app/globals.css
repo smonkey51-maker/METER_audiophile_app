@@ -457,7 +457,7 @@ html, body {
    sta facendo — niente più punto acceso/spento legato al caricamento. */
 @keyframes presence {
   0%, 100% { box-shadow: var(--lift-1), 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
-  50%      { box-shadow: var(--lift-1), 0 0 26px 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+  50%      { box-shadow: var(--lift-1), 0 0 var(--presence-spread, 26px 3px) color-mix(in srgb, var(--accent) var(--presence-glow, 16%), transparent); }
 }
 
 .field {
@@ -674,7 +674,112 @@ html, body {
   box-shadow: var(--lift-2); pointer-events: none;
 }
 
+/* ── azione flottante: registra un ascolto ──
+   Stessa superficie a colore pieno di .btn--pri, ma rotonda e fissa —
+   in basso a destra su desktop, dove la pill di stato sta in alto e non
+   c'è nulla da coprire. Su mobile la pill scende in basso, centrata: il
+   FAB non le si affianca sullo stesso filo (su schermi stretti i due
+   controlli fissi si toccherebbero), sale sopra di lei invece — stesso
+   angolo libero, mai sovrapposti. */
+.fab {
+  position: fixed; z-index: 55;
+  right: 24px; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  width: 56px; height: 56px; padding: 0; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--accent) 100%, white 8%),
+    color-mix(in srgb, var(--accent) 86%, black 8%));
+  color: var(--on-accent);
+  box-shadow: var(--lift-2), var(--glow-2);
+  transition: transform .15s var(--spring), box-shadow .22s var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fab:hover { transform: translateY(-2px); }
+}
+.fab:active { transform: scale(.94); }
+.fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 640px) {
+  .fab {
+    width: 50px; height: 50px; right: 16px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    z-index: 61;
+  }
+}
+
+/* ── il pick del giorno: una card sola, in evidenza, cover a tutto bordo ──
+   Stesso trucco già usato per tracklist-art/webplayer-art: lo sfondo lo
+   dichiara la classe (gradiente di legno come riserva), la copertina vera
+   arriva da uno style inline con priorità più alta. Il velo sopra è un
+   pseudo-elemento a z-index negativo — la stessa convenzione di .block —
+   non un filtro sull'immagine: il testo sopra resta sempre nitido. */
+.hero-pick {
+  position: relative; z-index: 0;
+  overflow: hidden; border-radius: var(--r-block);
+  min-height: 216px; padding: 26px;
+  display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  box-shadow: var(--lift-2);
+  background: radial-gradient(120% 120% at 30% 15%, color-mix(in srgb, var(--wood) 24%, transparent), transparent 72%),
+              var(--form) center/cover no-repeat;
+}
+.hero-pick::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--shell) 84%, transparent) 0%,
+    color-mix(in srgb, var(--shell) 38%, transparent) 58%,
+    transparent 100%);
+}
+.hero-pick-fallback {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+  opacity: .3; pointer-events: none;
+}
+.hero-pick-info { min-width: 0; flex: 1 1 auto; }
+.hero-pick-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ── consigli come diario: un filo verticale, non righe uniformi ──
+   Niente orari (proposti tutti nello stesso ciclo notturno, sarebbero
+   quasi identici e poco utili) — resta il ritmo del filo che scorre,
+   preso dal riferimento a diario. */
+.timeline-row {
+  position: relative;
+  padding: 0 0 26px 26px;
+}
+.timeline-row:last-child { padding-bottom: 0; }
+.timeline-row::before {
+  content: ""; position: absolute; left: 2px; top: 9px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--faint);
+}
+.timeline-row::after {
+  content: ""; position: absolute; left: 5.5px; top: 21px; bottom: -4px;
+  width: 1px; background: var(--hair);
+}
+.timeline-row:last-child::after { content: none; }
+
+/* ── confidenza mascherata: un codice, non solo una percentuale nuda ──
+   Otto trattini come le cifre coperte di una carta: quelli "accesi" sono
+   proporzionali alla confidenza dell'asse, non decorativi a caso. */
+.confidence-mask {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+}
+.confidence-mask span { color: var(--hair); }
+.confidence-mask span.is-on { color: var(--ink); }
+.confidence-mask span:nth-child(4) { margin-right: .35em; }
+
+/* ── il respiro dell'anello, più o meno vivo secondo la presenza ──
+   Stessa animazione "presence" di sempre: qui si parametrizza solo
+   l'ampiezza e il ritmo, mai un punto acceso/spento a sé. Le fasce
+   ricalcano esattamente quelle di presencePhrase() in Meter.tsx. */
+.brand-mark {
+  --presence-glow: 16%; --presence-spread: 26px 3px; --presence-speed: 6s;
+  animation-duration: var(--presence-speed);
+}
+.brand-mark--warm { --presence-glow: 32%; --presence-spread: 36px 5px; --presence-speed: 4s; }
+.brand-mark--cool { --presence-glow: 9%;  --presence-spread: 18px 2px; --presence-speed: 8s; }
+.brand-mark--faint { --presence-glow: 4%; --presence-spread: 12px 1px; --presence-speed: 11s; }
+
 @media (prefers-reduced-motion: reduce) {
   .rise, .pop, .sheet, .pulse, .warmup, .eq i, .brand-mark, .dropdown { animation: none }
   .btn:hover:not(:disabled) { transform: none }
+  .fab:hover { transform: none }
 }
