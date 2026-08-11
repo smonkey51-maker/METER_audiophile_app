@@ -269,35 +269,42 @@ html, body {
   box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 25px 50px rgba(0,0,0,0.6);
 }
 
-/* Ogni icona della pill porta lo stesso trattamento "attivo" del
-   riferimento — cerchio in vetro smerigliato, bagliore blu sotto, punto
-   luminoso — non solo quella che sarebbe "la pagina corrente" in una
-   tab bar: qui non esiste un concetto simile, quindi tutte uguali. */
+/* Icona piatta, come le tre non-attive del riferimento: nessun cerchio,
+   nessun bagliore. */
 .pill-icon {
   position: relative; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 40px; height: 40px;
   border: 0; padding: 0; background: transparent; cursor: pointer;
   /* Il solo scostamento dal riferimento: bianco fisso sparirebbe in
      tema chiaro. La capsula resta letterale, l'icona resta leggibile. */
-  color: var(--ink);
+  color: var(--ink); opacity: .9;
 }
-.pill-icon::before {
+.pill-icon > svg, .pill-icon > img { width: 25px; height: 25px; }
+.pill-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Il solo bottone "selezionato": il tema, l'unico controllo della pill
+   con un vero stato a due valori sempre presente — non un'aggiunta a
+   caso. Stesso cerchio in vetro smerigliato + bagliore blu + punto del
+   riferimento, riservato a lui solo. */
+.pill-icon--active {
+  width: 64px; height: 64px; border-radius: 50%; opacity: 1;
+}
+.pill-icon--active::before {
   content: ""; position: absolute; z-index: 0;
   left: 50%; bottom: -6px; transform: translateX(-50%);
   width: 56px; height: 32px; border-radius: 50%;
   background: radial-gradient(closest-side, rgba(70,120,255,0.45) 0%, rgba(70,120,255,0.15) 55%, transparent 80%);
   filter: blur(10px);
 }
-.pill-icon::after {
+.pill-icon--active::after {
   content: ""; position: absolute; z-index: 1; inset: 0; border-radius: 50%;
   background: rgba(255,255,255,0.06);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset;
 }
-.pill-icon > svg, .pill-icon > img { position: relative; z-index: 2; width: 26px; height: 26px; }
-.pill-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pill-icon--active > svg, .pill-icon--active > img { position: relative; z-index: 2; width: 26px; height: 26px; }
 .pill-icon-dot {
   position: absolute; z-index: 2; bottom: -9px; left: 50%; transform: translateX(-50%);
   width: 12px; height: 4px; border-radius: 2px;
@@ -305,14 +312,16 @@ html, body {
   box-shadow: 0 0 12px 4px rgba(90,140,255,0.9);
 }
 
-/* Stessa pill, in scala: alle dimensioni del riferimento cinque cerchi
-   da 64px con 36px di respiro non stanno su uno schermo da telefono —
-   non è un ridisegno, solo lo stesso disegno più piccolo. */
+/* Stessa pill, in scala: il cerchio attivo da 64px con 36px di respiro
+   non ci sta su uno schermo da telefono — non è un ridisegno, solo lo
+   stesso disegno più piccolo. */
 @media (max-width: 640px) {
-  .pill-status { gap: 14px; padding: 4px 14px; }
-  .pill-icon { width: 48px; height: 48px; }
-  .pill-icon::before { width: 42px; height: 24px; bottom: -5px; }
+  .pill-status { gap: 16px; padding: 4px 14px; }
+  .pill-icon { width: 32px; height: 32px; }
   .pill-icon > svg, .pill-icon > img { width: 20px !important; height: 20px !important; }
+  .pill-icon--active { width: 48px; height: 48px; }
+  .pill-icon--active::before { width: 42px; height: 24px; bottom: -5px; }
+  .pill-icon--active > svg, .pill-icon--active > img { width: 20px !important; height: 20px !important; }
   .pill-icon-dot { width: 10px; height: 3px; bottom: -7px; }
 }
 

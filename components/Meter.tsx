@@ -333,16 +333,13 @@ export default function Meter() {
       <div className="status-row">
         <div className="pill-status" role="group" aria-label="Stato e preferenze">
           <a className="pill-icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
-            <SpotifyMark size={26} />
-            <span className="pill-icon-dot" aria-hidden="true" />
+            <SpotifyMark size={25} />
           </a>
           <button className="pill-icon" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
-            <BookIcon size={26} />
-            <span className="pill-icon-dot" aria-hidden="true" />
+            <BookIcon size={25} />
           </button>
           <button className="pill-icon" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra" title="Petra">
-            <CatIcon size={26} />
-            <span className="pill-icon-dot" aria-hidden="true" />
+            <CatIcon size={25} />
           </button>
           <div ref={rigMenuRef} style={{ position: "relative" }}>
             <button
@@ -351,8 +348,7 @@ export default function Meter() {
               aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
               title={RIGS.find((r) => r.key === rig)?.label}
             >
-              <Headphones size={26} aria-hidden="true" />
-              <span className="pill-icon-dot" aria-hidden="true" />
+              <Headphones size={25} aria-hidden="true" />
             </button>
             {rigMenuOpen && (
               <div className="dropdown" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
@@ -368,7 +364,10 @@ export default function Meter() {
               </div>
             )}
           </div>
-          <button className="pill-icon" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
+          {/* L'unico bottone della pill con un vero stato a due valori
+              sempre presente: porta il cerchio con bagliore del
+              riferimento, riservato a lui. */}
+          <button className="pill-icon pill-icon--active" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
             {dark ? <Moon size={26} /> : <Sun size={26} />}
             <span className="pill-icon-dot" aria-hidden="true" />
           </button>
