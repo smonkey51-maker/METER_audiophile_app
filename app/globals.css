@@ -1,17 +1,17 @@
 /* ─────────────────────────────────────────────
-   METER — sistema visivo "vetro"
-   Non più uno strumento fisico: superfici sospese,
-   traslucide, che lasciano intravedere ciò che hanno
-   dietro. Profondità per trasparenza e ombra morbida,
-   mai per rilievo o bagliore. Movimento fluido, mai
-   nervoso — tutto arriva con un piccolo blur che si
-   dissolve, mai un lampo.
+   METER — Material Design 3, un solo tema
+   Il sistema "vetro liquido" (rifrazione SVG, ombre
+   multistrato, bagliori) è stato tolto per intero.
+   Al suo posto: superfici piatte, elevazione tonale
+   (un velo di --primary mescolato alla superficie,
+   non un'ombra scura), forme dalla scala M3, una sola
+   modalità chiara — niente più toggle tema.
    ───────────────────────────────────────────── */
 
 /* Serve perché --ambient possa transizionare come farebbe un colore
    qualunque: senza @property un custom property cambia di scatto, non
-   sfuma. Dove il browser non la supporta (Firefox), il velo cambia di
-   colpo invece che in dissolvenza — mai un errore, solo meno morbido. */
+   sfuma. Dove il browser non la supporta, il velo cambia di colpo
+   invece che in dissolvenza — mai un errore, solo meno morbido. */
 @property --ambient {
   syntax: '<color>';
   inherits: true;
@@ -19,173 +19,151 @@
 }
 
 :root {
-  --shell:  #000000;   /* nero pieno, come da specifica: non più il grafite */
-  --form:   rgba(255,255,255,.06);   /* vetro delle superfici */
-  --recess: rgba(255,255,255,.03);   /* incavo: campi, tab non attive */
-  --ink:    #FFFFFF;   /* bianco pieno, come da specifica */
-  --mute:   #A1A1A6;
-  --faint:  #8A8A90;   /* contrasto ~5.5:1 su --shell: sotto era ~3.7:1, illeggibile per testo così piccolo */
-  /* Non più una tavolozza inventata: i colori di sistema Apple
-     (systemOrange/Green/Blue/Purple, valori sRGB dark), ognuno con lo
-     stesso ruolo che ha in iOS/macOS — non decorazione, semantica. */
-  --accent: #FF9F0A;   /* systemOrange: l'unico colore acceso di continuo — pulsante primario, equalizzatore, fiducia */
-  --on-accent: #FFFFFF;
-  --good:   #30D158;   /* systemGreen: il verdetto "tenuto" — positivo, conclusivo */
-  --on-good: #FFFFFF;
-  --night:  #0A84FF;   /* systemBlue: il verdetto "in dubbio" — interattivo, non definitivo, il blu di default di ogni controllo */
-  --on-night: #FFFFFF;
-  --feature: #BF5AF2;  /* systemPurple: la sola superficie "creativa" — riservato al Wrapped */
-  --on-feature: #FFFFFF;
-  --wood:   #C9A874;   /* legno di rovere, dai riferimenti fotografici: solo per le copertine non ancora caricate, mai sullo sfondo della pagina */
+  /* ── ruoli colore M3 (schema chiaro), generati dal seme --accent
+     esistente (#FF9F0A): stesso colore che l'app riconosce da sempre
+     come "di Jessica", ora espresso come tonalità M3 invece che come
+     unico valore acceso a tutta forza. ── */
+  --md-sys-color-primary: #8A4E00;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #FFDDB3;
+  --md-sys-color-on-primary-container: #2C1600;
 
-  /* Tre strati — vicino, medio, lontano — più un filo di luce sul bordo
-     alto del vetro. Nessun colore nell'ombra, nessun bagliore. */
-  --lift-1: 0 1px 1px rgba(0,0,0,.14), 0 6px 16px rgba(0,0,0,.18),
-            0 22px 44px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.10);
-  --lift-2: 0 2px 4px rgba(0,0,0,.16), 0 12px 28px rgba(0,0,0,.22),
-            0 36px 72px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.15);
-  --carve:  inset 0 1px 3px rgba(0,0,0,.28), inset 0 -1px 0 rgba(255,255,255,.04);
+  --md-sys-color-secondary-container: #F6E4CB;
+  --md-sys-color-on-secondary-container: #271905;
 
-  /* Un accento appena percepibile sul primario: mai un alone, solo
-     un'ombra che prende un po' del colore del bottone. */
-  --glow-1: 0 4px 14px color-mix(in srgb, var(--accent) 24%, transparent);
-  --glow-2: 0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent);
+  /* Tertiary: hue spostata (blu-petrolio), riservata al verdetto "in
+     dubbio" — nel vecchio sistema era --night. */
+  --md-sys-color-tertiary: #3C6472;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #BEEAFB;
+  --md-sys-color-on-tertiary-container: #001F27;
 
-  /* La luce che il vetro cattura in alto. */
-  --panel: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 55%);
+  /* Ruolo aggiuntivo, non nel set base M3 ma nello spirito ("le app
+     possono estendere i ruoli core con i propri"): il verde del
+     verdetto "tenuto" — nel vecchio sistema era --good. */
+  --md-sys-color-success: #2E6B2E;
+  --md-sys-color-on-success: #FFFFFF;
+  --md-sys-color-success-container: #B4F1AE;
+  --md-sys-color-on-success-container: #002203;
 
-  --hair: rgba(255,255,255,.12);
-  --blur: blur(26px) saturate(180%);
-  --r-block: 28px;   /* squircle: curvatura accentuata, mai un angolo netto */
-  --r-inner: 20px;
-  --ease: cubic-bezier(.22,1,.36,1);
-  --spring: cubic-bezier(.34,1.56,.64,1);   /* i momenti che devono "arrivare": fogli, comparse, e ora anche il tap — un piccolo rimbalzo invece di un lineare */
+  /* Un secondo ruolo esteso: la sola superficie "creativa" dell'app
+     (il Wrapped) — nel vecchio sistema era --feature. */
+  --md-sys-color-feature: #7C4B9A;
+  --md-sys-color-on-feature: #FFFFFF;
+  --md-sys-color-feature-container: #F1DBFF;
+  --md-sys-color-on-feature-container: #2E0F49;
+
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+
+  --md-sys-color-surface: #FFF8F3;
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #FFF1E6;
+  --md-sys-color-surface-container: #FBEBDB;
+  --md-sys-color-surface-container-high: #F5E5D5;
+  --md-sys-color-surface-container-highest: #EFE0CF;
+  --md-sys-color-on-surface: #201B13;
+  --md-sys-color-on-surface-variant: #504536;
+  --md-sys-color-outline: #837465;
+  --md-sys-color-outline-variant: #D5C3B2;
+  --md-sys-color-scrim: #000000;
+
+  /* Legno di rovere per le copertine non ancora caricate — l'unico
+     colore che non viene dal seme M3, resta dai riferimenti fotografici. */
+  --md-sys-color-wood: #A9834F;
+
+  /* ── elevazione M3: ombra vera ma minima, più un velo di --primary
+     che cresce con il livello — mai la coppia di ombre chiara/scura
+     del neumorphism. Valori dallo specchietto M3 ufficiale. ── */
+  --md-sys-elevation-level0: none;
+  --md-sys-elevation-level1: 0px 1px 2px 0px rgba(0,0,0,.30), 0px 1px 3px 1px rgba(0,0,0,.15);
+  --md-sys-elevation-level2: 0px 1px 2px 0px rgba(0,0,0,.30), 0px 2px 6px 2px rgba(0,0,0,.15);
+  --md-sys-elevation-level3: 0px 1px 3px 0px rgba(0,0,0,.30), 0px 4px 8px 3px rgba(0,0,0,.15);
+  --md-sys-elevation-level4: 0px 2px 3px 0px rgba(0,0,0,.30), 0px 6px 10px 4px rgba(0,0,0,.15);
+  --md-sys-elevation-level5: 0px 4px 4px 0px rgba(0,0,0,.30), 0px 8px 12px 6px rgba(0,0,0,.15);
+
+  /* ── scala forme M3 ── */
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 999px;
+
+  --md-sys-motion-easing-standard: cubic-bezier(.2,0,0,1);
+  --md-sys-motion-easing-emphasized: cubic-bezier(.3,0,.8,.15);
+  --spring: cubic-bezier(.34,1.56,.64,1);
+
   --mono: var(--font-geist-mono), "SF Mono", ui-monospace, Menlo, monospace;
-}
 
-/* Nero pieno, bianco pieno: nessun colore negli angoli, come da
-   specifica. Lo sfondo è solo --shell, senza gradiente. */
-body {
-  background: var(--shell);
-}
-
-/* Editoriale: non "scuro invertito", ma un'altra stanza — bianco pieno
-   come da specifica Apple Music, non più il crema caldo. Meno saturazione
-   ovunque tranne l'accento. */
-[data-theme="light"] {
-  --shell:  #FFFFFF;
-  --form:   rgba(255,255,255,.6);
-  --recess: rgba(20,18,14,.035);
-  --ink:    #1C1B18;
-  --mute:   #716C63;
-  --faint:  #A19B8F;
-  --accent: #FF9500;   /* systemOrange (light) */
-  --on-accent: #FFFFFF;
-  --good:   #34C759;   /* systemGreen (light) */
-  --on-good: #FFFFFF;
-  --night:  #007AFF;   /* systemBlue (light) */
-  --on-night: #FFFFFF;
-  --feature: #AF52DE;  /* systemPurple (light) */
-  --on-feature: #FFFFFF;
-  --wood:   #A9834F;
-  /* Tre strati — vicino, medio, lontano — invece di uno solo: è quello
-     che fa sembrare la carta sospesa e non solo scontornata. */
-  --lift-1: 0 1px 1px rgba(20,18,14,.03), 0 4px 10px rgba(20,18,14,.04),
-            0 16px 32px rgba(20,18,14,.05), inset 0 1px 0 rgba(255,255,255,.7);
-  --lift-2: 0 2px 4px rgba(20,18,14,.04), 0 8px 20px rgba(20,18,14,.06),
-            0 28px 56px rgba(20,18,14,.08), inset 0 1px 0 rgba(255,255,255,.85);
-  --carve:  inset 0 1px 3px rgba(20,18,14,.07), inset 0 -1px 0 rgba(255,255,255,.6);
-  --glow-1: 0 4px 14px color-mix(in srgb, var(--accent) 14%, transparent);
-  --glow-2: 0 8px 22px color-mix(in srgb, var(--accent) 18%, transparent);
-  --panel: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,0) 55%);
-  --hair: rgba(20,18,14,.06);
+  /* ── alias brevi, usati nel resto del foglio e nel markup: stesso
+     valore dei token --md-sys-color-* sopra, solo più corti da scrivere. ── */
+  --surface: var(--md-sys-color-surface);
+  --surface-low: var(--md-sys-color-surface-container-low);
+  --surface-container: var(--md-sys-color-surface-container);
+  --surface-high: var(--md-sys-color-surface-container-high);
+  --surface-highest: var(--md-sys-color-surface-container-highest);
+  --on-surface: var(--md-sys-color-on-surface);
+  --on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --outline: var(--md-sys-color-outline);
+  --outline-variant: var(--md-sys-color-outline-variant);
+  --primary: var(--md-sys-color-primary);
+  --on-primary: var(--md-sys-color-on-primary);
+  --primary-container: var(--md-sys-color-primary-container);
+  --on-primary-container: var(--md-sys-color-on-primary-container);
+  --secondary-container: var(--md-sys-color-secondary-container);
+  --on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --tertiary-container: var(--md-sys-color-tertiary-container);
+  --on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --success: var(--md-sys-color-success);
+  --on-success: var(--md-sys-color-on-success);
+  --success-container: var(--md-sys-color-success-container);
+  --feature: var(--md-sys-color-feature);
+  --on-feature: var(--md-sys-color-on-feature);
+  --feature-container: var(--md-sys-color-feature-container);
+  --on-feature-container: var(--md-sys-color-on-feature-container);
+  --wood: var(--md-sys-color-wood);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
   margin: 0; padding: 0;
-  color: var(--ink);
+  background: var(--surface);
+  color: var(--on-surface);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.011em;
 }
 
-/* ── il vetro: due strati sotto il contenuto, non un fondo dipinto ──
-   Una superficie di vetro non è un colore traslucido: è una lastra che
-   sfoca *e piega* ciò che ha dietro. Perciò la tinta e la rifrazione
-   vivono in due pseudo-elementi a z-index negativo, e l'elemento stesso
-   resta senza fondo. Il contenuto in flusso normale sta sopra entrambi
-   senza bisogno di uno z-index proprio.
+/* Ritratti fotografici a tratto: tracciato scuro su sfondo trasparente.
+   Un solo tema chiaro: nessuna inversione, il tracciato resta come nel
+   file sorgente. */
+.line-photo { filter: none; }
 
-   `z-index: 0` e non `isolation: isolate`: servono entrambi a chiudere
-   il contesto di impilamento — così i due strati negativi restano dentro
-   la superficie invece di scivolare dietro alla pagina — ma isolate crea
-   anche un *backdrop root*, e allora il backdrop-filter dello strato di
-   sotto non avrebbe più niente da sfocare: il vetro perderebbe il blur.
-   Il solo z-index no.
-
-   --lg-tint  la tinta della lastra (default: la luce in alto + il vetro)
-   --lg-r     il raggio, per ritagliare la rifrazione che il filtro
-              spinge oltre il bordo
-   --lg-map   la mappa di rifrazione, o `none` per la sola sfocatura
-   Dove il browser non applica un filtro SVG al backdrop (Safari,
-   Firefox) resta il blur: il vetro perde la piega, non la trasparenza. */
-/* Le superfici che sono vetro — più .glass, per il markup nuovo. Non i
-   bottoni né i segmenti: su una capsula di 40px la piega si leggerebbe
-   come una sbavatura, non come spessore. */
-.glass, .block, .dropdown, .webplayer, .brand-mark {
-  position: relative; z-index: 0;
-  background: transparent;
+/* ── superfici: elevazione tonale, non ombra scura ──
+   Ogni card è --surface con un velo di --primary mescolato sopra (5%
+   al livello 1) più un'ombra molto sottile — così M3 comunica "sopra
+   cosa" senza il rilievo/incavo del neumorphism. */
+.card {
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  box-shadow: var(--md-sys-elevation-level1);
+  transition: box-shadow .2s var(--md-sys-motion-easing-standard);
 }
-.glass::before, .glass::after,
-.block::before, .block::after,
-.dropdown::before, .dropdown::after,
-.webplayer::before, .webplayer::after,
-.brand-mark::before, .brand-mark::after {
-  content: ""; position: absolute; inset: 0;
-  border-radius: inherit; pointer-events: none;
-}
-.glass::before, .block::before, .dropdown::before,
-.webplayer::before, .brand-mark::before {
-  z-index: -1; background: var(--lg-tint, var(--panel), var(--form));
-}
-.glass::after, .block::after, .dropdown::after,
-.webplayer::after, .brand-mark::after {
-  z-index: -2;
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  filter: var(--lg-map, url(#lg-refract));
-  -webkit-filter: var(--lg-map, url(#lg-refract));
-  clip-path: inset(0 round var(--lg-r, var(--r-block)));
-}
-
-/* ── superfici: si distinguono per tono, mai per un bordo disegnato ── */
-/* La distorsione era stata provata e tolta da qui: applicata
-   direttamente sull'elemento, lavava il contrasto del testo vero dentro
-   (es. il modulo "Registra un ascolto") — un bug di compositing. Non è
-   più lo stesso rischio: il filtro ora vive solo sullo strato ::after,
-   dietro al contenuto, che resta in flusso normale sopra e non lo
-   attraversa mai. Verificato in browser reale su .block e .dropdown
-   con testo vero: nessun lavaggio di contrasto. */
-.block {
-  border-radius: var(--r-block);
-  box-shadow: var(--lift-1);
-  transition: box-shadow .45s var(--ease), transform .45s var(--ease), background .45s var(--ease);
-}
-/* .flush è la variante senza superficie: niente vetro da rifrangere. */
-.block.flush::before, .block.flush::after { content: none; }
-.recess {
-  background: var(--recess);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border-radius: var(--r-inner);
-  box-shadow: var(--carve);
-}
+.card--flush { background: transparent; box-shadow: none; }
+.card--outlined { background: var(--surface); box-shadow: none; border: 1px solid var(--outline-variant); }
+.card--filled { background: var(--surface-container); box-shadow: none; }
+.card--elev2 { box-shadow: var(--md-sys-elevation-level2); background: color-mix(in srgb, var(--primary) 8%, var(--surface)); }
+.card--elev3 { box-shadow: var(--md-sys-elevation-level3); background: color-mix(in srgb, var(--primary) 11%, var(--surface)); }
+.card--large { border-radius: var(--md-sys-shape-corner-large); }
+.card--xl { border-radius: var(--md-sys-shape-corner-extra-large); }
 
 /* Contenitore con righe interne: una lista non è N card ripetute, è UN
    contenitore diviso da fili sottili — meno rumore, più leggibile. */
 .rows > * {
   padding: 18px 24px;
-  border-bottom: 1px solid var(--hair);
+  border-bottom: 1px solid var(--outline-variant);
 }
 .rows > *:last-child { border-bottom: 0; }
 
@@ -194,46 +172,51 @@ html, body {
   display: flex; align-items: center; gap: 14px;
   margin-bottom: 14px;
 }
-.section-label::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
-.flush { background: transparent; }
+.section-label::after { content: ""; flex: 1; height: 1px; background: var(--outline-variant); }
 
-/* ── controlli: capsule di vetro ── */
+/* ── bottoni M3: cinque famiglie, un ruolo ciascuna ──
+   filled = l'azione principale della schermata (piena, --primary)
+   tonal  = frequente ma non unica (--secondary-container)
+   outlined = alternativa neutra, bordo senza riempimento
+   text   = la più leggera, solo colore, nessun contenitore
+   Lo state layer (velo on-color all'8%/12%) sostituisce il
+   sollevamento con ombra che faceva prima da segnale di hover/press. */
 .btn {
-  position: relative; border: 1px solid var(--hair); border-radius: 999px; cursor: pointer;
-  font: inherit; font-size: 15px; font-weight: 500; letter-spacing: -0.01em;
-  padding: 12px 22px;
-  background: var(--panel), var(--form); color: var(--ink);
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--lift-1);
-  /* Ogni bottone dell'app passa da qui: 450ms per il rimbalzo al tap era
-     un feedback pigro, non tattile — la finestra corretta per la
-     risposta di un pulsante è 100-160ms, non mezzo secondo. Le altre
-     proprietà restano sotto ai 300ms invece di sconfinare a 350. */
-  transition: transform .15s var(--spring), background .22s var(--ease),
-              box-shadow .22s var(--ease), opacity .22s var(--ease), border-color .22s var(--ease);
+  position: relative; border: 1px solid transparent; border-radius: var(--md-sys-shape-corner-full);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer; font: inherit; font-size: 14px; font-weight: 500; letter-spacing: .01em;
+  text-decoration: none;
+  padding: 10px 24px; color: var(--on-surface);
+  background: transparent;
+  transition: background .15s var(--md-sys-motion-easing-standard), box-shadow .15s var(--md-sys-motion-easing-standard),
+              opacity .15s var(--md-sys-motion-easing-standard), transform .1s var(--md-sys-motion-easing-standard);
 }
-/* Il sollevamento al passaggio del mouse resta un'esclusiva del mouse:
-   su touch :hover non si spegne al dito che si alza, e il bottone
-   resterebbe "sollevato" finché non si tocca altrove — un difetto,
-   non un dettaglio, su un'app usata soprattutto da telefono. */
-@media (hover: hover) and (pointer: fine) {
-  .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--lift-2); }
-}
-.btn:active:not(:disabled) { transform: translateY(0) scale(.96); box-shadow: var(--carve); }
-.btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
-.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:active:not(:disabled) { transform: scale(.97); }
+.btn:disabled { opacity: .38; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-/* Il tasto primario: unica superficie a colore pieno, con un'ombra che
-   prende l'accento invece di un bagliore sopra il bottone. */
-.btn--pri {
-  background: linear-gradient(160deg,
-    color-mix(in srgb, var(--accent) 100%, white 8%),
-    color-mix(in srgb, var(--accent) 86%, black 8%));
-  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-  color: var(--on-accent); font-weight: 600;
-  box-shadow: var(--lift-1), var(--glow-1);
+.btn--filled { background: var(--primary); color: var(--on-primary); box-shadow: var(--md-sys-elevation-level0); }
+@media (hover: hover) and (pointer: fine) {
+  .btn--filled:hover:not(:disabled) { background: color-mix(in srgb, var(--on-primary) 8%, var(--primary)); box-shadow: var(--md-sys-elevation-level1); }
 }
-.btn--pri:hover:not(:disabled) { box-shadow: var(--lift-2), var(--glow-2); }
+.btn--filled:active:not(:disabled) { background: color-mix(in srgb, var(--on-primary) 12%, var(--primary)); }
+
+.btn--tonal { background: var(--secondary-container); color: var(--on-secondary-container); }
+@media (hover: hover) and (pointer: fine) {
+  .btn--tonal:hover:not(:disabled) { background: color-mix(in srgb, var(--on-secondary-container) 8%, var(--secondary-container)); }
+}
+
+.btn--outlined { border-color: var(--outline); color: var(--on-surface-variant); }
+@media (hover: hover) and (pointer: fine) {
+  .btn--outlined:hover:not(:disabled) { background: color-mix(in srgb, var(--on-surface) 8%, transparent); }
+}
+
+.btn--text { color: var(--primary); padding-left: 12px; padding-right: 12px; }
+@media (hover: hover) and (pointer: fine) {
+  .btn--text:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+}
+
+.btn--sm { font-size: 13px; padding: 7px 16px; }
 
 /* Il morph play/pausa: due icone nello stesso punto, una entra mentre
    l'altra esce ruotando — mai le due assenti insieme, mai uno scatto. */
@@ -248,322 +231,144 @@ html, body {
   .play-morph-icon, .play-morph-icon.is-out { transition: opacity .15s linear; transform: none; }
 }
 
-.btn--solid { background: var(--ink); color: var(--shell); border-color: transparent; }
-.btn--ghost { background: transparent; border-color: transparent; color: var(--mute); box-shadow: none; backdrop-filter: none; }
-.btn--ghost:hover:not(:disabled) { color: var(--ink); background: var(--form); border-color: var(--hair); box-shadow: var(--lift-1); backdrop-filter: var(--blur); }
-.btn--sm    { font-size: 13px; padding: 9px 16px; }
+/* ── chip M3 (filter chip): le dimensioni del giudizio ── */
+.chip {
+  border: 1px solid var(--outline); border-radius: var(--md-sys-shape-corner-small);
+  cursor: pointer; font: inherit; font-size: 13px; font-weight: 500;
+  padding: 8px 16px; background: transparent; color: var(--on-surface-variant);
+  transition: background .15s var(--md-sys-motion-easing-standard), border-color .15s var(--md-sys-motion-easing-standard), color .15s var(--md-sys-motion-easing-standard);
+}
+.chip--on { border-color: transparent; background: var(--secondary-container); color: var(--on-secondary-container); }
 
-/* La pill di stato, presa 1:1 dal riferimento (navbar-pill): stessa
-   capsula in vetro smerigliato piatto, senza la rifrazione liquida
-   condivisa dal resto dell'app — qui di proposito, non è un'omissione.
-   Valori fissi, non parametrizzati sul tema: il riferimento è un solo
-   disegno, non uno che si adatta al chiaro/scuro. */
-.pill-status {
-  position: relative;
-  display: inline-flex; align-items: center; gap: 36px;
-  padding: 5px 24px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.025);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 25px 50px rgba(0,0,0,0.6);
+/* ── top app bar: sostituisce la pill fluttuante ──
+   Sticky in alto, piena larghezza, piatta (elevazione 0): un filo
+   --outline-variant la stacca dal contenuto, non un'ombra. Stesso
+   comportamento su desktop e mobile — niente più salto in basso. */
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 10px 20px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--outline-variant);
 }
+.topbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.topbar-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
 
-/* Icona piatta, come le tre non-attive del riferimento: nessun cerchio,
-   nessun bagliore. */
-.pill-icon {
-  position: relative; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px;
-  border: 0; padding: 0; background: transparent; cursor: pointer;
-  /* Il solo scostamento dal riferimento: bianco fisso sparirebbe in
-     tema chiaro. La capsula resta letterale, l'icona resta leggibile. */
-  color: var(--ink); opacity: .9;
+/* IconButton M3 standard: nessun contenitore a riposo, solo un velo
+   tondo di stato all'hover/press — il pattern che sostituisce ogni
+   icona-in-cerchio-di-vetro di prima. */
+.icon-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: var(--md-sys-shape-corner-full);
+  border: 0; padding: 0; background: transparent; color: var(--on-surface-variant); cursor: pointer;
+  text-decoration: none;
+  transition: background .15s var(--md-sys-motion-easing-standard), color .15s var(--md-sys-motion-easing-standard);
 }
-.pill-icon > svg, .pill-icon > img { width: 25px; height: 25px; }
-.pill-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover { background: color-mix(in srgb, var(--on-surface) 8%, transparent); color: var(--on-surface); }
+}
+.icon-btn:active { background: color-mix(in srgb, var(--on-surface) 12%, transparent); }
+.icon-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.icon-btn:disabled { opacity: .38; cursor: not-allowed; }
+.icon-btn--on { background: var(--secondary-container); color: var(--on-secondary-container); }
+.icon-btn--sm { width: 32px; height: 32px; }
 
-/* Il solo bottone "selezionato": il tema, l'unico controllo della pill
-   con un vero stato a due valori sempre presente — non un'aggiunta a
-   caso. Stesso cerchio in vetro smerigliato + bagliore blu + punto del
-   riferimento, riservato a lui solo. */
-.pill-icon--active {
-  width: 64px; height: 64px; border-radius: 50%; opacity: 1;
-}
-.pill-icon--active::before {
-  content: ""; position: absolute; z-index: 0;
-  left: 50%; bottom: -6px; transform: translateX(-50%);
-  width: 56px; height: 32px; border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(70,120,255,0.45) 0%, rgba(70,120,255,0.15) 55%, transparent 80%);
-  filter: blur(10px);
-}
-.pill-icon--active::after {
-  content: ""; position: absolute; z-index: 1; inset: 0; border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset;
-}
-.pill-icon--active > svg, .pill-icon--active > img { position: relative; z-index: 2; width: 26px; height: 26px; }
-.pill-icon-dot {
-  position: absolute; z-index: 2; bottom: -9px; left: 50%; transform: translateX(-50%);
-  width: 12px; height: 4px; border-radius: 2px;
-  background: #DFE8FF;
-  box-shadow: 0 0 12px 4px rgba(90,140,255,0.9);
-}
-
-/* Stessa pill, in scala: il cerchio attivo da 64px con 36px di respiro
-   non ci sta su uno schermo da telefono — non è un ridisegno, solo lo
-   stesso disegno più piccolo. */
-@media (max-width: 640px) {
-  .pill-status { gap: 16px; padding: 4px 14px; }
-  .pill-icon { width: 32px; height: 32px; }
-  .pill-icon > svg, .pill-icon > img { width: 20px !important; height: 20px !important; }
-  .pill-icon--active { width: 48px; height: 48px; }
-  .pill-icon--active::before { width: 42px; height: 24px; bottom: -5px; }
-  .pill-icon--active > svg, .pill-icon--active > img { width: 20px !important; height: 20px !important; }
-  .pill-icon-dot { width: 10px; height: 3px; bottom: -7px; }
-}
-
-/* Menu a tendina fatto in casa: una <select> nativa non si può vestire
-   con lo stesso vetro del resto, il suo popup resta sempre quello del
-   sistema operativo. Questo invece è coerente con .block/.rows. */
-/* Sfondo quasi opaco, non il vetro traslucido di .block: se il browser
-   non applica il backdrop-filter (è successo su alcuni mobile), il testo
-   della pagina sotto non deve trasparire attraverso il menu. */
-.dropdown {
-  position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%);
-  z-index: 50; min-width: 190px; padding: 6px;
+/* Menu a tendina M3: superficie elevazione 2, angolo extra-small —
+   sostituisce il vecchio popover in vetro con rifrazione. */
+/* Ancorato a destra del trigger, non centrato: l'ultima icona della
+   toolbar sta vicino al bordo dello schermo, un menu centrato ci
+   uscirebbe fuori. Si apre verso sinistra, come un menu vero. */
+.menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  z-index: 50; min-width: 200px; padding: 8px;
   display: flex; flex-direction: column; gap: 2px;
-  border-radius: var(--r-inner); border: 1px solid var(--hair);
-  --lg-tint: var(--panel), color-mix(in srgb, var(--shell) 94%, var(--ink) 4%);
-  --lg-r: var(--r-inner);
-  --lg-map: url(#lg-refract-fine);
-  box-shadow: var(--lift-2);
-  /* Nasce dal bordo vicino al bottone che l'ha aperto, non dal proprio
-     centro: un popover che si apre "dal nulla" al centro non racconta
-     da dove è arrivato. Capovolto su mobile, dove il menu si apre verso
-     l'alto (vedi sotto).
-     Keyframes proprie, non la .pop condivisa: quella arriva a
-     `transform: none`, che avrebbe cancellato il translateX(-50%) che
-     centra il menu sotto al bottone — il menu si è sempre aperto
-     spostato a destra invece che centrato, un bug passato inosservato
-     finché non si è verificata la posizione reale dopo l'animazione. */
-  transform-origin: top center;
-  animation: dropdown-pop .35s var(--spring) both;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--surface-high);
+  box-shadow: var(--md-sys-elevation-level2);
+  transform-origin: top right;
+  animation: menu-pop .2s var(--md-sys-motion-easing-standard) both;
 }
-@keyframes dropdown-pop {
-  from { opacity: 0; transform: translateX(-50%) scale(.95); }
-  to   { opacity: 1; transform: translateX(-50%) scale(1); }
+@keyframes menu-pop {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: scale(1); }
 }
-.dropdown-item {
-  border: 0; border-radius: 12px; cursor: pointer; text-align: left;
-  font: inherit; font-size: 14px; letter-spacing: -0.005em;
-  padding: 10px 14px; background: transparent; color: var(--mute);
-  transition: background .2s var(--ease), color .2s var(--ease);
+.menu-item {
+  border: 0; border-radius: var(--md-sys-shape-corner-extra-small); cursor: pointer; text-align: left;
+  font: inherit; font-size: 14px;
+  padding: 10px 14px; background: transparent; color: var(--on-surface);
+  transition: background .15s var(--md-sys-motion-easing-standard);
 }
-.dropdown-item:hover, .dropdown-item:focus-visible { background: var(--recess); color: var(--ink); outline: none; }
-.dropdown-item.is-active { background: var(--form); color: var(--ink); font-weight: 600; box-shadow: var(--lift-1); }
+.menu-item:hover, .menu-item:focus-visible { background: color-mix(in srgb, var(--on-surface) 8%, transparent); outline: none; }
+.menu-item.is-active { background: var(--secondary-container); color: var(--on-secondary-container); font-weight: 600; }
 
-@media (max-width: 640px) {
-  /* La pill è fissa in basso su mobile: il menu deve aprirsi verso
-     l'alto, altrimenti finisce fuori dallo schermo. */
-  .dropdown { top: auto; bottom: calc(100% + 12px); transform-origin: bottom center; }
-}
-
-/* Ritratti fotografici a tratto: tracciato scuro su sfondo trasparente,
-   esattamente come i riferimenti — non ridisegnati. In dark mode si
-   invertono i canali RGB (l'alpha non cambia): il nero diventa bianco,
-   niente asset separato per i due temi. */
-.line-photo { filter: invert(1); }
-[data-theme="light"] .line-photo { filter: none; }
-
-/* Web player: appare al posto della sola riga di testo quando qualcosa
-   è caricato, anche solo in pausa — rettangolare, bordi smussati, con
-   la copertina dell'album invece di una semplice etichetta. */
-/* Non più un incavo nella pagina ma un widget che galleggia sopra —
-   come il mini-player agganciato in fondo nel riferimento: vetro pieno,
-   ombra vera, copertina grande, non una riga di testo con un'icona. */
-.webplayer {
-  display: flex; align-items: center; gap: 20px;
-  border-radius: var(--r-block); padding: 18px 22px;
-  box-shadow: var(--lift-2);
-  /* Il vetro prende la tinta di ciò che sta suonando: un velo debole
-     (14%) del colore medio della copertina, mescolato alla tinta di
-     vetro normale — mai forte abbastanza da competere col testo sopra.
-     --ambient arriva da JS (Meter.tsx), un rgb() o "transparent". */
-  --lg-tint: radial-gradient(135% 160% at 16% 0%, color-mix(in srgb, var(--ambient, transparent) 14%, transparent), transparent 68%),
-             var(--panel), var(--form);
-  transition: --ambient .8s var(--ease);
-}
-.webplayer-art {
-  width: 96px; height: 96px; flex-shrink: 0; border-radius: 22px;
-  background: radial-gradient(120% 120% at 30% 15%, color-mix(in srgb, var(--wood) 22%, transparent), transparent 72%),
-              var(--form) center/cover no-repeat;
-  box-shadow: var(--lift-1);
-  display: grid; place-items: center; color: var(--mute);
-}
-.webplayer-info { min-width: 0; flex: 1; }
-.webplayer-controls { display: flex; gap: 8px; flex-shrink: 0; }
-.truncate { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-
-/* Gli assi di gusto: pensieri distinti di Jessica, uno alla volta da
-   sfogliare — non righe di una lista, non uno scorrimento continuo. */
-.carousel-card { width: 100%; padding: 26px; animation: pop .4s var(--spring) both; }
-.confidence-track {
-  flex: 1; height: 3px; border-radius: 99px; background: var(--hair); overflow: hidden;
-}
-.confidence-fill { height: 100%; background: var(--accent); border-radius: 99px; }
-.axis-dot {
-  width: 6px; height: 6px; border-radius: 99px; border: 0; padding: 0;
-  background: var(--hair); cursor: pointer;
-  transition: background .3s var(--ease), transform .45s var(--spring);
-}
-.axis-dot.is-active { background: var(--accent); transform: scale(1.3); }
-
-/* Tracklist d'autore: copertina, niente altro rumore — e ora la
-   copertina stessa È il pulsante "avvia l'ascolto", non un'area che
-   sembra decorativa finché non ci si accorge che l'intera riga risponde
-   al tap. L'icona play resta visibile di continuo, non solo al passaggio
-   del mouse: su schermo touch "al passaggio" non esiste. */
-.tracklist-art-btn {
-  position: relative; border: 0; padding: 0; background: transparent; cursor: pointer;
-  border-radius: 9px; flex-shrink: 0;
-}
-.tracklist-art-btn:disabled { cursor: default; }
-.tracklist-art-btn:disabled .tracklist-art { opacity: .5; }
-.tracklist-art-btn:disabled .tracklist-play-overlay { opacity: 0; }
-.tracklist-art {
-  width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px;
-  background: radial-gradient(120% 120% at 30% 15%, color-mix(in srgb, var(--wood) 22%, transparent), transparent 72%),
-              var(--form) center/cover no-repeat;
-  display: grid; place-items: center; color: var(--mute);
-}
-.tracklist-play-overlay {
-  position: absolute; inset: 0; border-radius: 9px;
-  display: grid; place-items: center; color: #FFFFFF;
-  background: rgba(0,0,0,.32);
-  opacity: .85; transition: opacity .2s var(--ease), background .2s var(--ease);
-}
-.tracklist-art-btn:hover .tracklist-play-overlay,
-.tracklist-art-btn:focus-visible .tracklist-play-overlay { opacity: 1; background: rgba(0,0,0,.48); }
-
-@media (max-width: 640px) {
-  /* Copertina, testo e controlli non stanno su una riga sola in uno
-     schermo stretto: i controlli scendono, non stringono il testo. */
-  .webplayer { flex-wrap: wrap; }
-  .webplayer-controls { flex-basis: 100%; justify-content: flex-end; }
-}
-
-/* Marchio di Jessica: un ritratto a tratto, sospeso in cima alla pagina
-   come una firma, non nella pill — quella resta solo utilità. */
-/* Un anello di nozze, non solo una cornice: oro caldo con un filo di luce
-   in alto e un'ombra sotto, come una fede vera vista di taglio. */
-.brand-mark {
-  position: relative;
-  width: 102px; height: 102px; margin: 4px auto 32px;
-  display: grid; place-items: center; color: var(--ink);
-  border-radius: 999px; border: 2.5px solid #C9A227;
-  --lg-r: 999px;
-  box-shadow: var(--lift-1),
-    inset 0 1.5px 1px rgba(255,241,196,.65),
-    inset 0 -1.5px 1px rgba(90,64,10,.4);
-  animation: presence 6s ease-in-out infinite;
-}
-/* I due strati (tinta + sfocatura/rifrazione) sono già quelli condivisi
-   dichiarati sopra per .glass/.block/.pill-status/.dropdown/.webplayer:
-   .brand-mark è nella stessa lista, non serve una coppia ::before/::after
-   propria — bastava il filtro giusto, #lg-refract al posto del vecchio
-   #glass-distortion locale a Meter.tsx (rimosso: duplicava lo stesso
-   effetto con un secondo <svg><defs>). */
-/* Un respiro, non una spia: Jessica è "presente" a prescindere da cosa
-   sta facendo — niente più punto acceso/spento legato al caricamento. */
-@keyframes presence {
-  0%, 100% { box-shadow: var(--lift-1), 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
-  50%      { box-shadow: var(--lift-1), 0 0 var(--presence-spread, 26px 3px) color-mix(in srgb, var(--accent) var(--presence-glow, 16%), transparent); }
-}
-
+/* ── campo di testo M3 (outlined) ── */
 .field {
-  border: 1px solid var(--hair); outline: 0; border-radius: 999px;
-  background: var(--recess); color: var(--ink);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  box-shadow: var(--carve);
-  font: inherit; font-size: 16px; padding: 16px 22px; width: 100%;
-  transition: box-shadow .3s var(--ease), border-color .3s var(--ease);
+  border: 1px solid var(--outline); outline: 0; border-radius: var(--md-sys-shape-corner-small);
+  background: var(--surface); color: var(--on-surface);
+  font: inherit; font-size: 16px; padding: 15px 18px; width: 100%;
+  transition: border-color .15s var(--md-sys-motion-easing-standard), box-shadow .15s var(--md-sys-motion-easing-standard);
 }
-.field::placeholder { color: var(--faint); }
+.field::placeholder { color: var(--on-surface-variant); }
+.field:focus { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
 
 /* Il trigger del comando rapido: sembra il campo di ricerca di prima,
    ma è un bottone inerte — apre il vero campo in un foglio sopra. */
 .palette-trigger {
   display: flex; align-items: center; justify-content: space-between;
-  text-align: left; cursor: pointer; color: var(--faint);
+  text-align: left; cursor: pointer; color: var(--on-surface-variant);
 }
-.palette-trigger:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--hair)); }
+.palette-trigger:hover { border-color: var(--primary); }
 .palette-trigger > span:first-child { min-width: 0; }
 .kbd {
-  font-family: var(--mono); font-size: 11px; color: var(--faint);
-  border: 1px solid var(--hair); border-radius: 6px; padding: 3px 7px;
+  font-family: var(--mono); font-size: 11px; color: var(--on-surface-variant);
+  border: 1px solid var(--outline-variant); border-radius: 6px; padding: 3px 7px;
   flex-shrink: 0;
 }
 @media (max-width: 640px) {
-  /* Niente tastiera fisica su mobile: il suggerimento ⌘K non serve. */
+  /* Niente tastiera fisica su mobile: il suggerimento ⌘K non serve —
+     e lascia posto libero proprio dove il FAB galleggia sotto. */
   .kbd { display: none; }
 }
-.field:focus {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--hair));
-  box-shadow: var(--carve), 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
-}
 
-/* Etichette: i metadati tecnici (fonte, dimensioni, catena d'ascolto) sono
-   l'unico punto dove il monospace resta — piccolissimo, geometrico, mai invasivo. */
+/* ── tipografia: scala M3, ruoli di significato invariati ──
+   display  → il titolo della pagina / un valore in grande
+   title    → titolo di sezione o di brano
+   body     → testo corrente
+   label    → metadati tecnici, l'unico punto dove il monospace resta:
+              non è decorazione, è la stessa distinzione di sempre tra
+              "quello che pensa Jessica" e "i dati". */
 .label {
   font-family: var(--mono);
-  font-size: 10px; font-weight: 500; color: var(--faint);
+  font-size: 11px; font-weight: 500; color: var(--on-surface-variant);
   letter-spacing: .08em; text-transform: uppercase;
 }
-
-/* Cifre allineate, con il font di sistema: niente cambio di famiglia. */
 .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; letter-spacing: -.01em; }
 
-.display {
-  font-size: clamp(28px, 4.4vw, 52px);
-  line-height: 1.1; letter-spacing: -0.035em; font-weight: 700;
-  text-wrap: balance;
-  color: var(--ink);
-}
+.t-display    { font-weight: 700; letter-spacing: -.02em; color: var(--on-surface); line-height: 1.2; }
+.t-subdisplay { font-weight: 500; letter-spacing: -.005em; color: var(--on-surface-variant); line-height: 1.35; }
+.t-body       { font-weight: 400; line-height: 1.55; color: var(--on-surface-variant); }
 
-/* ── gerarchia tipografica a 4 livelli ──
-   1. Display     — il focus: titolo in riproduzione, headline, un valore.
-   2. Sub-display — il contesto: artista, album.
-   3. Micro-label — metadati tecnici e label d'interfaccia: è .label, sopra.
-   4. Body        — log, descrizioni, output di Claude.
-   La dimensione resta a chi la usa (varia per contesto); qui solo il tono. */
-.t-display    { font-weight: 800; letter-spacing: -0.03em; color: var(--ink); }
-.t-subdisplay { font-weight: 500; letter-spacing: -0.005em; color: var(--mute); }
-.t-body       { font-weight: 400; line-height: 1.6; color: var(--mute); }
-
-/* Il pensiero di Jessica, non un dato: l'unico posto dove il serif
-   sostituisce Geist. Un diario di bordo, non una dashboard. */
+/* Il pensiero di Jessica, non un dato: l'unico posto dove il corsivo
+   serif sostituisce Geist — resta, dentro la scala M3. */
 .t-quote {
   font-family: var(--font-serif), Georgia, serif;
   font-style: italic; font-weight: 400; letter-spacing: 0;
-  color: var(--ink);
+  color: var(--on-surface); line-height: 1.4;
 }
 
-/* ── indicatore di stato: un punto, non un LED ── */
+/* ── indicatore di stato: un punto ── */
 .led {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-  background: var(--accent); flex-shrink: 0;
-  transition: background .3s var(--ease);
+  background: var(--primary); flex-shrink: 0;
+  transition: background .3s var(--md-sys-motion-easing-standard);
 }
-.led--idle { background: var(--faint); }
+.led--idle { background: var(--outline); }
 
-/* Equalizzatore: si muove solo quando la musica è davvero in corso,
-   non un'animazione decorativa fine a sé stessa. */
+/* Equalizzatore: si muove solo quando la musica è davvero in corso. */
 .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; flex-shrink: 0; }
 .eq i {
-  display: block; width: 2px; background: var(--accent); border-radius: 1px;
+  display: block; width: 2px; background: var(--primary); border-radius: 1px;
   animation: eq-bounce 1s ease-in-out infinite;
 }
 .eq i:nth-child(1) { height: 40%; animation-delay: -0.9s; }
@@ -575,52 +380,44 @@ html, body {
   50%      { transform: scaleY(1); }
 }
 
-/* ── movimento: sempre con un piccolo blur che si scioglie ── */
+/* ── movimento ── */
 @keyframes rise  {
-  from { opacity: 0; transform: translateY(14px); filter: blur(6px) }
-  to   { opacity: 1; transform: none; filter: blur(0) }
+  from { opacity: 0; transform: translateY(14px) }
+  to   { opacity: 1; transform: none }
 }
 @keyframes pop   {
-  from { opacity: 0; transform: scale(.95) }
+  from { opacity: 0; transform: scale(.96) }
   to   { opacity: 1; transform: none }
 }
 @keyframes sheet {
-  from { opacity: 0; transform: translateY(36px) scale(.94); filter: blur(10px) }
-  to   { opacity: 1; transform: none; filter: blur(0) }
+  from { opacity: 0; transform: translateY(28px) scale(.97) }
+  to   { opacity: 1; transform: none }
 }
 @keyframes veil  { from { opacity: 0 } to { opacity: 1 } }
-
-/* Il respiro di un punto attivo: solo opacità, mai colore che si accende. */
 @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .4 } }
-
-/* Comparsa del testo principale: si mette a fuoco, non si accende. */
 @keyframes warmup {
-  from { opacity: 0; filter: blur(8px); transform: translateY(6px) }
-  to   { opacity: 1; filter: none; transform: none }
+  from { opacity: 0; transform: translateY(6px) }
+  to   { opacity: 1; transform: none }
 }
 
-.rise   { animation: rise .6s var(--ease) both }
-.pop    { animation: pop .45s var(--spring) both }
-.sheet  { animation: sheet .55s var(--spring) both }
+.rise   { animation: rise .5s var(--md-sys-motion-easing-standard) both }
+.pop    { animation: pop .3s var(--md-sys-motion-easing-standard) both }
+.sheet  { animation: sheet .35s var(--md-sys-motion-easing-emphasized) both }
 .pulse  { animation: pulse 1.8s infinite ease-in-out }
-.warmup { animation: warmup .9s var(--ease) both }
+.warmup { animation: warmup .6s var(--md-sys-motion-easing-standard) both }
 
+/* Lo scrim modale M3: nero fisso a bassa opacità, sempre — a
+   differenza delle superfici non ha un ruolo che cambia con lo sfondo. */
 .scrim {
   position: fixed; inset: 0; z-index: 60; padding: 20px;
   display: flex; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--shell) 55%, transparent);
-  backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
-  animation: veil .32s ease both;
+  background: color-mix(in srgb, var(--md-sys-color-scrim) 40%, transparent);
+  animation: veil .2s ease both;
 }
 
-/* Il foglio di giudizio apre/chiude dentro una View Transition (JS, vedi
-   withMorph in Meter.tsx): qui si intona solo il ritmo a quello del resto
-   della pagina, invece del mezzo secondo lineare di default. Dove il
-   browser non supporta le View Transitions questa regola non fa nulla —
-   niente da correggere, il .sheet/.veil esistenti bastano da soli. */
 ::view-transition-old(root), ::view-transition-new(root) {
-  animation-duration: .4s;
-  animation-timing-function: var(--ease);
+  animation-duration: .3s;
+  animation-timing-function: var(--md-sys-motion-easing-standard);
 }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
@@ -629,60 +426,226 @@ html, body {
 .cols { display: grid; gap: 20px; grid-template-columns: minmax(0,1fr); }
 @media (min-width: 1000px) { .cols { grid-template-columns: minmax(0,1.5fr) minmax(0,1fr) } }
 
-/* Stessa app, stesso layout: solo lo spazio intorno alle cose cambia
-   con lo schermo. Niente riflussi strutturali, solo respiro proporzionato. */
-.shell { padding: 48px 28px 96px; }
+.shell { max-width: 1120px; margin: 0 auto; padding: 40px 28px 120px; }
 @media (max-width: 640px) {
-  /* Spazio in più in fondo: sotto c'è la pill fissa, il contenuto non
-     deve finirci sotto. */
-  .shell { padding: 24px 16px 112px; }
-}
-
-/* La riga di stato: sticky in alto a destra su desktop, come nel
-   riferimento. Su mobile non c'è spazio a destra per farla respirare,
-   quindi scende in basso, centrata e sempre a portata di pollice. */
-.status-row {
-  position: sticky; top: 16px; z-index: 40;
-  max-width: 1120px; margin: 0 auto 40px; padding: 0 28px;
-  display: flex; justify-content: flex-end;
-}
-@media (max-width: 640px) {
-  .status-row {
-    position: fixed; top: auto; left: 0; right: 0;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    margin: 0; padding: 0 16px; justify-content: center; z-index: 60;
-  }
+  .shell { padding: 28px 16px 100px; }
 }
 
 .scroll::-webkit-scrollbar { width: 4px }
-.scroll::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 99px; opacity: .4 }
+.scroll::-webkit-scrollbar-thumb { background: var(--outline); border-radius: 99px; opacity: .4 }
 
-/* Il "simil-Wrapped": una scena a sé, non un foglio sopra la pagina —
-   schermo intero, una carta alla volta, come una storia. */
+/* ── il ritratto di Jessica: molto più grande, punto focale della
+   pagina. L'anello dorato e il respiro restano — l'unico tocco
+   volutamente non-M3 che l'app si tiene, ma senza più i doppi rilievi
+   interni (quelli sì erano neumorphism): solo bordo + un'ombra
+   morbida che pulsa. ── */
+.brand-mark {
+  position: relative;
+  width: 176px; height: 176px; margin: 8px auto 20px;
+  display: grid; place-items: center; color: var(--on-surface);
+  border-radius: 999px; border: 3px solid #C9A227;
+  background: var(--surface-container-lowest, var(--surface));
+  box-shadow: var(--md-sys-elevation-level1);
+  animation: presence 6s ease-in-out infinite;
+}
+@keyframes presence {
+  0%, 100% { box-shadow: var(--md-sys-elevation-level1), 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent); }
+  50%      { box-shadow: var(--md-sys-elevation-level1), 0 0 var(--presence-spread, 26px 3px) color-mix(in srgb, var(--primary) var(--presence-glow, 16%), transparent); }
+}
+.brand-mark {
+  --presence-glow: 16%; --presence-spread: 26px 3px; --presence-speed: 6s;
+  animation-duration: var(--presence-speed);
+}
+.brand-mark--warm { --presence-glow: 32%; --presence-spread: 40px 6px; --presence-speed: 4s; }
+.brand-mark--cool { --presence-glow: 9%;  --presence-spread: 18px 2px; --presence-speed: 8s; }
+.brand-mark--faint { --presence-glow: 4%; --presence-spread: 12px 1px; --presence-speed: 11s; }
+
+/* Header compatto della top app bar: stesso ritratto, in scala minore. */
+.topbar-avatar {
+  width: 34px; height: 34px; border-radius: 999px; border: 1.5px solid #C9A227;
+  display: grid; place-items: center; flex-shrink: 0; overflow: hidden;
+}
+
+/* ── web player ──
+   Non più vetro con rifrazione: una card piatta, con un filo a sinistra
+   tinto dal colore medio della copertina (--ambient, da JS) — un
+   indicatore "leading", non un bagliore. */
+.webplayer {
+  display: flex; align-items: center; gap: 20px;
+  border-radius: var(--md-sys-shape-corner-large); padding: 18px 22px;
+  border-left: 4px solid var(--ambient, var(--outline-variant));
+  transition: border-color .5s var(--md-sys-motion-easing-standard);
+}
+.webplayer-art {
+  width: 88px; height: 88px; flex-shrink: 0; border-radius: var(--md-sys-shape-corner-medium);
+  background: color-mix(in srgb, var(--wood) 22%, var(--surface-container)) center/cover no-repeat;
+  display: grid; place-items: center; color: var(--on-surface-variant);
+}
+.webplayer-info { min-width: 0; flex: 1; }
+.webplayer-controls { display: flex; gap: 8px; flex-shrink: 0; }
+.truncate { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+@media (max-width: 640px) {
+  .webplayer { flex-wrap: wrap; }
+  .webplayer-controls { flex-basis: 100%; justify-content: flex-end; }
+}
+
+/* ── gli assi di gusto ── */
+.confidence-track {
+  flex: 1; height: 4px; border-radius: 99px; background: var(--outline-variant); overflow: hidden;
+}
+.confidence-fill { height: 100%; background: var(--primary); border-radius: 99px; }
+.axis-dot {
+  width: 6px; height: 6px; border-radius: 99px; border: 0; padding: 0;
+  background: var(--outline-variant); cursor: pointer;
+  transition: background .2s var(--md-sys-motion-easing-standard), transform .2s var(--md-sys-motion-easing-standard);
+}
+.axis-dot.is-active { background: var(--primary); transform: scale(1.3); }
+
+/* ── confidenza mascherata ── */
+.confidence-mask {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+}
+.confidence-mask span { color: var(--outline-variant); }
+.confidence-mask span.is-on { color: var(--primary); }
+.confidence-mask span:nth-child(4) { margin-right: .35em; }
+
+/* ── tracklist / timeline ── */
+.tracklist-art-btn {
+  position: relative; border: 0; padding: 0; background: transparent; cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-small); flex-shrink: 0;
+}
+.tracklist-art-btn:disabled { cursor: default; }
+.tracklist-art-btn:disabled .tracklist-art { opacity: .5; }
+.tracklist-art-btn:disabled .tracklist-play-overlay { opacity: 0; }
+.tracklist-art {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--md-sys-shape-corner-small);
+  background: color-mix(in srgb, var(--wood) 22%, var(--surface-container)) center/cover no-repeat;
+  display: grid; place-items: center; color: var(--on-surface-variant);
+}
+.tracklist-play-overlay {
+  position: absolute; inset: 0; border-radius: var(--md-sys-shape-corner-small);
+  display: grid; place-items: center; color: #FFFFFF;
+  background: rgba(0,0,0,.4);
+  opacity: .85; transition: opacity .2s var(--md-sys-motion-easing-standard);
+}
+.tracklist-art-btn:hover .tracklist-play-overlay,
+.tracklist-art-btn:focus-visible .tracklist-play-overlay { opacity: 1; }
+
+.timeline-row { position: relative; padding: 0 0 26px 26px; }
+.timeline-row:last-child { padding-bottom: 0; }
+.timeline-row::before {
+  content: ""; position: absolute; left: 2px; top: 9px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--outline);
+}
+.timeline-row::after {
+  content: ""; position: absolute; left: 5.5px; top: 21px; bottom: -4px;
+  width: 1px; background: var(--outline-variant);
+}
+.timeline-row:last-child::after { content: none; }
+
+/* ── il pick del giorno: cover a tutto bordo, angolo extra-large ── */
+.hero-pick {
+  position: relative; z-index: 0;
+  overflow: hidden; border-radius: var(--md-sys-shape-corner-extra-large);
+  min-height: 216px; padding: 26px;
+  display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  box-shadow: var(--md-sys-elevation-level1);
+  background: color-mix(in srgb, var(--wood) 24%, var(--surface-container)) center/cover no-repeat;
+}
+.hero-pick::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--md-sys-color-scrim) 65%, transparent) 0%,
+    color-mix(in srgb, var(--md-sys-color-scrim) 25%, transparent) 58%,
+    transparent 100%);
+}
+.hero-pick, .hero-pick .t-display, .hero-pick .t-subdisplay, .hero-pick .t-body, .hero-pick .label {
+  color: #FFFFFF;
+}
+.hero-pick-fallback {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+  opacity: .5; pointer-events: none; color: #FFFFFF;
+}
+.hero-pick-info { min-width: 0; flex: 1 1 auto; }
+.hero-pick-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+/* Sopra una foto qualunque un icon-btn trasparente sparirebbe: qui
+   porta un fondo proprio, non l'affidamento a un velo di stato. */
+.hero-pick-actions .icon-btn { background: rgba(255,255,255,.18); color: #FFFFFF; }
+.hero-pick-actions .icon-btn:hover { background: rgba(255,255,255,.3); color: #FFFFFF; }
+.hero-pick-actions .icon-btn:disabled { background: rgba(255,255,255,.1); }
+
+/* ── FAB M3: quadrato arrotondato (angolo "large"), non un cerchio —
+   container primary-container, come da specifica FAB standard. ── */
+.fab {
+  position: fixed; z-index: 55;
+  right: 24px; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  height: 56px; padding: 0 20px; border: 0;
+  border-radius: var(--md-sys-shape-corner-large); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--primary-container); color: var(--on-primary-container);
+  font: inherit; font-size: 14px; font-weight: 600;
+  box-shadow: var(--md-sys-elevation-level3);
+  transition: box-shadow .15s var(--md-sys-motion-easing-standard), transform .1s var(--md-sys-motion-easing-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fab:hover { box-shadow: var(--md-sys-elevation-level4); }
+}
+.fab:active { transform: scale(.97); box-shadow: var(--md-sys-elevation-level3); }
+.fab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (max-width: 640px) {
+  /* FAB "small" M3, solo icona: su un telefono la versione estesa
+     arriva a coprire il campo di ricerca appena sopra — l'etichetta
+     resta nell'aria-label, non sparisce, solo non si vede più. */
+  .fab { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 48px; height: 48px; padding: 0; gap: 0; }
+  .fab-label { display: none; }
+}
+
+/* ── dialoghi M3: angolo extra-large, elevazione 3 ── */
+.dialog {
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--surface-container-highest, var(--surface-highest));
+  box-shadow: var(--md-sys-elevation-level3);
+}
+
+/* ── snackbar M3: superficie invertita, come da specifica —
+   l'unica superficie scura dell'app, apposta, perché si stacchi
+   sempre dal contenuto sotto qualunque esso sia. ── */
+.snackbar {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 70;
+  max-width: 92vw; padding: 14px 24px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--on-surface); color: var(--surface);
+  box-shadow: var(--md-sys-elevation-level3);
+  font-size: 14px;
+}
+
+/* ── il "simil-Wrapped": scena a schermo intero ── */
 .wrapped-scrim {
   position: fixed; inset: 0; z-index: 90;
-  background: var(--shell); color: var(--ink);
+  background: var(--surface); color: var(--on-surface);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
-  animation: veil .32s ease both;
+  animation: veil .2s ease both;
 }
 .wrapped-close {
   position: absolute; top: 20px; right: 20px; z-index: 3;
-  border: 0; background: var(--recess); color: var(--mute);
-  width: 38px; height: 38px; border-radius: 999px;
+  border: 0; background: var(--surface-container); color: var(--on-surface-variant);
+  width: 40px; height: 40px; border-radius: 999px;
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
 }
-.wrapped-close:hover { color: var(--ink); background: var(--form); }
+.wrapped-close:hover { color: var(--on-surface); background: var(--surface-high); }
 .wrapped-progress {
   position: absolute; top: 20px; left: 20px; right: 74px; z-index: 3;
   display: flex; gap: 5px;
 }
 .wrapped-progress-seg {
-  flex: 1; height: 3px; border-radius: 99px; background: var(--hair);
+  flex: 1; height: 3px; border-radius: 99px; background: var(--outline-variant);
   overflow: hidden;
 }
-.wrapped-progress-seg.is-done, .wrapped-progress-seg.is-active { background: var(--ink); }
+.wrapped-progress-seg.is-done, .wrapped-progress-seg.is-active { background: var(--primary); }
 .wrapped-progress-seg.is-active { opacity: .55; }
 .wrapped-card {
   position: relative; z-index: 2; pointer-events: none;
@@ -693,116 +656,11 @@ html, body {
 .wrapped-tap { flex: 1; border: 0; background: transparent; cursor: pointer; }
 .wrapped-photo {
   position: relative; width: 100%; aspect-ratio: 16 / 9;
-  border-radius: var(--r-block); overflow: hidden;
-  box-shadow: var(--lift-2); pointer-events: none;
+  border-radius: var(--md-sys-shape-corner-large); overflow: hidden;
+  box-shadow: var(--md-sys-elevation-level2); pointer-events: none;
 }
-
-/* ── azione flottante: registra un ascolto ──
-   Stessa superficie a colore pieno di .btn--pri, ma rotonda e fissa —
-   in basso a destra su desktop, dove la pill di stato sta in alto e non
-   c'è nulla da coprire. Su mobile la pill scende in basso, centrata: il
-   FAB non le si affianca sullo stesso filo (su schermi stretti i due
-   controlli fissi si toccherebbero), sale sopra di lei invece — stesso
-   angolo libero, mai sovrapposti. */
-.fab {
-  position: fixed; z-index: 55;
-  right: 24px; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  width: 56px; height: 56px; padding: 0; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-  border-radius: 999px; cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(160deg,
-    color-mix(in srgb, var(--accent) 100%, white 8%),
-    color-mix(in srgb, var(--accent) 86%, black 8%));
-  color: var(--on-accent);
-  box-shadow: var(--lift-2), var(--glow-2);
-  transition: transform .15s var(--spring), box-shadow .22s var(--ease);
-}
-@media (hover: hover) and (pointer: fine) {
-  .fab:hover { transform: translateY(-2px); }
-}
-.fab:active { transform: scale(.94); }
-.fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-@media (max-width: 640px) {
-  .fab {
-    width: 50px; height: 50px; right: 16px;
-    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
-    z-index: 61;
-  }
-}
-
-/* ── il pick del giorno: una card sola, in evidenza, cover a tutto bordo ──
-   Stesso trucco già usato per tracklist-art/webplayer-art: lo sfondo lo
-   dichiara la classe (gradiente di legno come riserva), la copertina vera
-   arriva da uno style inline con priorità più alta. Il velo sopra è un
-   pseudo-elemento a z-index negativo — la stessa convenzione di .block —
-   non un filtro sull'immagine: il testo sopra resta sempre nitido. */
-.hero-pick {
-  position: relative; z-index: 0;
-  overflow: hidden; border-radius: var(--r-block);
-  min-height: 216px; padding: 26px;
-  display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;
-  box-shadow: var(--lift-2);
-  background: radial-gradient(120% 120% at 30% 15%, color-mix(in srgb, var(--wood) 24%, transparent), transparent 72%),
-              var(--form) center/cover no-repeat;
-}
-.hero-pick::before {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(to top,
-    color-mix(in srgb, var(--shell) 84%, transparent) 0%,
-    color-mix(in srgb, var(--shell) 38%, transparent) 58%,
-    transparent 100%);
-}
-.hero-pick-fallback {
-  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-  opacity: .3; pointer-events: none;
-}
-.hero-pick-info { min-width: 0; flex: 1 1 auto; }
-.hero-pick-actions { display: flex; gap: 8px; flex-shrink: 0; }
-
-/* ── consigli come diario: un filo verticale, non righe uniformi ──
-   Niente orari (proposti tutti nello stesso ciclo notturno, sarebbero
-   quasi identici e poco utili) — resta il ritmo del filo che scorre,
-   preso dal riferimento a diario. */
-.timeline-row {
-  position: relative;
-  padding: 0 0 26px 26px;
-}
-.timeline-row:last-child { padding-bottom: 0; }
-.timeline-row::before {
-  content: ""; position: absolute; left: 2px; top: 9px;
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--faint);
-}
-.timeline-row::after {
-  content: ""; position: absolute; left: 5.5px; top: 21px; bottom: -4px;
-  width: 1px; background: var(--hair);
-}
-.timeline-row:last-child::after { content: none; }
-
-/* ── confidenza mascherata: un codice, non solo una percentuale nuda ──
-   Otto trattini come le cifre coperte di una carta: quelli "accesi" sono
-   proporzionali alla confidenza dell'asse, non decorativi a caso. */
-.confidence-mask {
-  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
-}
-.confidence-mask span { color: var(--hair); }
-.confidence-mask span.is-on { color: var(--ink); }
-.confidence-mask span:nth-child(4) { margin-right: .35em; }
-
-/* ── il respiro dell'anello, più o meno vivo secondo la presenza ──
-   Stessa animazione "presence" di sempre: qui si parametrizza solo
-   l'ampiezza e il ritmo, mai un punto acceso/spento a sé. Le fasce
-   ricalcano esattamente quelle di presencePhrase() in Meter.tsx. */
-.brand-mark {
-  --presence-glow: 16%; --presence-spread: 26px 3px; --presence-speed: 6s;
-  animation-duration: var(--presence-speed);
-}
-.brand-mark--warm { --presence-glow: 32%; --presence-spread: 36px 5px; --presence-speed: 4s; }
-.brand-mark--cool { --presence-glow: 9%;  --presence-spread: 18px 2px; --presence-speed: 8s; }
-.brand-mark--faint { --presence-glow: 4%; --presence-spread: 12px 1px; --presence-speed: 11s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .pop, .sheet, .pulse, .warmup, .eq i, .brand-mark, .dropdown { animation: none }
-  .btn:hover:not(:disabled) { transform: none }
-  .fab:hover { transform: none }
+  .rise, .pop, .sheet, .pulse, .warmup, .eq i, .brand-mark, .menu { animation: none }
+  .btn:active:not(:disabled), .fab:active { transform: none }
 }

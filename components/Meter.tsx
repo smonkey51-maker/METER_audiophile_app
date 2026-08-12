@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, ChevronLeft, ChevronRight, Headphones, Moon, Music2, MessageSquare, Pause, Play,
-  Plus, Search, SkipBack, SkipForward, Sun, X,
+  Check, ChevronLeft, ChevronRight, Headphones, Music2, MessageSquare, Pause, Play,
+  Plus, Search, SkipBack, SkipForward, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
@@ -47,13 +47,13 @@ function confidenceMask(confidence: number) {
 }
 
 export default function Meter() {
-  const [dark, setDark] = useState(true);
   const [model, setModel] = useState<Model>(EMPTY_MODEL);
   const [listens, setListens] = useState<Listen[]>([]);
   const [rig, setRig] = useState<string>("aperte");
   const [ready, setReady] = useState(false);
 
   const [rating, setRating] = useState<{ rec: Partial<Rec> & { id?: number }; verdict: Verdict | null; dims: string[] } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [manual, setManual] = useState({ open: false, artist: "", track: "" });
   const [toast, setToast] = useState<string | null>(null);
   const [playback, setPlayback] = useState<Playback | null>(null);
@@ -72,7 +72,6 @@ export default function Meter() {
   const rigTriggerRef = useRef<HTMLButtonElement>(null);
   const paletteInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const flash = useCallback((t: string) => {
@@ -103,14 +102,14 @@ export default function Meter() {
   // il menu si esplora con le frecce, come una vera listbox.
   useEffect(() => {
     if (!rigMenuOpen) return;
-    const items = Array.from(rigMenuRef.current?.querySelectorAll<HTMLButtonElement>(".dropdown-item") ?? []);
+    const items = Array.from(rigMenuRef.current?.querySelectorAll<HTMLButtonElement>(".menu-item") ?? []);
     (items.find((el) => el.getAttribute("aria-selected") === "true") ?? items[0])?.focus();
   }, [rigMenuOpen]);
 
   function onRigMenuKeyDown(e: React.KeyboardEvent) {
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
     e.preventDefault();
-    const items = Array.from(rigMenuRef.current?.querySelectorAll<HTMLButtonElement>(".dropdown-item") ?? []);
+    const items = Array.from(rigMenuRef.current?.querySelectorAll<HTMLButtonElement>(".menu-item") ?? []);
     const idx = items.indexOf(document.activeElement as HTMLButtonElement);
     const next = e.key === "ArrowDown" ? (idx + 1) % items.length : (idx - 1 + items.length) % items.length;
     items[next]?.focus();
@@ -178,12 +177,9 @@ export default function Meter() {
     return () => clearInterval(t);
   }, [refreshPlayback]);
 
-  // Il vero materiale di vetro non ha un colore proprio: prende quello di
-  // ciò che ha dietro. Qui non c'è uno sfondo da rifrangere in tempo
-  // reale, ma il senso è lo stesso — il vetro del web player si intona
-  // alla copertina che sta suonando. Nessun colore medio è sbagliato
-  // abbastanza da rompere la lettura: resta solo un velo dietro il vetro,
-  // mai il testo sopra.
+  // Un indicatore "leading" tinto dal colore medio della copertina in
+  // riproduzione — non più un velo di vetro, solo un filo colorato sul
+  // bordo della card, coerente con superfici piatte.
   useEffect(() => {
     const art = playback?.art;
     if (!art) { setAmbient("transparent"); return; }
@@ -273,20 +269,25 @@ export default function Meter() {
   }
 
   async function commitRating() {
-    if (!rating?.verdict) return;
+    if (!rating?.verdict || submitting) return;
     const { rec, verdict, dims } = rating;
-    await fetch("/api/log", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        artist: rec.artist, track: rec.track, album: rec.album, spotify_url: rec.url,
-        verdict, dims, rig, meter: rec.meter, dynamics: rec.dynamics,
-        production: rec.production, era: rec.era, bridge: rec.bridge,
-        source: rec.id ? "rec" : "manual",
-      }),
-    });
-    closeRating();
-    await refresh();
-    flash(`${rec.track}: ${VERDICTS.find((v) => v.key === verdict)!.label}`);
+    setSubmitting(true);
+    try {
+      await fetch("/api/log", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          artist: rec.artist, track: rec.track, album: rec.album, spotify_url: rec.url,
+          verdict, dims, rig, meter: rec.meter, dynamics: rec.dynamics,
+          production: rec.production, era: rec.era, bridge: rec.bridge,
+          source: rec.id ? "rec" : "manual",
+        }),
+      });
+      closeRating();
+      await refresh();
+      flash(`${rec.track}: ${VERDICTS.find((v) => v.key === verdict)!.label}`);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (!ready) {
@@ -300,62 +301,42 @@ export default function Meter() {
     );
   }
 
+  const hasData = !!model.summary;
+
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* Filtro di distorsione per il vetro "liquido": ondula leggermente
-          ciò che il backdrop-filter sfoca dietro le superfici di vetro,
-          invece di un blur piatto. Definito una sola volta, richiamato da
-          --liquid-distort nel CSS. */}
-      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-        <defs>
-          <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves={2} seed={92} result="noise" />
-            <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
-            <feDisplacementMap in="SourceGraphic" in2="blurred" scale="28" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
-      {/* Il ritratto di Jessica, non la scritta: la firma della pagina.
-          Sotto, un indicatore di presenza — non un timestamp di sistema. */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 4 }}>
-        <div className={`brand-mark${presenceTier(model.updatedAt) ? ` brand-mark--${presenceTier(model.updatedAt)}` : ""}`} title="Jessica AI">
-          <JessicaAvatar size={63} />
+      {/* Top app bar M3: sostituisce la pillola fluttuante. Stessa
+          collocazione su desktop e mobile — niente più salto in basso. */}
+      <div className="topbar">
+        <div className="topbar-brand">
+          <div className="topbar-avatar"><JessicaAvatar size={28} /></div>
+          <span className="t-display" style={{ fontSize: 15 }}>Jessica</span>
         </div>
-        {presencePhrase(model.updatedAt) && (
-          <p className="label" style={{ textAlign: "center" }}>{presencePhrase(model.updatedAt)}</p>
-        )}
-      </div>
-
-      {/* Niente più barra: riaggiorno e consolidamento sono automatici (dream
-          cron, ogni notte), non serve più un frontalino di controlli. Resta
-          solo la pill di utilità — sticky in alto su desktop, in basso al
-          centro su mobile (vedi .status-row). */}
-      <div className="status-row">
-        <div className="pill-status" role="group" aria-label="Stato e preferenze">
-          <a className="pill-icon" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega Spotify">
-            <SpotifyMark size={25} />
+        <div className="topbar-actions" role="group" aria-label="Stato e preferenze">
+          <a className="icon-btn" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega il tuo profilo Spotify">
+            <SpotifyMark size={22} />
           </a>
-          <button className="pill-icon" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Il tuo Wrapped">
-            <BookIcon size={25} />
+          <button className="icon-btn" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Vedi il tuo Wrapped">
+            <BookIcon size={22} />
           </button>
-          <button className="pill-icon" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra" title="Petra">
-            <CatIcon size={25} />
+          <button className="icon-btn" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra, la gatta di Jessica" title="Petra">
+            <CatIcon size={22} />
           </button>
           <div ref={rigMenuRef} style={{ position: "relative" }}>
             <button
               ref={rigTriggerRef}
-              type="button" className="pill-icon" onClick={() => setRigMenuOpen((o) => !o)}
+              type="button" className={`icon-btn${rigMenuOpen ? " icon-btn--on" : ""}`} onClick={() => setRigMenuOpen((o) => !o)}
               aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
-              title={RIGS.find((r) => r.key === rig)?.label}
+              title={`Catena d'ascolto: ${RIGS.find((r) => r.key === rig)?.label}`}
             >
-              <Headphones size={25} aria-hidden="true" />
+              <Headphones size={22} aria-hidden="true" />
             </button>
             {rigMenuOpen && (
-              <div className="dropdown" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
+              <div className="menu" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
                 {RIGS.map((r) => (
                   <button
                     key={r.key} type="button" role="option" aria-selected={r.key === rig}
-                    className={`dropdown-item${r.key === rig ? " is-active" : ""}`}
+                    className={`menu-item${r.key === rig ? " is-active" : ""}`}
                     onClick={() => { setRig(r.key); setRigMenuOpen(false); rigTriggerRef.current?.focus(); }}
                   >
                     {r.label}
@@ -364,24 +345,29 @@ export default function Meter() {
               </div>
             )}
           </div>
-          {/* L'unico bottone della pill con un vero stato a due valori
-              sempre presente: porta il cerchio con bagliore del
-              riferimento, riservato a lui. */}
-          <button className="pill-icon pill-icon--active" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"}>
-            {dark ? <Moon size={26} /> : <Sun size={26} />}
-            <span className="pill-icon-dot" aria-hidden="true" />
-          </button>
         </div>
       </div>
 
-      <div className="shell" style={{ maxWidth: 1120, margin: "0 auto" }}>
+      <div className="shell">
+        {/* Il ritratto di Jessica, molto più grande: il vero punto focale
+            della pagina, non più un dettaglio accanto alla pillola. Sotto,
+            un indicatore di presenza — non un timestamp di sistema. */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 8 }}>
+          <div className={`brand-mark${presenceTier(model.updatedAt) ? ` brand-mark--${presenceTier(model.updatedAt)}` : ""}`} title="Jessica AI">
+            <JessicaAvatar size={120} />
+          </div>
+          {presencePhrase(model.updatedAt) && (
+            <p className="label" style={{ textAlign: "center" }}>{presencePhrase(model.updatedAt)}</p>
+          )}
+        </div>
+
         {/* Niente più schermata bianca se il DB è irraggiungibile: lo si
             dice, con un modo per riprovare, e il resto della pagina
             resta comunque usabile. */}
         {dbError && (
-          <section className="block pop" style={{ padding: "16px 22px", marginBottom: 28, maxWidth: 760, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-            <span className="t-body" style={{ fontSize: 15 }}>Non riesco a raggiungere la memoria di Jessica in questo momento.</span>
-            <button className="btn btn--ghost btn--sm" onClick={refresh}>Riprova</button>
+          <section className="card pop" style={{ padding: "16px 22px", marginBottom: 28, maxWidth: 760, marginLeft: "auto", marginRight: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <span className="t-body" style={{ fontSize: 14 }}>Non riesco a raggiungere la memoria di Jessica in questo momento.</span>
+            <button className="btn btn--text btn--sm" onClick={refresh}>Riprova</button>
           </section>
         )}
 
@@ -389,16 +375,24 @@ export default function Meter() {
             paragrafo (model.summary) inizia sempre con "Bubi sei...", lo
             garantisce il prompt che lo genera. Una citazione, non un dato:
             l'unico posto (con "Opinioni") dove entra il serif. */}
-        <section className="rise" style={{ maxWidth: 760, margin: "0 auto 56px", textAlign: "center" }}>
-          <p className="label" style={{ marginBottom: 18, color: "var(--mute)" }}>Cosa so di te?</p>
-          <p className="warmup t-quote" style={{ fontSize: "clamp(26px, 4vw, 34px)", lineHeight: 1.4 }}>
+        <section className="rise" style={{ maxWidth: 760, margin: "0 auto 32px", textAlign: "center" }}>
+          <p className="label" style={{ marginBottom: 18, color: "var(--on-surface-variant)" }}>Cosa so di te?</p>
+          <p className="warmup t-quote" style={{ fontSize: "clamp(24px, 4vw, 32px)" }}>
             {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
           </p>
+          {/* Percorso guidato per chi arriva senza dati: due azioni
+              esplicite invece di lasciar scoprire da soli dove si comincia. */}
+          {!hasData && (
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
+              <a className="btn btn--filled" href="/api/spotify/login">Collega Spotify</a>
+              <button className="btn btn--outlined" onClick={() => setManual({ open: true, artist: "", track: "" })}>
+                Registra il primo ascolto
+              </button>
+            </div>
+          )}
         </section>
 
-        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo.
-            Flush come il resto della pagina — solo il web player, quando c'è
-            qualcosa da mostrare, resta una superficie propria. */}
+        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
         <section className="rise" style={{ marginBottom: 36 }}>
           <div className="section-label"><p className="label">Ora in ascolto</p></div>
 
@@ -406,7 +400,7 @@ export default function Meter() {
             /* Qualcosa è caricato, anche solo in pausa: diventa un web player
                vero, con la copertina, non più la sola riga di testo. */
             <div style={{ marginBottom: 20 }}>
-              <div className="webplayer" style={{ "--ambient": ambient } as React.CSSProperties}>
+              <div className="card webplayer" style={{ "--ambient": ambient } as React.CSSProperties}>
                 <div key={playback.art ?? playback.track} className="webplayer-art pop" aria-hidden="true" style={playback.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
                   {!playback.art && <Music2 size={26} style={{ opacity: .4 }} />}
                 </div>
@@ -422,10 +416,10 @@ export default function Meter() {
                   </p>
                 </div>
                 <div className="webplayer-controls">
-                  <button className="btn btn--ghost btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente" style={{ display: "inline-flex", alignItems: "center" }}>
+                  <button className="icon-btn icon-btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente">
                     <SkipBack size={15} />
                   </button>
-                  <button className="btn btn--pri" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ padding: "11px 15px" }}>
+                  <button className="btn btn--filled" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ padding: "11px 15px" }}>
                     {/* Non uno scambio secco di icona: le due si passano il
                         posto, una si ritira ruotando mentre l'altra arriva
                         dallo stesso punto — un morph, non un salto. */}
@@ -434,7 +428,7 @@ export default function Meter() {
                       <span className={`play-morph-icon${playback.isPlaying ? " is-out" : ""}`}><Play size={18} /></span>
                     </span>
                   </button>
-                  <button className="btn btn--ghost btn--sm" onClick={() => playerAction("next")} aria-label="Successiva" style={{ display: "inline-flex", alignItems: "center" }}>
+                  <button className="icon-btn icon-btn--sm" onClick={() => playerAction("next")} aria-label="Successiva">
                     <SkipForward size={15} />
                   </button>
                 </div>
@@ -445,22 +439,22 @@ export default function Meter() {
                play, tutto sotto — la tracklist — si sposterebbe sotto al dito
                proprio mentre si prova a toccare la riga successiva. */
             <div style={{ marginBottom: 20 }}>
-              <div className="webplayer">
+              <div className="card webplayer">
                 <div className="webplayer-art" aria-hidden="true"><Music2 size={26} style={{ opacity: .4 }} /></div>
                 <div className="webplayer-info">
-                  <p className="t-body" style={{ fontSize: 17 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
+                  <p className="t-body" style={{ fontSize: 15 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
                 </div>
                 {/* Stessi tre tasti, disattivati: sotto i 640px vanno a
                     capo su una riga propria — se mancassero qui, la sagoma
                     tornerebbe a cambiare altezza proprio su mobile. */}
                 <div className="webplayer-controls" style={{ opacity: .35 }}>
-                  <button className="btn btn--ghost btn--sm" disabled aria-hidden="true" tabIndex={-1} style={{ display: "inline-flex", alignItems: "center" }}>
+                  <button className="icon-btn icon-btn--sm" disabled aria-hidden="true" tabIndex={-1}>
                     <SkipBack size={15} />
                   </button>
-                  <button className="btn btn--pri" disabled aria-hidden="true" tabIndex={-1} style={{ display: "inline-flex", alignItems: "center", padding: "11px 15px" }}>
+                  <button className="btn btn--filled" disabled aria-hidden="true" tabIndex={-1} style={{ padding: "11px 15px" }}>
                     <Play size={18} />
                   </button>
-                  <button className="btn btn--ghost btn--sm" disabled aria-hidden="true" tabIndex={-1} style={{ display: "inline-flex", alignItems: "center" }}>
+                  <button className="icon-btn icon-btn--sm" disabled aria-hidden="true" tabIndex={-1}>
                     <SkipForward size={15} />
                   </button>
                 </div>
@@ -474,7 +468,7 @@ export default function Meter() {
               solo la ricerca, a piena larghezza. */}
           <button className="field palette-trigger" onClick={() => setPaletteOpen(true)}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <Search size={15} style={{ opacity: .6, flexShrink: 0 }} />
+              <Search size={15} style={{ opacity: .7, flexShrink: 0 }} />
               <span className="truncate">Cerca un brano su Spotify</span>
             </span>
             <span className="kbd">⌘K</span>
@@ -486,7 +480,7 @@ export default function Meter() {
             risultato, non c'è più una conversazione da tenere in piedi. */}
         <section style={{ marginTop: 8 }}>
           <div className="section-label"><p className="label">Le mie opinioni sulla tua musica</p></div>
-          <p className="t-body" style={{ fontSize: 15.5, maxWidth: 640, marginBottom: 28 }}>
+          <p className="t-body" style={{ fontSize: 15, maxWidth: 640, marginBottom: 28 }}>
             Ogni notte passo in rassegna quello che ascolti e scelgo brani nuovi per conto mio — in totale autonomia, non me lo chiedi tu.
           </p>
 
@@ -500,8 +494,8 @@ export default function Meter() {
             const axis = model.axes[safeIndex];
             return (
             <div style={{ marginBottom: 32, maxWidth: 480 }}>
-              <div className="block carousel-card" key={safeIndex}>
-                <p className="t-quote" style={{ fontSize: 19, lineHeight: 1.45 }}>&ldquo;{axis.claim}&rdquo;</p>
+              <div className="card card--large carousel-card" key={safeIndex}>
+                <p className="t-quote" style={{ fontSize: 18 }}>&ldquo;{axis.claim}&rdquo;</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 18 }}>
                   <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(axis.confidence * 100)}%` }} /></div>
                   <span style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -516,7 +510,7 @@ export default function Meter() {
               </div>
               {model.axes.length > 1 && (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: 14 }}>
-                  <button className="btn btn--ghost btn--sm" aria-label="Pensiero precedente" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) - 1 + model.axes.length) % model.axes.length)} style={{ display: "inline-flex", alignItems: "center", padding: 6 }}>
+                  <button className="icon-btn icon-btn--sm" aria-label="Pensiero precedente" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) - 1 + model.axes.length) % model.axes.length)}>
                     <ChevronLeft size={16} />
                   </button>
                   <div style={{ display: "flex", gap: 6 }}>
@@ -524,7 +518,7 @@ export default function Meter() {
                       <button key={i} className={`axis-dot${i === safeIndex ? " is-active" : ""}`} aria-label={`Pensiero ${i + 1}`} onClick={() => setAxisIndex(i)} />
                     ))}
                   </div>
-                  <button className="btn btn--ghost btn--sm" aria-label="Pensiero successivo" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) + 1) % model.axes.length)} style={{ display: "inline-flex", alignItems: "center", padding: 6 }}>
+                  <button className="icon-btn icon-btn--sm" aria-label="Pensiero successivo" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) + 1) % model.axes.length)}>
                     <ChevronRight size={16} />
                   </button>
                 </div>
@@ -536,7 +530,7 @@ export default function Meter() {
           <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
 
           {dailyPicks.length === 0 ? (
-            <p className="t-body" style={{ fontSize: 15.5, maxWidth: 480 }}>
+            <p className="t-body" style={{ fontSize: 15, maxWidth: 480 }}>
               Niente di nuovo ancora — propongo al ciclo notturno. Nel frattempo registra un ascolto che vuoi farmi conoscere.
             </p>
           ) : (
@@ -555,21 +549,20 @@ export default function Meter() {
                     <div className="hero-pick-info">
                       <p className="label" style={{ marginBottom: 8 }}>Pick di oggi</p>
                       <p className="t-display truncate" style={{ fontSize: 21 }}>{pick.track}</p>
-                      <p className="t-subdisplay truncate" style={{ fontSize: 14.5, marginTop: 2 }}>{pick.artist}</p>
-                      {pick.bridge && <p className="t-body" style={{ fontSize: 13.5, marginTop: 8, maxWidth: 340 }}>{pick.bridge}</p>}
+                      <p className="t-subdisplay truncate" style={{ fontSize: 14, marginTop: 2 }}>{pick.artist}</p>
+                      {pick.bridge && <p className="t-body" style={{ fontSize: 13, marginTop: 8, maxWidth: 340 }}>{pick.bridge}</p>}
                     </div>
                     <div className="hero-pick-actions">
                       <button
-                        className="btn btn--sm" disabled={!canPlay}
+                        className="icon-btn" disabled={!canPlay}
                         aria-label={canPlay ? `Avvia ${pick.track}` : `${pick.track}: non ancora trovato su Spotify`}
                         title={canPlay ? "Avvia l'ascolto" : "Non ancora trovato su Spotify"}
                         onClick={() => canPlay && playerAction("play", pick.spotify_id)}
-                        style={{ display: "inline-flex", alignItems: "center" }}
                       >
-                        <Play size={14} fill="currentColor" />
+                        <Play size={16} fill="currentColor" />
                       </button>
                       <button
-                        className="btn btn--sm" aria-label={`Commenta ${pick.track}`} title="Commenta questo consiglio"
+                        className="btn btn--tonal btn--sm" aria-label={`Commenta ${pick.track}`} title="Commenta questo consiglio"
                         onClick={judge}
                         style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                       >
@@ -608,7 +601,7 @@ export default function Meter() {
                         </button>
                         <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
                           <span className="t-display truncate" style={{ fontSize: 16, maxWidth: 220 }}>{e.track}</span>
-                          <span className="t-subdisplay truncate" style={{ fontSize: 13.5, maxWidth: 220 }}>{e.artist}</span>
+                          <span className="t-subdisplay truncate" style={{ fontSize: 13, maxWidth: 220 }}>{e.artist}</span>
                         </span>
                       </span>
                       <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
@@ -619,7 +612,7 @@ export default function Meter() {
                             una sola icona ghost, ma un pulsante con etichetta —
                             si legge "commenta", non si intuisce da un'iconcina. */}
                         <button
-                          className="btn btn--ghost btn--sm" aria-label={`Commenta ${e.track}`} title="Commenta questo consiglio"
+                          className="btn btn--tonal btn--sm" aria-label={`Commenta ${e.track}`} title="Commenta questo consiglio"
                           onClick={judge}
                           style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                         >
@@ -639,19 +632,19 @@ export default function Meter() {
       {/* foglio di giudizio */}
       {rating && (
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && closeRating()}>
-          <div className="block sheet" style={{ maxWidth: 470, width: "100%", padding: 30 }}>
+          <div className="dialog sheet" style={{ maxWidth: 470, width: "100%", padding: 30 }}>
             <p className="label">Giudizio</p>
             <p className="t-display" style={{ fontSize: 22, marginTop: 6 }}>{rating.rec.track}</p>
-            <p className="t-subdisplay" style={{ fontSize: 15.5, marginTop: 2 }}>{rating.rec.artist}</p>
+            <p className="t-subdisplay" style={{ fontSize: 15, marginTop: 2 }}>{rating.rec.artist}</p>
 
             <div style={{ display: "flex", gap: 8, margin: "26px 0" }}>
               {VERDICTS.map((v) => {
                 const on = rating.verdict === v.key;
-                // Un colore per verdetto, non uno per "selezionato": salvia per
-                // ciò che resta, lilla per ciò che resta in dubbio, niente
-                // colore per ciò che si scarta — solo una superficie neutra.
-                const bg = !on ? "var(--recess)" : v.key === "keep" ? "var(--good)" : v.key === "maybe" ? "var(--night)" : "var(--form)";
-                const fg = !on ? "var(--ink)" : v.key === "keep" ? "var(--on-good)" : v.key === "maybe" ? "var(--on-night)" : "var(--ink)";
+                // Un colore per verdetto, non uno per "selezionato": verde
+                // tenue per ciò che resta, blu tenue per ciò che resta in
+                // dubbio, niente colore per ciò che si scarta.
+                const bg = !on ? "var(--surface-container)" : v.key === "keep" ? "var(--success-container)" : v.key === "maybe" ? "var(--tertiary-container)" : "var(--on-surface)";
+                const fg = !on ? "var(--on-surface)" : v.key === "keep" ? "var(--on-success-container)" : v.key === "maybe" ? "var(--on-tertiary-container)" : "var(--surface)";
                 return (
                   <button key={v.key} className="btn btn--sm" title={v.hint} style={{ flex: 1, background: bg, color: fg }}
                     onClick={() => setRating((r) => r && { ...r, verdict: v.key })}>
@@ -662,14 +655,14 @@ export default function Meter() {
             </div>
 
             <p className="label">Su cosa</p>
-            <p className="t-body" style={{ fontSize: 15.5, margin: "6px 0 14px" }}>
+            <p className="t-body" style={{ fontSize: 15, margin: "6px 0 14px" }}>
               È la parte che il modello impara davvero. Puoi sceglierne più di una.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 26 }}>
               {DIMS.map((d) => {
                 const on = rating.dims.includes(d);
                 return (
-                  <button key={d} className="btn btn--sm" style={{ background: on ? "var(--ink)" : "var(--recess)", color: on ? "var(--shell)" : "var(--ink)" }}
+                  <button key={d} className={`chip${on ? " chip--on" : ""}`}
                     onClick={() => setRating((r) => r && { ...r, dims: on ? r.dims.filter((x) => x !== d) : [...r.dims, d] })}>
                     {d}
                   </button>
@@ -679,10 +672,10 @@ export default function Meter() {
 
             <p className="label" style={{ marginBottom: 16 }}>Catena · {RIGS.find((r) => r.key === rig)?.label}</p>
             <div style={{ display: "flex", gap: 8 }}>
-              <button className="btn btn--pri" style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={commitRating} disabled={!rating.verdict}>
-                <Check size={15} /> Registra
+              <button className="btn btn--filled" style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={commitRating} disabled={!rating.verdict || submitting}>
+                <Check size={15} /> {submitting ? "Registro…" : "Registra"}
               </button>
-              <button className="btn btn--ghost" onClick={closeRating} aria-label="Annulla" style={{ display: "inline-flex", alignItems: "center" }}>
+              <button className="icon-btn" onClick={closeRating} aria-label="Annulla">
                 <X size={15} />
               </button>
             </div>
@@ -693,20 +686,20 @@ export default function Meter() {
       {/* ingresso manuale */}
       {manual.open && (
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && setManual({ open: false, artist: "", track: "" })}>
-          <div className="block sheet" style={{ maxWidth: 430, width: "100%", padding: 30 }}>
+          <div className="dialog sheet" style={{ maxWidth: 430, width: "100%", padding: 30 }}>
             <p className="t-display" style={{ fontSize: 21 }}>Registra un ascolto</p>
-            <p className="t-body" style={{ fontSize: 15.5, margin: "10px 0 20px" }}>
+            <p className="t-body" style={{ fontSize: 15, margin: "10px 0 20px" }}>
               Quello che ascolti fuori da qui vale più dei suoi suggerimenti.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <input className="field" placeholder="Artista" value={manual.artist} onChange={(e) => setManual((m) => ({ ...m, artist: e.target.value }))} />
               <input className="field" placeholder="Brano" value={manual.track} onChange={(e) => setManual((m) => ({ ...m, track: e.target.value }))} />
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <button className="btn btn--pri" style={{ flex: 1 }} disabled={!manual.artist.trim() || !manual.track.trim()}
+                <button className="btn btn--filled" style={{ flex: 1 }} disabled={!manual.artist.trim() || !manual.track.trim()}
                   onClick={() => { openRating({ artist: manual.artist.trim(), track: manual.track.trim() }); setManual({ open: false, artist: "", track: "" }); }}>
                   Continua
                 </button>
-                <button className="btn btn--ghost" onClick={() => setManual({ open: false, artist: "", track: "" })}>Annulla</button>
+                <button className="btn btn--text" onClick={() => setManual({ open: false, artist: "", track: "" })}>Annulla</button>
               </div>
             </div>
           </div>
@@ -717,7 +710,7 @@ export default function Meter() {
           quello che non trova, senza chiudere e riaprire un altro foglio. */}
       {paletteOpen && (
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && setPaletteOpen(false)}>
-          <div className="block sheet" style={{ maxWidth: 560, width: "100%", padding: 24 }}>
+          <div className="dialog sheet" style={{ maxWidth: 560, width: "100%", padding: 24 }}>
             <div style={{ display: "flex", gap: 8 }}>
               <input
                 ref={paletteInputRef} className="field" style={{ flex: 1 }}
@@ -725,11 +718,11 @@ export default function Meter() {
                 onKeyDown={(e) => e.key === "Enter" && runSearch()}
                 placeholder="Cerca un brano su Spotify"
               />
-              <button className="btn btn--pri btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <button className="btn btn--filled btn--sm" onClick={runSearch} disabled={searching || !searchQuery.trim()} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <Search size={14} />
                 {searching ? "Cerco…" : "Cerca"}
               </button>
-              <button className="btn btn--ghost" onClick={() => setPaletteOpen(false)} aria-label="Chiudi" style={{ display: "inline-flex", alignItems: "center" }}>
+              <button className="icon-btn" onClick={() => setPaletteOpen(false)} aria-label="Chiudi">
                 <X size={16} />
               </button>
             </div>
@@ -737,11 +730,11 @@ export default function Meter() {
             {searchResults.length > 0 && (
               <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8, maxHeight: "50vh", overflowY: "auto" }}>
                 {searchResults.map((r) => (
-                  <div key={r.uri} className="recess" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 15.5, minWidth: 0 }}><span className="t-display" style={{ fontSize: 15.5 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
+                  <div key={r.uri} className="card card--filled" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 15, minWidth: 0 }}><span className="t-display" style={{ fontSize: 15 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
                     <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                      <button className="btn btn--sm" onClick={() => { playerAction("play", r.uri); setPaletteOpen(false); }}>Riproduci</button>
-                      <button className="btn btn--ghost btn--sm" onClick={() => { openRating({ artist: r.artist, track: r.track, album: r.album, url: r.url }); setPaletteOpen(false); }}>Giudica</button>
+                      <button className="btn btn--tonal btn--sm" onClick={() => { playerAction("play", r.uri); setPaletteOpen(false); }}>Riproduci</button>
+                      <button className="btn btn--text btn--sm" onClick={() => { openRating({ artist: r.artist, track: r.track, album: r.album, url: r.url }); setPaletteOpen(false); }}>Giudica</button>
                     </div>
                   </div>
                 ))}
@@ -749,9 +742,9 @@ export default function Meter() {
             )}
 
             {!searching && searchQuery.trim() && searchResults.length === 0 && (
-              <p className="t-body" style={{ fontSize: 15, marginTop: 16 }}>
+              <p className="t-body" style={{ fontSize: 14, marginTop: 16 }}>
                 Nessun risultato.{" "}
-                <button className="btn btn--ghost btn--sm" onClick={() => { setManual({ open: true, artist: "", track: "" }); setPaletteOpen(false); }}>
+                <button className="btn btn--text btn--sm" onClick={() => { setManual({ open: true, artist: "", track: "" }); setPaletteOpen(false); }}>
                   Registra manualmente
                 </button>
               </p>
@@ -761,14 +754,15 @@ export default function Meter() {
       )}
 
       {toast && (
-        <div className="block pop" style={{ position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: 26, zIndex: 70, padding: "14px 24px", boxShadow: "var(--lift-2)", maxWidth: "92vw" }}>
-          <span className="t-body" style={{ fontSize: 15.5 }}>{toast}</span>
+        <div className="snackbar pop" role="status">
+          <span>{toast}</span>
         </div>
       )}
 
       {/* Azione flottante, sempre a portata: se c'è già qualcosa in
           ascolto salta dritto al giudizio, altrimenti apre il modulo
-          manuale — stessa logica che aveva il bottone inline di prima. */}
+          manuale — stessa logica che aveva il bottone inline di prima.
+          FAB M3 esteso: icona + etichetta, non solo un'icona. */}
       <button
         type="button" className="fab pop"
         onClick={() => {
@@ -777,7 +771,7 @@ export default function Meter() {
         }}
         aria-label="Registra un ascolto" title="Registra un ascolto"
       >
-        <Plus size={24} />
+        <Plus size={20} /> <span className="fab-label">Registra</span>
       </button>
 
       {wrappedOpen && <Wrapped onClose={() => setWrappedOpen(false)} />}
