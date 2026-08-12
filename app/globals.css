@@ -20,17 +20,17 @@
 }
 
 :root {
-  /* ── ruoli colore M3 (schema chiaro), generati dal seme --accent
-     esistente (#FF9F0A): stesso colore che l'app riconosce da sempre
-     come "di Jessica", ora espresso come tonalità M3 invece che come
-     unico valore acceso a tutta forza. ── */
-  --md-sys-color-primary: #8A4E00;
+  /* ── ruoli colore M3 (schema chiaro), generati dal seme indaco
+     (#5B4FE0): il vecchio ambra è stato ritirato a favore del blu-
+     violetto del nuovo mockup — stesso sistema di ruoli M3, seme
+     diverso. ── */
+  --md-sys-color-primary: #5B4FE0;
   --md-sys-color-on-primary: #FFFFFF;
-  --md-sys-color-primary-container: #FFDDB3;
-  --md-sys-color-on-primary-container: #2C1600;
+  --md-sys-color-primary-container: #E3DFFF;
+  --md-sys-color-on-primary-container: #160068;
 
-  --md-sys-color-secondary-container: #F6E4CB;
-  --md-sys-color-on-secondary-container: #271905;
+  --md-sys-color-secondary-container: #E6E1F9;
+  --md-sys-color-on-secondary-container: #241D48;
 
   /* Tertiary: hue spostata (blu-petrolio), riservata al verdetto "in
      dubbio" — nel vecchio sistema era --night. */
@@ -48,30 +48,31 @@
   --md-sys-color-on-success-container: #002203;
 
   /* Un secondo ruolo esteso: la sola superficie "creativa" dell'app
-     (il Wrapped) — nel vecchio sistema era --feature. */
-  --md-sys-color-feature: #7C4B9A;
+     (il Wrapped) — nel vecchio sistema era --feature. Hue spostata sul
+     magenta per restare distinguibile dal nuovo primary indaco. */
+  --md-sys-color-feature: #9333EA;
   --md-sys-color-on-feature: #FFFFFF;
-  --md-sys-color-feature-container: #F1DBFF;
-  --md-sys-color-on-feature-container: #2E0F49;
+  --md-sys-color-feature-container: #F3DDFF;
+  --md-sys-color-on-feature-container: #350059;
 
   --md-sys-color-error: #BA1A1A;
   --md-sys-color-on-error: #FFFFFF;
 
-  --md-sys-color-surface: #FFF8F3;
+  --md-sys-color-surface: #F7F7FC;
   --md-sys-color-surface-container-lowest: #FFFFFF;
-  --md-sys-color-surface-container-low: #FFF1E6;
-  --md-sys-color-surface-container: #FBEBDB;
-  --md-sys-color-surface-container-high: #F5E5D5;
-  --md-sys-color-surface-container-highest: #EFE0CF;
-  --md-sys-color-on-surface: #201B13;
-  --md-sys-color-on-surface-variant: #504536;
-  --md-sys-color-outline: #837465;
-  --md-sys-color-outline-variant: #D5C3B2;
+  --md-sys-color-surface-container-low: #F1F0FA;
+  --md-sys-color-surface-container: #EBE9F7;
+  --md-sys-color-surface-container-high: #E3E1F1;
+  --md-sys-color-surface-container-highest: #DBD8EC;
+  --md-sys-color-on-surface: #1B1B23;
+  --md-sys-color-on-surface-variant: #55536A;
+  --md-sys-color-outline: #7B7A90;
+  --md-sys-color-outline-variant: #CBC8DE;
   --md-sys-color-scrim: #000000;
 
-  /* Legno di rovere per le copertine non ancora caricate — l'unico
-     colore che non viene dal seme M3, resta dai riferimenti fotografici. */
-  --md-sys-color-wood: #A9834F;
+  /* Tinta neutra fredda per le copertine non ancora caricate — segue
+     il seme indaco invece del legno caldo di prima. */
+  --md-sys-color-wood: #6A6480;
 
   /* ── elevazione M3: ombra vera ma minima, più un velo di --primary
      che cresce con il livello — mai la coppia di ombre chiara/scura
@@ -133,13 +134,13 @@
    ridichiarare i --md-sys-color-*: gli alias brevi sopra li seguono
    da soli, perché puntano al nome del ruolo, non al suo valore. */
 [data-theme="dark"] {
-  --md-sys-color-primary: #FFB77C;
-  --md-sys-color-on-primary: #4A2800;
-  --md-sys-color-primary-container: #6B3900;
-  --md-sys-color-on-primary-container: #FFDDB3;
+  --md-sys-color-primary: #7B6EF6;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #332B66;
+  --md-sys-color-on-primary-container: #E3DFFF;
 
-  --md-sys-color-secondary-container: #4D3B27;
-  --md-sys-color-on-secondary-container: #F6E4CB;
+  --md-sys-color-secondary-container: #2E2A47;
+  --md-sys-color-on-secondary-container: #E1DEF5;
 
   --md-sys-color-tertiary: #A0CDE0;
   --md-sys-color-on-tertiary: #00363F;
@@ -151,24 +152,24 @@
   --md-sys-color-success-container: #0B5313;
   --md-sys-color-on-success-container: #B4F1AE;
 
-  --md-sys-color-feature: #E0B6FF;
-  --md-sys-color-on-feature: #48186A;
-  --md-sys-color-feature-container: #5E3080;
-  --md-sys-color-on-feature-container: #F1DBFF;
+  --md-sys-color-feature: #E0A6FF;
+  --md-sys-color-on-feature: #3D0060;
+  --md-sys-color-feature-container: #5B2380;
+  --md-sys-color-on-feature-container: #F6DBFF;
 
   --md-sys-color-error: #FFB4AB;
   --md-sys-color-on-error: #690005;
 
-  --md-sys-color-surface: #17130D;
-  --md-sys-color-surface-container-lowest: #0F0C08;
-  --md-sys-color-surface-container-low: #201B14;
-  --md-sys-color-surface-container: #241F17;
-  --md-sys-color-surface-container-high: #2F2921;
-  --md-sys-color-surface-container-highest: #3A332A;
-  --md-sys-color-on-surface: #EDE1D3;
-  --md-sys-color-on-surface-variant: #C6B7A5;
-  --md-sys-color-outline: #9A8C7B;
-  --md-sys-color-outline-variant: #4D4237;
+  --md-sys-color-surface: #0A0A11;
+  --md-sys-color-surface-container-lowest: #060609;
+  --md-sys-color-surface-container-low: #121219;
+  --md-sys-color-surface-container: #17171F;
+  --md-sys-color-surface-container-high: #1E1E29;
+  --md-sys-color-surface-container-highest: #262633;
+  --md-sys-color-on-surface: #EDEDF5;
+  --md-sys-color-on-surface-variant: #A9A8BE;
+  --md-sys-color-outline: #77758C;
+  --md-sys-color-outline-variant: #38374A;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -214,13 +215,6 @@ html, body {
   border-bottom: 1px solid var(--outline-variant);
 }
 .rows > *:last-child { border-bottom: 0; }
-
-/* Etichetta di sezione con un filo che la prolunga fino al bordo. */
-.section-label {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 14px;
-}
-.section-label::after { content: ""; flex: 1; height: 1px; background: var(--outline-variant); }
 
 /* ── bottoni M3: cinque famiglie, un ruolo ciascuna ──
    filled = l'azione principale della schermata (piena, --primary)
@@ -288,33 +282,38 @@ html, body {
 }
 .chip--on { border-color: transparent; background: var(--secondary-container); color: var(--on-secondary-container); }
 
-/* ── nav pill: una capsula sola, sospesa in alto ──
-   Non più una barra piatta a tutta larghezza: un unico contenitore
-   arrotondato con dentro un segmento "attivo" (etichetta + ritratto,
-   tinto di --primary-container) e i controlli icona-sola in fila — il
-   tema resta staccato in un suo cerchio a parte, in fondo alla fila. */
+/* ── header piatto: niente più capsula sospesa ──
+   Un'intestazione semplice, sullo stesso fondo della pagina — il
+   wordmark METER a sinistra, le utility e l'azione rapida a destra.
+   Resta sticky (comodo per ⌘K mentre si scorre), ma senza il
+   contenitore arrotondato: un velo sfocato appare solo dietro il
+   contenuto che le scorre sotto. */
 .topbar-wrap {
-  position: sticky; top: 14px; z-index: 40;
-  padding: 0 20px; margin-bottom: 8px;
+  position: sticky; top: 0; z-index: 40;
+  padding: 20px 28px; margin-bottom: 4px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
 }
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; max-width: 1120px; margin: 0 auto;
-  padding: 6px; border-radius: var(--md-sys-shape-corner-full);
-  background: var(--surface-container-high);
-  box-shadow: var(--md-sys-elevation-level2);
 }
 .topbar-group { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.topbar-brand {
-  display: flex; align-items: center; gap: 8px; min-width: 0; flex-shrink: 0;
-  padding: 8px 18px 8px 8px; border-radius: var(--md-sys-shape-corner-full);
-  background: var(--primary-container); color: var(--on-primary-container);
+.topbar-logo {
+  display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 0;
+  color: var(--on-surface); text-decoration: none;
 }
+.topbar-logo-mark {
+  width: 26px; height: 26px; border-radius: var(--md-sys-shape-corner-small);
+  background: var(--primary); color: var(--on-primary);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.topbar-wordmark { font-size: 17px; font-weight: 700; letter-spacing: .02em; }
 .topbar-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-.topbar-theme { flex-shrink: 0; background: color-mix(in srgb, var(--on-surface) 6%, transparent); }
+.topbar-theme { flex-shrink: 0; }
 @media (max-width: 640px) {
-  .topbar-wrap { padding: 0 12px; }
-  .topbar-brand span { display: none; }
+  .topbar-wrap { padding: 16px 12px; }
+  .topbar-wordmark { display: none; }
 }
 
 /* IconButton M3 standard: nessun contenitore a riposo, solo un velo
@@ -522,11 +521,47 @@ html, body {
 .brand-mark--cool { --presence-glow: 9%;  --presence-spread: 18px 2px; --presence-speed: 8s; }
 .brand-mark--faint { --presence-glow: 4%; --presence-spread: 12px 1px; --presence-speed: 11s; }
 
-/* Header compatto della top app bar: stesso ritratto, in scala minore. */
-.topbar-avatar {
-  width: 34px; height: 34px; border-radius: 999px; border: 1.5px solid #C9A227;
-  display: grid; place-items: center; flex-shrink: 0; overflow: hidden;
+/* Stessa cornice dorata, in scala minore: il ritratto ora vive accanto
+   alla citazione ("Cosa so di te"), non più da solo come punto focale
+   della pagina — ma resta lei, con lo stesso respiro. */
+.brand-mark--sm {
+  width: 48px; height: 48px; margin: 0; border-width: 2px;
 }
+
+/* ── intestazione "Cosa so di te": ritratto piccolo a fianco della
+   citazione, invece del grande ritratto centrato di prima. ── */
+.hero-header {
+  display: flex; align-items: flex-start; gap: 20px;
+  margin: 4px 0 32px;
+}
+.hero-profile {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  flex-shrink: 0; width: 64px;
+}
+.hero-content { min-width: 0; flex: 1; text-align: left; }
+.hero-presence { font-size: 13px; font-weight: 500; color: var(--primary); margin-top: 14px; }
+@media (max-width: 560px) {
+  .hero-header { flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+  .hero-content { text-align: center; }
+  .hero-presence { text-align: center; }
+}
+
+/* Pillola del ciclo notturno: presenza passiva del lavoro che Jessica
+   fa da sola la notte, non un log — un badge quieto, non un allarme. */
+.cycle-pill {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
+  padding: 6px 14px; border-radius: var(--md-sys-shape-corner-full);
+  background: var(--surface-container); color: var(--on-surface-variant);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+}
+
+/* ── gli assi di gusto, in elenco ──
+   Non più un carosello a un pensiero alla volta: tutti gli assi
+   visibili insieme, come un elenco di citazioni ciascuna con la sua
+   barra di confidenza — più densi, ma tutti a colpo d'occhio. */
+.axis-row + .axis-row { margin-top: 22px; }
+.axis-bar-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.axis-pct { flex-shrink: 0; }
 
 /* ── web player ──
    Non più vetro con rifrazione: una card piatta, con un filo a sinistra
@@ -557,20 +592,6 @@ html, body {
   flex: 1; height: 4px; border-radius: 99px; background: var(--outline-variant); overflow: hidden;
 }
 .confidence-fill { height: 100%; background: var(--primary); border-radius: 99px; }
-.axis-dot {
-  width: 6px; height: 6px; border-radius: 99px; border: 0; padding: 0;
-  background: var(--outline-variant); cursor: pointer;
-  transition: background .2s var(--md-sys-motion-easing-standard), transform .2s var(--md-sys-motion-easing-standard);
-}
-.axis-dot.is-active { background: var(--primary); transform: scale(1.3); }
-
-/* ── confidenza mascherata ── */
-.confidence-mask {
-  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
-}
-.confidence-mask span { color: var(--outline-variant); }
-.confidence-mask span.is-on { color: var(--primary); }
-.confidence-mask span:nth-child(4) { margin-right: .35em; }
 
 /* ── tracklist / timeline ── */
 .tracklist-art-btn {

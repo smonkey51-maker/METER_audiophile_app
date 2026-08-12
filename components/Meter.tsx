@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, ChevronLeft, ChevronRight, Headphones, Moon, Music2, MessageSquare, Pause, Play,
-  Plus, Search, SkipBack, SkipForward, Sun, X,
+  Check, Gauge, Headphones, Moon, Music2, MessageSquare, Pause, Play,
+  Plus, Search, Sparkles, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
@@ -38,12 +38,20 @@ function presenceTier(iso?: string) {
   return "faint";
 }
 
-// Un codice a otto trattini, come le cifre coperte di una carta: quelli
-// "accesi" sono proporzionali alla confidenza, mai a caso.
-function confidenceMask(confidence: number) {
-  const total = 8;
-  const filled = Math.min(total, Math.max(1, Math.round(confidence * total)));
-  return Array.from({ length: total }, (_, i) => i < filled);
+// Il ciclo notturno gira alle 4:00 UTC (vercel.json): da model.updatedAt
+// e da quell'orario fisso si ricava sia "quanto fa" che "tra quanto" —
+// dato vero, non un placeholder, letto dallo stesso cron che lo muove.
+function cyclePhrase(updatedAt?: string) {
+  if (!updatedAt) return null;
+  const now = Date.now();
+  const last = new Date(updatedAt).getTime();
+  const hoursSince = Math.max(0, Math.round((now - last) / 3600000));
+  const next = new Date();
+  next.setUTCHours(4, 0, 0, 0);
+  if (next.getTime() <= now) next.setUTCDate(next.getUTCDate() + 1);
+  const hoursUntil = Math.max(1, Math.round((next.getTime() - now) / 3600000));
+  const sinceLabel = hoursSince < 1 ? "meno di un'ora fa" : `${hoursSince}h fa`;
+  return `Ultimo ciclo notturno: ${sinceLabel} · prossimo in ~${hoursUntil}h`;
 }
 
 export default function Meter() {
@@ -66,7 +74,6 @@ export default function Meter() {
   const [dbError, setDbError] = useState(false);
   const [wrappedOpen, setWrappedOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [axisIndex, setAxisIndex] = useState(0);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const rigMenuRef = useRef<HTMLDivElement>(null);
@@ -270,6 +277,14 @@ export default function Meter() {
     withMorph(() => setRating(null));
   }
 
+  // Stessa scorciatoia dietro due ingressi (il FAB in fondo, il bottone
+  // "Giudica in ascolto" in testata): se qualcosa sta suonando salta
+  // dritto al giudizio, altrimenti apre il modulo manuale.
+  function quickJudge() {
+    if (playback) openRating({ artist: playback.artist, track: playback.track });
+    else setManual({ open: true, artist: "", track: "" });
+  }
+
   async function commitRating() {
     if (!rating?.verdict || submitting) return;
     const { rec, verdict, dims } = rating;
@@ -307,25 +322,29 @@ export default function Meter() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* Nav pill: una capsula sola invece della barra piatta — il
-          segmento "Jessica" gioca il ruolo del tab attivo/etichettato,
-          le utility restano icona-sola, il tema si stacca in fondo. */}
+      {/* Intestazione piatta: il wordmark METER a sinistra, le utility
+          e l'azione rapida "Giudica in ascolto" a destra — non più la
+          capsula sospesa, il ritratto di Jessica si è spostato più giù,
+          accanto a "Cosa so di te". */}
       <div className="topbar-wrap">
         <div className="topbar">
+          <div className="topbar-logo">
+            <span className="topbar-logo-mark" aria-hidden="true"><Gauge size={15} /></span>
+            <span className="topbar-wordmark">METER</span>
+          </div>
           <div className="topbar-group">
-            <div className="topbar-brand">
-              <div className="topbar-avatar"><JessicaAvatar size={22} /></div>
-              <span style={{ fontSize: 14, fontWeight: 600 }}>Jessica</span>
-            </div>
             <div className="topbar-actions" role="group" aria-label="Stato e preferenze">
               <a className="icon-btn" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega il tuo profilo Spotify">
-                <SpotifyMark size={22} />
+                <SpotifyMark size={20} />
               </a>
-              <button className="icon-btn" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Vedi il tuo Wrapped">
-                <BookIcon size={22} />
-              </button>
               <button className="icon-btn" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra, la gatta di Jessica" title="Petra">
-                <CatIcon size={22} />
+                <CatIcon size={20} />
+              </button>
+              <button className="icon-btn topbar-theme" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} title={dark ? "Tema scuro" : "Tema chiaro"}>
+                {dark ? <Moon size={20} /> : <Sun size={20} />}
+              </button>
+              <button className="icon-btn" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Vedi il tuo Wrapped">
+                <BookIcon size={20} />
               </button>
               <div ref={rigMenuRef} style={{ position: "relative" }}>
                 <button
@@ -334,7 +353,7 @@ export default function Meter() {
                   aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
                   title={`Catena d'ascolto: ${RIGS.find((r) => r.key === rig)?.label}`}
                 >
-                  <Headphones size={22} aria-hidden="true" />
+                  <Headphones size={20} aria-hidden="true" />
                 </button>
                 {rigMenuOpen && (
                   <div className="menu" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
@@ -351,60 +370,64 @@ export default function Meter() {
                 )}
               </div>
             </div>
+            <button className="btn btn--filled btn--sm" onClick={quickJudge} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              Giudica in ascolto <Plus size={14} />
+            </button>
           </div>
-          <button className="icon-btn topbar-theme" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} title={dark ? "Tema scuro" : "Tema chiaro"}>
-            {dark ? <Moon size={22} /> : <Sun size={22} />}
-          </button>
         </div>
       </div>
 
       <div className="shell">
-        {/* Il ritratto di Jessica, molto più grande: il vero punto focale
-            della pagina, non più un dettaglio accanto alla pillola. Sotto,
-            un indicatore di presenza — non un timestamp di sistema. */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 8 }}>
-          <div className={`brand-mark${presenceTier(model.updatedAt) ? ` brand-mark--${presenceTier(model.updatedAt)}` : ""}`} title="Jessica AI">
-            <JessicaAvatar size={120} />
-          </div>
-          {presencePhrase(model.updatedAt) && (
-            <p className="label" style={{ textAlign: "center" }}>{presencePhrase(model.updatedAt)}</p>
-          )}
-        </div>
-
         {/* Niente più schermata bianca se il DB è irraggiungibile: lo si
             dice, con un modo per riprovare, e il resto della pagina
             resta comunque usabile. */}
         {dbError && (
-          <section className="card pop" style={{ padding: "16px 22px", marginBottom: 28, maxWidth: 760, marginLeft: "auto", marginRight: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <section className="card pop" style={{ padding: "16px 22px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
             <span className="t-body" style={{ fontSize: 14 }}>Non riesco a raggiungere la memoria di Jessica in questo momento.</span>
             <button className="btn btn--text btn--sm" onClick={refresh}>Riprova</button>
           </section>
         )}
 
-        {/* tesi: Jessica dice cosa sa di te, sempre in tono scherzoso — il
-            paragrafo (model.summary) inizia sempre con "Bubi sei...", lo
-            garantisce il prompt che lo genera. Una citazione, non un dato:
-            l'unico posto (con "Opinioni") dove entra il serif. */}
-        <section className="rise" style={{ maxWidth: 760, margin: "0 auto 32px", textAlign: "center" }}>
-          <p className="label" style={{ marginBottom: 18, color: "var(--on-surface-variant)" }}>Cosa so di te?</p>
-          <p className="warmup t-quote" style={{ fontSize: "clamp(24px, 4vw, 32px)" }}>
-            {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
-          </p>
-          {/* Percorso guidato per chi arriva senza dati: due azioni
-              esplicite invece di lasciar scoprire da soli dove si comincia. */}
-          {!hasData && (
-            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
-              <a className="btn btn--filled" href="/api/spotify/login">Collega Spotify</a>
-              <button className="btn btn--outlined" onClick={() => setManual({ open: true, artist: "", track: "" })}>
-                Registra il primo ascolto
-              </button>
+        {/* Il ritratto di Jessica, ora accanto alla sua tesi invece che
+            sopra da solo: "Cosa so di te" — il paragrafo (model.summary)
+            inizia sempre con "Bubi sei...", lo garantisce il prompt che lo
+            genera. Una citazione, non un dato: l'unico posto (con
+            "Opinioni") dove entra il serif. Sotto, la presenza passiva
+            (non un timestamp) e il ciclo notturno, letto dal cron vero. */}
+        <section className="hero-header rise">
+          <div className="hero-profile">
+            <div className={`brand-mark brand-mark--sm${presenceTier(model.updatedAt) ? ` brand-mark--${presenceTier(model.updatedAt)}` : ""}`} title="Jessica AI">
+              <JessicaAvatar size={44} />
             </div>
-          )}
+            <span className="t-display" style={{ fontSize: 14 }}>Jessica</span>
+          </div>
+          <div className="hero-content">
+            <p className="label" style={{ marginBottom: 16 }}>Cosa so di te</p>
+            <p className="warmup t-quote" style={{ fontSize: "clamp(22px, 3.2vw, 30px)" }}>
+              {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
+            </p>
+            {presencePhrase(model.updatedAt) && (
+              <p className="hero-presence">{presencePhrase(model.updatedAt)}</p>
+            )}
+            {cyclePhrase(model.updatedAt) && (
+              <span className="cycle-pill"><Moon size={12} aria-hidden="true" /> {cyclePhrase(model.updatedAt)}</span>
+            )}
+            {/* Percorso guidato per chi arriva senza dati: due azioni
+                esplicite invece di lasciar scoprire da soli dove si comincia. */}
+            {!hasData && (
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24 }}>
+                <a className="btn btn--filled" href="/api/spotify/login">Collega Spotify</a>
+                <button className="btn btn--outlined" onClick={() => setManual({ open: true, artist: "", track: "" })}>
+                  Registra il primo ascolto
+                </button>
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
         <section className="rise" style={{ marginBottom: 36 }}>
-          <div className="section-label"><p className="label">Ora in ascolto</p></div>
+          <p className="label" style={{ marginBottom: 14 }}>Ora in ascolto</p>
 
           {playback ? (
             /* Qualcosa è caricato, anche solo in pausa: diventa un web player
@@ -416,10 +439,11 @@ export default function Meter() {
                 </div>
                 <div className="webplayer-info">
                   <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                    <Sparkles size={12} style={{ color: "var(--primary)", flexShrink: 0 }} aria-hidden="true" />
+                    <span className="truncate">{`In ascolto${playback.device ? " su " + playback.device : ""}`}</span>
                     {playback.isPlaying && (
                       <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
                     )}
-                    <span className="truncate">{`In ascolto${playback.device ? " su " + playback.device : ""}`}</span>
                   </p>
                   <p className="truncate" style={{ fontSize: 17 }}>
                     <span className="t-display">{playback.track}</span> <span className="t-subdisplay">· {playback.artist}</span>
@@ -489,53 +513,27 @@ export default function Meter() {
             brani nuovi senza che nessuno glielo chieda. Qui vedi solo il
             risultato, non c'è più una conversazione da tenere in piedi. */}
         <section style={{ marginTop: 8 }}>
-          <div className="section-label"><p className="label">Le mie opinioni sulla tua musica</p></div>
+          <p className="label" style={{ marginBottom: 14 }}>Le mie opinioni sulla tua musica</p>
           <p className="t-body" style={{ fontSize: 15, maxWidth: 640, marginBottom: 28 }}>
             Ogni notte passo in rassegna quello che ascolti e scelgo brani nuovi per conto mio — in totale autonomia, non me lo chiedi tu.
           </p>
 
           {/* Le analisi vere, quelle che Spotify non può fare: gli assi di
-              gusto che consolida nei cicli notturni. Uno alla volta, da
-              sfogliare — sono pensieri distinti, non righe di una lista. */}
-          {model.axes.length > 0 && (() => {
-            // Se un ciclo notturno pota gli assi, l'indice sfogliato può
-            // restare fuori range: si aggancia all'ultimo rimasto.
-            const safeIndex = Math.min(axisIndex, model.axes.length - 1);
-            const axis = model.axes[safeIndex];
-            return (
+              gusto che consolida nei cicli notturni — tutti in elenco,
+              ciascuno con la propria barra di confidenza. */}
+          {model.axes.length > 0 && (
             <div style={{ marginBottom: 32, maxWidth: 480 }}>
-              <div className="card card--large carousel-card" key={safeIndex}>
-                <p className="t-quote" style={{ fontSize: 18 }}>&ldquo;{axis.claim}&rdquo;</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 18 }}>
-                  <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(axis.confidence * 100)}%` }} /></div>
-                  <span style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                    <span className="confidence-mask" aria-hidden="true">
-                      {confidenceMask(axis.confidence).map((on, i) => (
-                        <span key={i} className={on ? "is-on" : ""}>•</span>
-                      ))}
-                    </span>
-                    <span className="label">{Math.round(axis.confidence * 100)}%</span>
-                  </span>
-                </div>
-              </div>
-              {model.axes.length > 1 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: 14 }}>
-                  <button className="icon-btn icon-btn--sm" aria-label="Pensiero precedente" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) - 1 + model.axes.length) % model.axes.length)}>
-                    <ChevronLeft size={16} />
-                  </button>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    {model.axes.map((_, i) => (
-                      <button key={i} className={`axis-dot${i === safeIndex ? " is-active" : ""}`} aria-label={`Pensiero ${i + 1}`} onClick={() => setAxisIndex(i)} />
-                    ))}
+              {model.axes.map((axis, i) => (
+                <div className="axis-row" key={i}>
+                  <p className="t-quote" style={{ fontSize: 17 }}>&ldquo;{axis.claim}&rdquo;</p>
+                  <div className="axis-bar-row">
+                    <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(axis.confidence * 100)}%` }} /></div>
+                    <span className="label axis-pct">{Math.round(axis.confidence * 100)}%</span>
                   </div>
-                  <button className="icon-btn icon-btn--sm" aria-label="Pensiero successivo" onClick={() => setAxisIndex((i) => (Math.min(i, model.axes.length - 1) + 1) % model.axes.length)}>
-                    <ChevronRight size={16} />
-                  </button>
                 </div>
-              )}
+              ))}
             </div>
-            );
-          })()}
+          )}
 
           <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
 
@@ -584,9 +582,10 @@ export default function Meter() {
               })()}
 
               {/* Come un diario, non righe uniformi: un filo verticale che
-                  scorre da un consiglio al successivo. */}
+                  scorre da un consiglio al successivo — il primo resta
+                  solo nella card in evidenza sopra, non si ripete qui. */}
               <div className="timeline">
-                {dailyPicks.map((e) => {
+                {dailyPicks.slice(1).map((e) => {
                   const judge = () => openRating({ ...e, url: e.spotify_url, id: e.id });
                   const canPlay = !!e.spotify_id;
                   return (
@@ -775,10 +774,7 @@ export default function Meter() {
           FAB M3 esteso: icona + etichetta, non solo un'icona. */}
       <button
         type="button" className="fab pop"
-        onClick={() => {
-          if (playback) openRating({ artist: playback.artist, track: playback.track });
-          else setManual({ open: true, artist: "", track: "" });
-        }}
+        onClick={quickJudge}
         aria-label="Registra un ascolto" title="Registra un ascolto"
       >
         <Plus size={20} /> <span className="fab-label">Registra</span>
