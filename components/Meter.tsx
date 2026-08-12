@@ -539,7 +539,7 @@ export default function Meter() {
             );
           })()}
 
-          <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
+          <div className="section-label"><p className="label">Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p></div>
 
           {dailyPicks.length === 0 ? (
             <p className="t-body" style={{ fontSize: 15, maxWidth: 480 }}>

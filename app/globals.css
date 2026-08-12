@@ -29,8 +29,11 @@
   --md-sys-color-primary-container: #EADDFF;
   --md-sys-color-on-primary-container: #23005C;
 
-  --md-sys-color-secondary-container: #E8DEF8;
-  --md-sys-color-on-secondary-container: #1D192B;
+  /* Deliberatamente quasi neutro: se anche il tonale "secondario" fosse
+     viola pieno come il primary, i due ruoli si confonderebbero a colpo
+     d'occhio. Solo un velo di tinta, non un secondo blocco di colore. */
+  --md-sys-color-secondary-container: #EDE9F1;
+  --md-sys-color-on-secondary-container: #332F39;
 
   /* Tertiary: viola-indaco più profondo, riservato al verdetto "in
      dubbio" — nel vecchio sistema era --night. Stessa famiglia del
@@ -70,7 +73,7 @@
   --md-sys-color-on-surface: #1C1425;
   --md-sys-color-on-surface-variant: #49454E;
   --md-sys-color-outline: #7A7583;
-  --md-sys-color-outline-variant: #CBC4D4;
+  --md-sys-color-outline-variant: #DBD5DF;
   --md-sys-color-scrim: #000000;
 
   /* Sfondo neutro per le copertine non ancora caricate — lilla
@@ -142,8 +145,11 @@
   --md-sys-color-primary-container: #55388F;
   --md-sys-color-on-primary-container: #EADDFF;
 
-  --md-sys-color-secondary-container: #4A4458;
-  --md-sys-color-on-secondary-container: #E8DEF8;
+  /* Stesso principio del tema chiaro: quasi neutro, un gradino sopra
+     surface-container-high — non un secondo viola pieno accanto al
+     primary, o i due ruoli si perdono l'uno nell'altro. */
+  --md-sys-color-secondary-container: #362F40;
+  --md-sys-color-on-secondary-container: #DDD7E4;
 
   --md-sys-color-tertiary: #C3C0FF;
   --md-sys-color-on-tertiary: #2C2568;
@@ -175,7 +181,7 @@
   --md-sys-color-on-surface: #E7E0EC;
   --md-sys-color-on-surface-variant: #C9C2D6;
   --md-sys-color-outline: #928F9C;
-  --md-sys-color-outline-variant: #49444F;
+  --md-sys-color-outline-variant: #37333E;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
