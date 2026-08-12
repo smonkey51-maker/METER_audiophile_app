@@ -307,47 +307,52 @@ export default function Meter() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* Top app bar M3: sostituisce la pillola fluttuante. Stessa
-          collocazione su desktop e mobile — niente più salto in basso. */}
-      <div className="topbar">
-        <div className="topbar-brand">
-          <div className="topbar-avatar"><JessicaAvatar size={28} /></div>
-          <span className="t-display" style={{ fontSize: 15 }}>Jessica</span>
-        </div>
-        <div className="topbar-actions" role="group" aria-label="Stato e preferenze">
-          <a className="icon-btn" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega il tuo profilo Spotify">
-            <SpotifyMark size={22} />
-          </a>
-          <button className="icon-btn" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Vedi il tuo Wrapped">
-            <BookIcon size={22} />
-          </button>
-          <button className="icon-btn" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra, la gatta di Jessica" title="Petra">
-            <CatIcon size={22} />
-          </button>
-          <div ref={rigMenuRef} style={{ position: "relative" }}>
-            <button
-              ref={rigTriggerRef}
-              type="button" className={`icon-btn${rigMenuOpen ? " icon-btn--on" : ""}`} onClick={() => setRigMenuOpen((o) => !o)}
-              aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
-              title={`Catena d'ascolto: ${RIGS.find((r) => r.key === rig)?.label}`}
-            >
-              <Headphones size={22} aria-hidden="true" />
-            </button>
-            {rigMenuOpen && (
-              <div className="menu" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
-                {RIGS.map((r) => (
-                  <button
-                    key={r.key} type="button" role="option" aria-selected={r.key === rig}
-                    className={`menu-item${r.key === rig ? " is-active" : ""}`}
-                    onClick={() => { setRig(r.key); setRigMenuOpen(false); rigTriggerRef.current?.focus(); }}
-                  >
-                    {r.label}
-                  </button>
-                ))}
+      {/* Nav pill: una capsula sola invece della barra piatta — il
+          segmento "Jessica" gioca il ruolo del tab attivo/etichettato,
+          le utility restano icona-sola, il tema si stacca in fondo. */}
+      <div className="topbar-wrap">
+        <div className="topbar">
+          <div className="topbar-group">
+            <div className="topbar-brand">
+              <div className="topbar-avatar"><JessicaAvatar size={22} /></div>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>Jessica</span>
+            </div>
+            <div className="topbar-actions" role="group" aria-label="Stato e preferenze">
+              <a className="icon-btn" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega il tuo profilo Spotify">
+                <SpotifyMark size={22} />
+              </a>
+              <button className="icon-btn" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Vedi il tuo Wrapped">
+                <BookIcon size={22} />
+              </button>
+              <button className="icon-btn" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra, la gatta di Jessica" title="Petra">
+                <CatIcon size={22} />
+              </button>
+              <div ref={rigMenuRef} style={{ position: "relative" }}>
+                <button
+                  ref={rigTriggerRef}
+                  type="button" className={`icon-btn${rigMenuOpen ? " icon-btn--on" : ""}`} onClick={() => setRigMenuOpen((o) => !o)}
+                  aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
+                  title={`Catena d'ascolto: ${RIGS.find((r) => r.key === rig)?.label}`}
+                >
+                  <Headphones size={22} aria-hidden="true" />
+                </button>
+                {rigMenuOpen && (
+                  <div className="menu" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
+                    {RIGS.map((r) => (
+                      <button
+                        key={r.key} type="button" role="option" aria-selected={r.key === rig}
+                        className={`menu-item${r.key === rig ? " is-active" : ""}`}
+                        onClick={() => { setRig(r.key); setRigMenuOpen(false); rigTriggerRef.current?.focus(); }}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
-          <button className="icon-btn" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} title={dark ? "Tema scuro" : "Tema chiaro"}>
+          <button className="icon-btn topbar-theme" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} title={dark ? "Tema scuro" : "Tema chiaro"}>
             {dark ? <Moon size={22} /> : <Sun size={22} />}
           </button>
         </div>

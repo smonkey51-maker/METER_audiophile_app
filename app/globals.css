@@ -288,20 +288,34 @@ html, body {
 }
 .chip--on { border-color: transparent; background: var(--secondary-container); color: var(--on-secondary-container); }
 
-/* ── top app bar: sostituisce la pill fluttuante ──
-   Sticky in alto, piena larghezza, piatta (elevazione 0): un filo
-   --outline-variant la stacca dal contenuto, non un'ombra. Stesso
-   comportamento su desktop e mobile — niente più salto in basso. */
-.topbar {
-  position: sticky; top: 0; z-index: 40;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 10px 20px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--outline-variant);
+/* ── nav pill: una capsula sola, sospesa in alto ──
+   Non più una barra piatta a tutta larghezza: un unico contenitore
+   arrotondato con dentro un segmento "attivo" (etichetta + ritratto,
+   tinto di --primary-container) e i controlli icona-sola in fila — il
+   tema resta staccato in un suo cerchio a parte, in fondo alla fila. */
+.topbar-wrap {
+  position: sticky; top: 14px; z-index: 40;
+  padding: 0 20px; margin-bottom: 8px;
 }
-.topbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; max-width: 1120px; margin: 0 auto;
+  padding: 6px; border-radius: var(--md-sys-shape-corner-full);
+  background: var(--surface-container-high);
+  box-shadow: var(--md-sys-elevation-level2);
+}
+.topbar-group { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.topbar-brand {
+  display: flex; align-items: center; gap: 8px; min-width: 0; flex-shrink: 0;
+  padding: 8px 18px 8px 8px; border-radius: var(--md-sys-shape-corner-full);
+  background: var(--primary-container); color: var(--on-primary-container);
+}
 .topbar-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.topbar-theme { flex-shrink: 0; background: color-mix(in srgb, var(--on-surface) 6%, transparent); }
+@media (max-width: 640px) {
+  .topbar-wrap { padding: 0 12px; }
+  .topbar-brand span { display: none; }
+}
 
 /* IconButton M3 standard: nessun contenitore a riposo, solo un velo
    tondo di stato all'hover/press — il pattern che sostituisce ogni
