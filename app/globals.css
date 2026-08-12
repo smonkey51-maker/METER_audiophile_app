@@ -1,11 +1,12 @@
 /* ─────────────────────────────────────────────
-   METER — Material Design 3, un solo tema
+   METER — Material Design 3, chiaro e scuro
    Il sistema "vetro liquido" (rifrazione SVG, ombre
    multistrato, bagliori) è stato tolto per intero.
    Al suo posto: superfici piatte, elevazione tonale
    (un velo di --primary mescolato alla superficie,
-   non un'ombra scura), forme dalla scala M3, una sola
-   modalità chiara — niente più toggle tema.
+   non un'ombra scura), forme dalla scala M3. Due
+   temi, stesso seme di colore (--md-sys-color-primary
+   parte da #FF9F0A in entrambi), tonalità diverse.
    ───────────────────────────────────────────── */
 
 /* Serve perché --ambient possa transizionare come farebbe un colore
@@ -125,6 +126,51 @@
   --wood: var(--md-sys-color-wood);
 }
 
+/* Stesso seme, tonalità M3 dark: non un chiaro invertito a caso, gli
+   stessi ruoli pensati per un fondo scuro (i chiari diventano i
+   colori "in primo piano" — testo, icone, il container più vivo —
+   invece dei toni pieni usati come sfondo in schema chiaro). Basta
+   ridichiarare i --md-sys-color-*: gli alias brevi sopra li seguono
+   da soli, perché puntano al nome del ruolo, non al suo valore. */
+[data-theme="dark"] {
+  --md-sys-color-primary: #FFB77C;
+  --md-sys-color-on-primary: #4A2800;
+  --md-sys-color-primary-container: #6B3900;
+  --md-sys-color-on-primary-container: #FFDDB3;
+
+  --md-sys-color-secondary-container: #4D3B27;
+  --md-sys-color-on-secondary-container: #F6E4CB;
+
+  --md-sys-color-tertiary: #A0CDE0;
+  --md-sys-color-on-tertiary: #00363F;
+  --md-sys-color-tertiary-container: #1D4E5C;
+  --md-sys-color-on-tertiary-container: #BEEAFB;
+
+  --md-sys-color-success: #8FD888;
+  --md-sys-color-on-success: #00390A;
+  --md-sys-color-success-container: #0B5313;
+  --md-sys-color-on-success-container: #B4F1AE;
+
+  --md-sys-color-feature: #E0B6FF;
+  --md-sys-color-on-feature: #48186A;
+  --md-sys-color-feature-container: #5E3080;
+  --md-sys-color-on-feature-container: #F1DBFF;
+
+  --md-sys-color-error: #FFB4AB;
+  --md-sys-color-on-error: #690005;
+
+  --md-sys-color-surface: #17130D;
+  --md-sys-color-surface-container-lowest: #0F0C08;
+  --md-sys-color-surface-container-low: #201B14;
+  --md-sys-color-surface-container: #241F17;
+  --md-sys-color-surface-container-high: #2F2921;
+  --md-sys-color-surface-container-highest: #3A332A;
+  --md-sys-color-on-surface: #EDE1D3;
+  --md-sys-color-on-surface-variant: #C6B7A5;
+  --md-sys-color-outline: #9A8C7B;
+  --md-sys-color-outline-variant: #4D4237;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
@@ -134,12 +180,14 @@ html, body {
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.011em;
+  transition: background .2s var(--md-sys-motion-easing-standard), color .2s var(--md-sys-motion-easing-standard);
 }
 
-/* Ritratti fotografici a tratto: tracciato scuro su sfondo trasparente.
-   Un solo tema chiaro: nessuna inversione, il tracciato resta come nel
-   file sorgente. */
+/* Ritratti fotografici a tratto: tracciato scuro su sfondo trasparente,
+   com'è nel file sorgente — in tema scuro si invertono i canali RGB
+   (l'alpha non cambia): il nero diventa chiaro, niente asset separato. */
 .line-photo { filter: none; }
+[data-theme="dark"] .line-photo { filter: invert(1); }
 
 /* ── superfici: elevazione tonale, non ombra scura ──
    Ogni card è --surface con un velo di --primary mescolato sopra (5%

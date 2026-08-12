@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, ChevronLeft, ChevronRight, Headphones, Music2, MessageSquare, Pause, Play,
-  Plus, Search, SkipBack, SkipForward, X,
+  Check, ChevronLeft, ChevronRight, Headphones, Moon, Music2, MessageSquare, Pause, Play,
+  Plus, Search, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
@@ -47,6 +47,7 @@ function confidenceMask(confidence: number) {
 }
 
 export default function Meter() {
+  const [dark, setDark] = useState(true);
   const [model, setModel] = useState<Model>(EMPTY_MODEL);
   const [listens, setListens] = useState<Listen[]>([]);
   const [rig, setRig] = useState<string>("aperte");
@@ -72,6 +73,7 @@ export default function Meter() {
   const rigTriggerRef = useRef<HTMLButtonElement>(null);
   const paletteInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const flash = useCallback((t: string) => {
@@ -345,6 +347,9 @@ export default function Meter() {
               </div>
             )}
           </div>
+          <button className="icon-btn" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} title={dark ? "Tema scuro" : "Tema chiaro"}>
+            {dark ? <Moon size={22} /> : <Sun size={22} />}
+          </button>
         </div>
       </div>
 

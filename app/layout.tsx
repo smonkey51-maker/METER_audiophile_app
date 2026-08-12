@@ -17,9 +17,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Un solo tema, chiaro: la barra del browser prende la stessa
-  // superficie M3 della pagina, non più due varianti per preferenza OS.
-  themeColor: "#FFF8F3",
+  // La barra del browser segue la preferenza del sistema: non è legata
+  // al toggle dentro l'app (che parte da scuro), solo un'approssimazione
+  // ragionevole prima che React monti.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFF8F3" },
+    { media: "(prefers-color-scheme: dark)", color: "#17130D" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
