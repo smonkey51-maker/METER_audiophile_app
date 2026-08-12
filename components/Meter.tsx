@@ -472,17 +472,19 @@ export default function Meter() {
             </div>
           )}
 
-          {/* Non più una barra sempre aperta: un trigger, come un comando
-              rapido. ⌘K la apre da ovunque nella pagina. "Registra un
-              ascolto" è passato al FAB in fondo alla pagina: qui resta
-              solo la ricerca, a piena larghezza. */}
-          <button className="field palette-trigger" onClick={() => setPaletteOpen(true)}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <Search size={15} style={{ opacity: .7, flexShrink: 0 }} />
-              <span className="truncate">Cerca un brano su Spotify</span>
-            </span>
+          {/* Non più una barra a piena larghezza (su desktop restava per lo
+              più vuota): il trigger del comando rapido ora è solo il logo
+              Spotify, cliccabile. ⌘K apre lo stesso foglio da ovunque nella
+              pagina. "Registra un ascolto" resta sul FAB in fondo. */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            <button
+              type="button" className="icon-btn spotify-search-trigger" onClick={() => setPaletteOpen(true)}
+              aria-label="Cerca un brano su Spotify" title="Cerca un brano su Spotify (⌘K)"
+            >
+              <SpotifyMark size={22} />
+            </button>
             <span className="kbd">⌘K</span>
-          </button>
+          </div>
         </section>
 
         {/* Jessica lavora da sola: ogni notte guarda cosa ascolti e propone
@@ -537,7 +539,7 @@ export default function Meter() {
             );
           })()}
 
-          <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
+          <div className="section-label"><p className="label">Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p></div>
 
           {dailyPicks.length === 0 ? (
             <p className="t-body" style={{ fontSize: 15, maxWidth: 480 }}>

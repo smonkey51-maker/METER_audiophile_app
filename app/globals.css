@@ -6,7 +6,8 @@
    (un velo di --primary mescolato alla superficie,
    non un'ombra scura), forme dalla scala M3. Due
    temi, stesso seme di colore (--md-sys-color-primary
-   parte da #FF9F0A in entrambi), tonalità diverse.
+   parte da #6E4FA3, viola, in entrambi), tonalità
+   diverse — lilla, viola, nero.
    ───────────────────────────────────────────── */
 
 /* Serve perché --ambient possa transizionare come farebbe un colore
@@ -20,58 +21,64 @@
 }
 
 :root {
-  /* ── ruoli colore M3 (schema chiaro), generati dal seme --accent
-     esistente (#FF9F0A): stesso colore che l'app riconosce da sempre
-     come "di Jessica", ora espresso come tonalità M3 invece che come
-     unico valore acceso a tutta forza. ── */
-  --md-sys-color-primary: #8A4E00;
+  /* ── ruoli colore M3 (schema chiaro), seme viola (#6E4FA3): la
+     stessa identità che l'app riconosce come "di Jessica" ora vive
+     nella famiglia lilla/viola invece che nell'ambra di prima. ── */
+  --md-sys-color-primary: #6E4FA3;
   --md-sys-color-on-primary: #FFFFFF;
-  --md-sys-color-primary-container: #FFDDB3;
-  --md-sys-color-on-primary-container: #2C1600;
+  --md-sys-color-primary-container: #EADDFF;
+  --md-sys-color-on-primary-container: #23005C;
 
-  --md-sys-color-secondary-container: #F6E4CB;
-  --md-sys-color-on-secondary-container: #271905;
+  /* Deliberatamente quasi neutro: se anche il tonale "secondario" fosse
+     viola pieno come il primary, i due ruoli si confonderebbero a colpo
+     d'occhio. Solo un velo di tinta, non un secondo blocco di colore. */
+  --md-sys-color-secondary-container: #EDE9F1;
+  --md-sys-color-on-secondary-container: #332F39;
 
-  /* Tertiary: hue spostata (blu-petrolio), riservata al verdetto "in
-     dubbio" — nel vecchio sistema era --night. */
-  --md-sys-color-tertiary: #3C6472;
+  /* Tertiary: viola-indaco più profondo, riservato al verdetto "in
+     dubbio" — nel vecchio sistema era --night. Stessa famiglia del
+     primary, hue spostata verso il blu invece che verso il magenta. */
+  --md-sys-color-tertiary: #47408C;
   --md-sys-color-on-tertiary: #FFFFFF;
-  --md-sys-color-tertiary-container: #BEEAFB;
-  --md-sys-color-on-tertiary-container: #001F27;
+  --md-sys-color-tertiary-container: #E1DFFF;
+  --md-sys-color-on-tertiary-container: #0F0A3C;
 
   /* Ruolo aggiuntivo, non nel set base M3 ma nello spirito ("le app
      possono estendere i ruoli core con i propri"): il verde del
-     verdetto "tenuto" — nel vecchio sistema era --good. */
+     verdetto "tenuto" — nel vecchio sistema era --good. Resta verde:
+     è un segnale funzionale (accetta/scarta), non parte della
+     tavolozza del brand. */
   --md-sys-color-success: #2E6B2E;
   --md-sys-color-on-success: #FFFFFF;
   --md-sys-color-success-container: #B4F1AE;
   --md-sys-color-on-success-container: #002203;
 
   /* Un secondo ruolo esteso: la sola superficie "creativa" dell'app
-     (il Wrapped) — nel vecchio sistema era --feature. */
-  --md-sys-color-feature: #7C4B9A;
+     (il Wrapped) — nel vecchio sistema era --feature. Già viola,
+     lasciata quasi invariata. */
+  --md-sys-color-feature: #8B4FA0;
   --md-sys-color-on-feature: #FFFFFF;
-  --md-sys-color-feature-container: #F1DBFF;
-  --md-sys-color-on-feature-container: #2E0F49;
+  --md-sys-color-feature-container: #F6D9FF;
+  --md-sys-color-on-feature-container: #350045;
 
   --md-sys-color-error: #BA1A1A;
   --md-sys-color-on-error: #FFFFFF;
 
-  --md-sys-color-surface: #FFF8F3;
+  --md-sys-color-surface: #FFFBFF;
   --md-sys-color-surface-container-lowest: #FFFFFF;
-  --md-sys-color-surface-container-low: #FFF1E6;
-  --md-sys-color-surface-container: #FBEBDB;
-  --md-sys-color-surface-container-high: #F5E5D5;
-  --md-sys-color-surface-container-highest: #EFE0CF;
-  --md-sys-color-on-surface: #201B13;
-  --md-sys-color-on-surface-variant: #504536;
-  --md-sys-color-outline: #837465;
-  --md-sys-color-outline-variant: #D5C3B2;
+  --md-sys-color-surface-container-low: #F7EDFF;
+  --md-sys-color-surface-container: #F1E7FA;
+  --md-sys-color-surface-container-high: #EBE0F4;
+  --md-sys-color-surface-container-highest: #E5DAEE;
+  --md-sys-color-on-surface: #1C1425;
+  --md-sys-color-on-surface-variant: #49454E;
+  --md-sys-color-outline: #7A7583;
+  --md-sys-color-outline-variant: #DBD5DF;
   --md-sys-color-scrim: #000000;
 
-  /* Legno di rovere per le copertine non ancora caricate — l'unico
-     colore che non viene dal seme M3, resta dai riferimenti fotografici. */
-  --md-sys-color-wood: #A9834F;
+  /* Sfondo neutro per le copertine non ancora caricate — lilla
+     spento invece dell'ambra di prima, coerente con la tavolozza. */
+  --md-sys-color-wood: #7E6A96;
 
   /* ── elevazione M3: ombra vera ma minima, più un velo di --primary
      che cresce con il livello — mai la coppia di ombre chiara/scura
@@ -133,42 +140,48 @@
    ridichiarare i --md-sys-color-*: gli alias brevi sopra li seguono
    da soli, perché puntano al nome del ruolo, non al suo valore. */
 [data-theme="dark"] {
-  --md-sys-color-primary: #FFB77C;
-  --md-sys-color-on-primary: #4A2800;
-  --md-sys-color-primary-container: #6B3900;
-  --md-sys-color-on-primary-container: #FFDDB3;
+  --md-sys-color-primary: #D2BBFF;
+  --md-sys-color-on-primary: #3B1E77;
+  --md-sys-color-primary-container: #55388F;
+  --md-sys-color-on-primary-container: #EADDFF;
 
-  --md-sys-color-secondary-container: #4D3B27;
-  --md-sys-color-on-secondary-container: #F6E4CB;
+  /* Stesso principio del tema chiaro: quasi neutro, un gradino sopra
+     surface-container-high — non un secondo viola pieno accanto al
+     primary, o i due ruoli si perdono l'uno nell'altro. */
+  --md-sys-color-secondary-container: #362F40;
+  --md-sys-color-on-secondary-container: #DDD7E4;
 
-  --md-sys-color-tertiary: #A0CDE0;
-  --md-sys-color-on-tertiary: #00363F;
-  --md-sys-color-tertiary-container: #1D4E5C;
-  --md-sys-color-on-tertiary-container: #BEEAFB;
+  --md-sys-color-tertiary: #C3C0FF;
+  --md-sys-color-on-tertiary: #2C2568;
+  --md-sys-color-tertiary-container: #443C80;
+  --md-sys-color-on-tertiary-container: #E1DFFF;
 
   --md-sys-color-success: #8FD888;
   --md-sys-color-on-success: #00390A;
   --md-sys-color-success-container: #0B5313;
   --md-sys-color-on-success-container: #B4F1AE;
 
-  --md-sys-color-feature: #E0B6FF;
-  --md-sys-color-on-feature: #48186A;
-  --md-sys-color-feature-container: #5E3080;
-  --md-sys-color-on-feature-container: #F1DBFF;
+  --md-sys-color-feature: #EBB2FF;
+  --md-sys-color-on-feature: #4C0064;
+  --md-sys-color-feature-container: #6C2986;
+  --md-sys-color-on-feature-container: #F6D9FF;
 
   --md-sys-color-error: #FFB4AB;
   --md-sys-color-on-error: #690005;
 
-  --md-sys-color-surface: #17130D;
-  --md-sys-color-surface-container-lowest: #0F0C08;
-  --md-sys-color-surface-container-low: #201B14;
-  --md-sys-color-surface-container: #241F17;
-  --md-sys-color-surface-container-high: #2F2921;
-  --md-sys-color-surface-container-highest: #3A332A;
-  --md-sys-color-on-surface: #EDE1D3;
-  --md-sys-color-on-surface-variant: #C6B7A5;
-  --md-sys-color-outline: #9A8C7B;
-  --md-sys-color-outline-variant: #4D4237;
+  /* Nero pieno, non un grigio scuro: lo sfondo dell'app diventa la
+     terza gamba della tavolozza (lilla, viola, nero), non un neutro
+     qualunque. I container salgono di un filo alla volta da lì. */
+  --md-sys-color-surface: #0A0710;
+  --md-sys-color-surface-container-lowest: #000000;
+  --md-sys-color-surface-container-low: #150F1F;
+  --md-sys-color-surface-container: #1A1424;
+  --md-sys-color-surface-container-high: #241D30;
+  --md-sys-color-surface-container-highest: #2F273C;
+  --md-sys-color-on-surface: #E7E0EC;
+  --md-sys-color-on-surface-variant: #C9C2D6;
+  --md-sys-color-outline: #928F9C;
+  --md-sys-color-outline-variant: #37333E;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -376,12 +389,15 @@ html, body {
 
 /* Il trigger del comando rapido: sembra il campo di ricerca di prima,
    ma è un bottone inerte — apre il vero campo in un foglio sopra. */
-.palette-trigger {
-  display: flex; align-items: center; justify-content: space-between;
-  text-align: left; cursor: pointer; color: var(--on-surface-variant);
+/* Trigger del comando rapido: solo il logo Spotify, in un cerchio tonale
+   invece del bottone-icona trasparente standard — così resta leggibile
+   anche da solo, senza la barra a piena larghezza che lo precedeva. */
+.spotify-search-trigger {
+  background: var(--secondary-container); color: var(--on-secondary-container);
 }
-.palette-trigger:hover { border-color: var(--primary); }
-.palette-trigger > span:first-child { min-width: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .spotify-search-trigger:hover { background: color-mix(in srgb, var(--on-secondary-container) 8%, var(--secondary-container)); }
+}
 .kbd {
   font-family: var(--mono); font-size: 11px; color: var(--on-surface-variant);
   border: 1px solid var(--outline-variant); border-radius: 6px; padding: 3px 7px;
