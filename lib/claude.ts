@@ -50,6 +50,7 @@ export function parseJson<T>(content: unknown[], fallback: T): T {
 export function clampAxes(raw: any[], max: number, ceiling = 0.95) {
   return (raw ?? [])
     .map((a) => ({
+      title: String(a?.title ?? "").trim(),
       claim: String(a?.claim ?? "").trim(),
       confidence: Math.max(0, Math.min(ceiling, Number(a?.confidence) || 0.4)),
       evidence: Math.max(1, Number(a?.evidence) || 1),

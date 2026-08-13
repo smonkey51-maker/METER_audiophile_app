@@ -499,17 +499,14 @@ export default function Meter() {
 
         {/* ── Le mie opinioni sulla tua musica ── */}
         <section className="rise">
-          <p className="label" style={{ marginBottom: 8 }}>Le mie opinioni sulla tua musica</p>
-          <p className="t-body" style={{ fontSize: 14, maxWidth: 560, marginBottom: 24 }}>
-            Ogni notte passo in rassegna quello che ascolti e scelgo brani nuovi per conto mio — in totale autonomia, non me lo chiedi tu.
-          </p>
+          <p className="label" style={{ marginBottom: 16 }}>Le mie opinioni sulla tua musica</p>
 
           {model.axes.length > 0 ? (
             <div className="opinions-grid">
               {model.axes.map((axis, i) => (
                 <div key={i}>
                   <div className="opinion-row-head">
-                    <span className="t-quote">{axis.claim}</span>
+                    <span className="t-quote">{axis.title || axis.claim}</span>
                     <span className="opinion-pct tnum">{Math.round(axis.confidence * 100)}%</span>
                   </div>
                   <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(axis.confidence * 100)}%` }} /></div>

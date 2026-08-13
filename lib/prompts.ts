@@ -47,7 +47,9 @@ Changelog: solo ciò che è cambiato, max 5 righe, in italiano.
 
 "summary": una frase rivolta direttamente all'ascoltatore, tono scherzoso e complice, che DEVE iniziare esattamente con "Bubi sei..." seguito da che tipo di ascoltatore è, in breve.
 
-SOLO JSON: {"axes":[{"claim":"","confidence":0.0,"evidence":0,"trace":[""]}],"rules":[""],"summary":"","changelog":[""]}`;
+Per ogni asse scrivi anche "title": un'etichetta di 2-3 parole (sostantivo o sostantivo+aggettivo, es. "Tensione narrativa", "Timbro oscillante", "Dinamica selettiva") che riassume il tema dell'asse, non la conclusione.
+
+SOLO JSON: {"axes":[{"title":"","claim":"","confidence":0.0,"evidence":0,"trace":[""]}],"rules":[""],"summary":"","changelog":[""]}`;
 
 export const META_SYSTEM = `Sei il meta-consolidamento di METER: la memoria di lunghissimo periodo.
 Ricevi IDENTITÀ attuale, ERE precedenti, MODELLO corrente. Scrivi un'identità d'ascolto: 3-5 frasi a un livello che sopravvive ai cambi di fase. Non ripetere gli assi, astrai. Cosa resta vero da mesi, cosa si è spostato, cosa non è mai cambiato. Se noti una traiettoria (un allontanamento, un ritorno), dilla. L'identità non viene mai potata: deve valere anche fra un anno.
@@ -56,14 +58,14 @@ SOLO JSON: {"identity":"","era":"una frase su questa era"}`;
 export const SEED_SYSTEM = `Sei il processo di innesto della memoria di METER. Ricevi il profilo Spotify di un ascoltatore: artisti più ascoltati su tre finestre temporali, brani più ascoltati, libreria salvata, artisti seguiti, cronologia recente.
 
 Costruisci un modello iniziale:
-- axes: da 3 a 6 preferenze osservabili, formulate per orientare una scelta futura, con la dimensione nominata (produzione, arrangiamento, esecuzione, timbro, dinamica, metrica, scrittura). CONFIDENZA MASSIMA 0.45: sono inferenze dal volume d'ascolto, non giudizi espressi. In "trace" fino a 3 artisti o brani su cui ti basi.
+- axes: da 3 a 6 preferenze osservabili, formulate per orientare una scelta futura, con la dimensione nominata (produzione, arrangiamento, esecuzione, timbro, dinamica, metrica, scrittura). CONFIDENZA MASSIMA 0.45: sono inferenze dal volume d'ascolto, non giudizi espressi. In "trace" fino a 3 artisti o brani su cui ti basi. Per ogni asse scrivi anche "title": un'etichetta di 2-3 parole che riassume il tema dell'asse (es. "Complessità armonica", "Respiro nella densità").
 - identity: 3-5 frasi. Nomina le tensioni, non i generi: cosa tiene insieme cose distanti, dove il gusto si contraddice. Le tre finestre temporali dicono la traiettoria: usale.
 - summary: una frase rivolta direttamente all'ascoltatore, tono scherzoso e complice, che DEVE iniziare esattamente con "Bubi sei..." seguito da che tipo di ascoltatore è, in breve.
 - gaps: 2-3 domande a cui questi dati non rispondono e che varrebbe la pena verificare con un giudizio esplicito.
 - newArtists: fino a 12 artisti ricorrenti da aggiungere al profilo di partenza.
 
 Italiano, asciutto. SOLO JSON:
-{"axes":[{"claim":"","confidence":0.0,"evidence":0,"trace":[""]}],"identity":"","summary":"","gaps":[""],"newArtists":[""]}`;
+{"axes":[{"title":"","claim":"","confidence":0.0,"evidence":0,"trace":[""]}],"identity":"","summary":"","gaps":[""],"newArtists":[""]}`;
 
 export function listenLine(e: Listen) {
   if (e.verdict) {
