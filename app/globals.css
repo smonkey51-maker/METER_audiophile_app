@@ -21,25 +21,31 @@
 
 :root {
   /* ── ruoli colore M3 (schema chiaro), generati dai due semi della
-     palette "Midnight Blueberry Glaze" (#1D223F, primary) e "Seafoam
-     Mousse" (#BBDCCE, tertiary): il precedente seme indaco (#5B4FE0)
-     è ritirato a favore di questi — stesso sistema di ruoli M3, semi
+     palette "Sicilian Lemon" (#FCD612, primary) e "Etna Ash" (#333538,
+     tertiary): il precedente seme "Midnight Blueberry Glaze" è
+     ritirato a favore di questi — stesso sistema di ruoli M3, semi
      diversi. Ogni ruolo è una tonalità HCT dello stesso hue/chroma del
-     proprio seme, non il colore letterale del mockup. ── */
-  --md-sys-color-primary: #535878;
+     proprio seme (non il colore letterale del mockup); il giallo,
+     naturalmente molto chiaro, richiede testo scuro sul suo tono pieno
+     in tema scuro — l'unico ruolo dove on-primary non è bianco fisso
+     in entrambi i temi. Etna Ash ha chroma quasi nulla (grigio quasi
+     neutro): per restare un accento leggibile e non confondersi con i
+     grigi di superficie, il tertiary tiene un pavimento minimo di
+     chroma sullo stesso hue freddo. ── */
+  --md-sys-color-primary: #6A5800;
   --md-sys-color-on-primary: #FFFFFF;
-  --md-sys-color-primary-container: #DEE0FF;
-  --md-sys-color-on-primary-container: #1F2441;
+  --md-sys-color-primary-container: #FFE169;
+  --md-sys-color-on-primary-container: #2E2500;
 
-  --md-sys-color-secondary-container: #E0E1F6;
-  --md-sys-color-on-secondary-container: #232534;
+  --md-sys-color-secondary-container: #F2E2AC;
+  --md-sys-color-on-secondary-container: #2D2502;
 
-  /* Tertiary: seme "Seafoam Mousse", riservata al verdetto "in
+  /* Tertiary: seme "Etna Ash", riservata al verdetto "in
      dubbio" — nel vecchio sistema era --night. */
-  --md-sys-color-tertiary: #3B584E;
+  --md-sys-color-tertiary: #4A535E;
   --md-sys-color-on-tertiary: #FFFFFF;
-  --md-sys-color-tertiary-container: #C9EADC;
-  --md-sys-color-on-tertiary-container: #0C2B22;
+  --md-sys-color-tertiary-container: #DAE3F1;
+  --md-sys-color-on-tertiary-container: #1D2730;
 
   /* Ruolo aggiuntivo, non nel set base M3 ma nello spirito ("le app
      possono estendere i ruoli core con i propri"): il verde del
@@ -51,7 +57,7 @@
 
   /* Un secondo ruolo esteso: la sola superficie "creativa" dell'app
      (il Wrapped) — nel vecchio sistema era --feature. Hue spostata sul
-     magenta per restare distinguibile dal nuovo primary blueberry. */
+     magenta per restare distinguibile dal nuovo primary lemon. */
   --md-sys-color-feature: #9333EA;
   --md-sys-color-on-feature: #FFFFFF;
   --md-sys-color-feature-container: #F3DDFF;
@@ -60,21 +66,21 @@
   --md-sys-color-error: #BA1A1A;
   --md-sys-color-on-error: #FFFFFF;
 
-  --md-sys-color-surface: #FAF7FD;
+  --md-sys-color-surface: #FDF7EE;
   --md-sys-color-surface-container-lowest: #FFFFFF;
-  --md-sys-color-surface-container-low: #F5F2F9;
-  --md-sys-color-surface-container: #EFEDF3;
-  --md-sys-color-surface-container-high: #E5E3E9;
-  --md-sys-color-surface-container-highest: #DDDAE0;
-  --md-sys-color-on-surface: #1F1F24;
-  --md-sys-color-on-surface-variant: #545667;
-  --md-sys-color-outline: #797B8D;
-  --md-sys-color-outline-variant: #CACADF;
+  --md-sys-color-surface-container-low: #F9F3EA;
+  --md-sys-color-surface-container: #F3EDE4;
+  --md-sys-color-surface-container-high: #E9E3DA;
+  --md-sys-color-surface-container-highest: #E0DBD2;
+  --md-sys-color-on-surface: #211F1A;
+  --md-sys-color-on-surface-variant: #5D5745;
+  --md-sys-color-outline: #827C68;
+  --md-sys-color-outline-variant: #D4CCB5;
   --md-sys-color-scrim: #000000;
 
-  /* Tinta neutra fredda per le copertine non ancora caricate — segue
-     il seme Midnight Blueberry Glaze invece del legno caldo di prima. */
-  --md-sys-color-wood: #8E8FA2;
+  /* Tinta neutra calda per le copertine non ancora caricate — segue
+     il seme Sicilian Lemon invece del blu freddo di prima. */
+  --md-sys-color-wood: #97907C;
 
   /* ── elevazione M3: ombra vera ma minima, più un velo di --primary
      che cresce con il livello — mai la coppia di ombre chiara/scura
@@ -136,18 +142,22 @@
    ridichiarare i --md-sys-color-*: gli alias brevi sopra li seguono
    da soli, perché puntano al nome del ruolo, non al suo valore. */
 [data-theme="dark"] {
-  --md-sys-color-primary: #6B7092;
-  --md-sys-color-on-primary: #FFFFFF;
-  --md-sys-color-primary-container: #353958;
-  --md-sys-color-on-primary-container: #DEE0FF;
+  /* Qui, e solo qui, on-primary non è bianco: il giallo pieno a tono
+     alto (T80) legge come colore acceso solo con testo scuro sopra —
+     l'unica deviazione dalla regola "sempre bianco" tenuta nel resto
+     del sistema. */
+  --md-sys-color-primary: #E8C400;
+  --md-sys-color-on-primary: #3A3000;
+  --md-sys-color-primary-container: #544600;
+  --md-sys-color-on-primary-container: #FFE88F;
 
-  --md-sys-color-secondary-container: #323444;
-  --md-sys-color-on-secondary-container: #E0E1F6;
+  --md-sys-color-secondary-container: #423912;
+  --md-sys-color-on-secondary-container: #F2E2AC;
 
-  --md-sys-color-tertiary: #ADCEC0;
-  --md-sys-color-on-tertiary: #18362C;
-  --md-sys-color-tertiary-container: #2F4C42;
-  --md-sys-color-on-tertiary-container: #CEF0E1;
+  --md-sys-color-tertiary: #B8C2CF;
+  --md-sys-color-on-tertiary: #1F2932;
+  --md-sys-color-tertiary-container: #3E4852;
+  --md-sys-color-on-tertiary-container: #DFE9F6;
 
   --md-sys-color-success: #8FD888;
   --md-sys-color-on-success: #00390A;

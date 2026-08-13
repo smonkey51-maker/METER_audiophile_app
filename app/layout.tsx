@@ -21,8 +21,8 @@ export const viewport: Viewport = {
   // al toggle dentro l'app (che parte da scuro), solo un'approssimazione
   // ragionevole prima che React monti.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF7FD" },
-    { media: "(prefers-color-scheme: dark)", color: "#0D0E12" },
+    { media: "(prefers-color-scheme: light)", color: "#FDF7EE" },
+    { media: "(prefers-color-scheme: dark)", color: "#100E09" },
   ],
 };
 
