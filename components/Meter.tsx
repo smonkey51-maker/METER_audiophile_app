@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, Headphones, Moon, Music2, MessageSquare, Pause, Play,
+  Check, Headphones, Home, ListMusic, Moon, Music2, MessageSquare, Pause, Play,
   Plus, Search, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
@@ -294,17 +294,28 @@ export default function Meter() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* ── Header: wordmark a sinistra, utility + azione rapida a destra ── */}
-      <div className="topbar-wrap">
-        <div className="topbar">
-          <div className="topbar-logo">
-            <span className="topbar-logo-mark" aria-hidden="true">
+      <div className="app-shell">
+        {/* ── Sidebar: logo + navigazione alle sezioni, stile Spotify ── */}
+        <aside className="sidebar">
+          <a className="sidebar-logo" href="#home" aria-label="METER">
+            <span className="sidebar-logo-mark" aria-hidden="true">
               <svg viewBox="0 0 20 20" width={13} height={13} fill="none">
                 <path d="M3 15 L3 5 L10 12 L17 5 L17 15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </span>
-            <span className="topbar-wordmark">METER</span>
-          </div>
+          </a>
+          <nav className="sidebar-nav" aria-label="Sezioni">
+            <a className="sidebar-link" href="#home"><Home size={18} aria-hidden="true" /> Home</a>
+            <a className="sidebar-link" href="#listening"><Music2 size={18} aria-hidden="true" /> Ora in ascolto</a>
+            <a className="sidebar-link" href="#picks"><ListMusic size={18} aria-hidden="true" /> Consigli di oggi</a>
+            <a className="sidebar-link" href="#opinions"><MessageSquare size={18} aria-hidden="true" /> Le mie opinioni</a>
+          </nav>
+        </aside>
+
+        <div className="app-main">
+      {/* ── Header: sole 5 icone di stato e preferenze ── */}
+      <div className="topbar-wrap">
+        <div className="topbar">
           <div className="topbar-group">
             <div className="topbar-actions" role="group" aria-label="Stato e preferenze">
               <a className="icon-btn" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega il tuo profilo Spotify">
@@ -343,9 +354,6 @@ export default function Meter() {
                 )}
               </div>
             </div>
-            <button className="btn btn--filled btn--sm" onClick={quickJudge} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 6 }}>
-              Giudica in ascolto <Plus size={14} />
-            </button>
           </div>
         </div>
       </div>
@@ -359,7 +367,7 @@ export default function Meter() {
         )}
 
         {/* ── Jessica + "Cosa so di te" ── */}
-        <section className="hero-header rise">
+        <section id="home" className="hero-header rise">
           <div className="hero-profile">
             <div className={`brand-mark${presenceTier(model.updatedAt) ? ` brand-mark--${presenceTier(model.updatedAt)}` : ""}`} title="Jessica AI">
               <JessicaAvatar size={80} />
@@ -389,7 +397,7 @@ export default function Meter() {
         </section>
 
         {/* ── Ora in ascolto ── */}
-        <section className="rise" style={{ marginBottom: 40 }}>
+        <section id="listening" className="rise" style={{ marginBottom: 40 }}>
           <p className="label" style={{ marginBottom: 16 }}>Ora in ascolto</p>
           <div className="card webplayer">
             <div className="webplayer-art" aria-hidden="true" style={playback?.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
@@ -441,7 +449,7 @@ export default function Meter() {
         </section>
 
         {/* ── Consigli di oggi ── */}
-        <section className="rise" style={{ marginBottom: 48 }}>
+        <section id="picks" className="rise" style={{ marginBottom: 48 }}>
           <p className="label" style={{ marginBottom: 20 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
 
           {dailyPicks.length === 0 ? (
@@ -498,7 +506,7 @@ export default function Meter() {
         </section>
 
         {/* ── Le mie opinioni sulla tua musica ── */}
-        <section className="rise">
+        <section id="opinions" className="rise">
           <p className="label" style={{ marginBottom: 16 }}>Le mie opinioni sulla tua musica</p>
 
           {model.axes.length > 0 ? (
@@ -519,6 +527,8 @@ export default function Meter() {
             </p>
           )}
         </section>
+      </div>
+        </div>
       </div>
 
       {/* ── barra di riproduzione in fondo ── */}

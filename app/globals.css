@@ -115,6 +115,12 @@ html, body {
   transition: background .2s var(--ease), color .2s var(--ease);
 }
 
+html { scroll-behavior: smooth; }
+#home, #listening, #picks, #opinions { scroll-margin-top: 84px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
 .line-photo { filter: none; }
 [data-theme="dark"] .line-photo { filter: invert(1); }
 
@@ -193,6 +199,41 @@ html, body {
 }
 .chip--on { background: var(--primary); color: var(--on-primary); }
 
+/* ── layout: rail laterale fisso + contenuto, stile Spotify ── */
+.app-shell { display: flex; min-height: 100vh; align-items: flex-start; }
+.app-main { flex: 1; min-width: 0; }
+
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 20px 12px;
+  background: var(--surface-container-lowest);
+  border-right: 1px solid var(--outline-variant);
+}
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px 24px; color: var(--on-surface); text-decoration: none;
+}
+.sidebar-logo-mark {
+  width: 28px; height: 28px; border-radius: var(--shape-sm);
+  background: var(--primary); color: var(--on-primary);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 14px; padding: 10px 12px;
+  border-radius: var(--shape-sm); text-decoration: none;
+  color: var(--on-surface-variant); font-size: 14px; font-weight: 700;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .sidebar-link:hover { color: var(--on-surface); background: var(--surface-container); }
+}
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+}
+
 /* ── header: sticky, piatto, sfumato dietro il contenuto ── */
 .topbar-wrap {
   position: sticky; top: 0; z-index: 40;
@@ -202,25 +243,14 @@ html, body {
   border-bottom: 1px solid var(--outline-variant);
 }
 .topbar {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: flex-end;
   gap: 16px; max-width: 900px; margin: 0 auto;
 }
 .topbar-group { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.topbar-logo {
-  display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 0;
-  color: var(--on-surface); text-decoration: none;
-}
-.topbar-logo-mark {
-  width: 28px; height: 28px; border-radius: var(--shape-sm);
-  background: var(--primary); color: var(--on-primary);
-  display: grid; place-items: center; flex-shrink: 0;
-}
-.topbar-wordmark { font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: .02em; }
 .topbar-actions { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
 .topbar-theme { flex-shrink: 0; }
 @media (max-width: 640px) {
   .topbar-wrap { padding: 12px 12px; }
-  .topbar-wordmark { display: none; }
 }
 
 .icon-btn {
