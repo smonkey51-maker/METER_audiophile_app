@@ -20,24 +20,26 @@
 }
 
 :root {
-  /* ── ruoli colore M3 (schema chiaro), generati dal seme indaco
-     (#5B4FE0): il vecchio ambra è stato ritirato a favore del blu-
-     violetto del nuovo mockup — stesso sistema di ruoli M3, seme
-     diverso. ── */
-  --md-sys-color-primary: #5B4FE0;
+  /* ── ruoli colore M3 (schema chiaro), generati dai due semi della
+     palette "Midnight Blueberry Glaze" (#1D223F, primary) e "Seafoam
+     Mousse" (#BBDCCE, tertiary): il precedente seme indaco (#5B4FE0)
+     è ritirato a favore di questi — stesso sistema di ruoli M3, semi
+     diversi. Ogni ruolo è una tonalità HCT dello stesso hue/chroma del
+     proprio seme, non il colore letterale del mockup. ── */
+  --md-sys-color-primary: #535878;
   --md-sys-color-on-primary: #FFFFFF;
-  --md-sys-color-primary-container: #E3DFFF;
-  --md-sys-color-on-primary-container: #160068;
+  --md-sys-color-primary-container: #DEE0FF;
+  --md-sys-color-on-primary-container: #1F2441;
 
-  --md-sys-color-secondary-container: #E6E1F9;
-  --md-sys-color-on-secondary-container: #241D48;
+  --md-sys-color-secondary-container: #E0E1F6;
+  --md-sys-color-on-secondary-container: #232534;
 
-  /* Tertiary: hue spostata (blu-petrolio), riservata al verdetto "in
+  /* Tertiary: seme "Seafoam Mousse", riservata al verdetto "in
      dubbio" — nel vecchio sistema era --night. */
-  --md-sys-color-tertiary: #3C6472;
+  --md-sys-color-tertiary: #3B584E;
   --md-sys-color-on-tertiary: #FFFFFF;
-  --md-sys-color-tertiary-container: #BEEAFB;
-  --md-sys-color-on-tertiary-container: #001F27;
+  --md-sys-color-tertiary-container: #C9EADC;
+  --md-sys-color-on-tertiary-container: #0C2B22;
 
   /* Ruolo aggiuntivo, non nel set base M3 ma nello spirito ("le app
      possono estendere i ruoli core con i propri"): il verde del
@@ -49,7 +51,7 @@
 
   /* Un secondo ruolo esteso: la sola superficie "creativa" dell'app
      (il Wrapped) — nel vecchio sistema era --feature. Hue spostata sul
-     magenta per restare distinguibile dal nuovo primary indaco. */
+     magenta per restare distinguibile dal nuovo primary blueberry. */
   --md-sys-color-feature: #9333EA;
   --md-sys-color-on-feature: #FFFFFF;
   --md-sys-color-feature-container: #F3DDFF;
@@ -58,21 +60,21 @@
   --md-sys-color-error: #BA1A1A;
   --md-sys-color-on-error: #FFFFFF;
 
-  --md-sys-color-surface: #F7F7FC;
+  --md-sys-color-surface: #FAF7FD;
   --md-sys-color-surface-container-lowest: #FFFFFF;
-  --md-sys-color-surface-container-low: #F1F0FA;
-  --md-sys-color-surface-container: #EBE9F7;
-  --md-sys-color-surface-container-high: #E3E1F1;
-  --md-sys-color-surface-container-highest: #DBD8EC;
-  --md-sys-color-on-surface: #1B1B23;
-  --md-sys-color-on-surface-variant: #55536A;
-  --md-sys-color-outline: #7B7A90;
-  --md-sys-color-outline-variant: #CBC8DE;
+  --md-sys-color-surface-container-low: #F5F2F9;
+  --md-sys-color-surface-container: #EFEDF3;
+  --md-sys-color-surface-container-high: #E5E3E9;
+  --md-sys-color-surface-container-highest: #DDDAE0;
+  --md-sys-color-on-surface: #1F1F24;
+  --md-sys-color-on-surface-variant: #545667;
+  --md-sys-color-outline: #797B8D;
+  --md-sys-color-outline-variant: #CACADF;
   --md-sys-color-scrim: #000000;
 
   /* Tinta neutra fredda per le copertine non ancora caricate — segue
-     il seme indaco invece del legno caldo di prima. */
-  --md-sys-color-wood: #6A6480;
+     il seme Midnight Blueberry Glaze invece del legno caldo di prima. */
+  --md-sys-color-wood: #8E8FA2;
 
   /* ── elevazione M3: ombra vera ma minima, più un velo di --primary
      che cresce con il livello — mai la coppia di ombre chiara/scura
@@ -134,18 +136,18 @@
    ridichiarare i --md-sys-color-*: gli alias brevi sopra li seguono
    da soli, perché puntano al nome del ruolo, non al suo valore. */
 [data-theme="dark"] {
-  --md-sys-color-primary: #7B6EF6;
+  --md-sys-color-primary: #6B7092;
   --md-sys-color-on-primary: #FFFFFF;
-  --md-sys-color-primary-container: #332B66;
-  --md-sys-color-on-primary-container: #E3DFFF;
+  --md-sys-color-primary-container: #353958;
+  --md-sys-color-on-primary-container: #DEE0FF;
 
-  --md-sys-color-secondary-container: #2E2A47;
-  --md-sys-color-on-secondary-container: #E1DEF5;
+  --md-sys-color-secondary-container: #323444;
+  --md-sys-color-on-secondary-container: #E0E1F6;
 
-  --md-sys-color-tertiary: #A0CDE0;
-  --md-sys-color-on-tertiary: #00363F;
-  --md-sys-color-tertiary-container: #1D4E5C;
-  --md-sys-color-on-tertiary-container: #BEEAFB;
+  --md-sys-color-tertiary: #ADCEC0;
+  --md-sys-color-on-tertiary: #18362C;
+  --md-sys-color-tertiary-container: #2F4C42;
+  --md-sys-color-on-tertiary-container: #CEF0E1;
 
   --md-sys-color-success: #8FD888;
   --md-sys-color-on-success: #00390A;
@@ -160,16 +162,16 @@
   --md-sys-color-error: #FFB4AB;
   --md-sys-color-on-error: #690005;
 
-  --md-sys-color-surface: #0A0A11;
-  --md-sys-color-surface-container-lowest: #060609;
-  --md-sys-color-surface-container-low: #121219;
-  --md-sys-color-surface-container: #17171F;
-  --md-sys-color-surface-container-high: #1E1E29;
-  --md-sys-color-surface-container-highest: #262633;
-  --md-sys-color-on-surface: #EDEDF5;
-  --md-sys-color-on-surface-variant: #A9A8BE;
-  --md-sys-color-outline: #77758C;
-  --md-sys-color-outline-variant: #38374A;
+  --md-sys-color-surface: #0D0E12;
+  --md-sys-color-surface-container-lowest: #07070B;
+  --md-sys-color-surface-container-low: #17171C;
+  --md-sys-color-surface-container: #1D1D22;
+  --md-sys-color-surface-container-high: #25252A;
+  --md-sys-color-surface-container-highest: #2E2E32;
+  --md-sys-color-on-surface: #EDEAF0;
+  --md-sys-color-on-surface-variant: #AEAFC3;
+  --md-sys-color-outline: #77788B;
+  --md-sys-color-outline-variant: #3B3D4D;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
