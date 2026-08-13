@@ -1,14 +1,20 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
-import { Instrument_Serif } from "next/font/google";
+import { Unbounded, Plus_Jakarta_Sans, Lora } from "next/font/google";
 
+const unbounded = Unbounded({
+  subsets: ["latin"], weight: ["700", "900"],
+  variable: "--font-unbounded", display: "swap",
+});
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"], weight: ["400", "500", "600", "700"],
+  variable: "--font-jakarta", display: "swap",
+});
 // Riservato al pensiero di Jessica: citazioni, non dati. Il resto
-// dell'interfaccia resta Geist.
-const serif = Instrument_Serif({
-  subsets: ["latin"], weight: "400", style: ["normal", "italic"],
-  variable: "--font-serif", display: "swap",
+// dell'interfaccia resta Jakarta.
+const lora = Lora({
+  subsets: ["latin"], weight: ["400", "500"], style: ["italic"],
+  variable: "--font-lora", display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -21,14 +27,14 @@ export const viewport: Viewport = {
   // al toggle dentro l'app (che parte da scuro), solo un'approssimazione
   // ragionevole prima che React monti.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFF8F3" },
-    { media: "(prefers-color-scheme: dark)", color: "#17130D" },
+    { media: "(prefers-color-scheme: light)", color: "#fff8f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#141414" },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="it" className={`${GeistSans.variable} ${GeistMono.variable} ${serif.variable}`}>
+    <html lang="it" className={`${unbounded.variable} ${jakarta.variable} ${lora.variable}`}>
       <body>
         {children}
       </body>

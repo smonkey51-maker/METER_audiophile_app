@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, Gauge, Headphones, Moon, Music2, MessageSquare, Pause, Play,
-  Plus, Search, Sparkles, SkipBack, SkipForward, Sun, X,
+  Check, Headphones, Moon, Music2, MessageSquare, Pause, Play,
+  Plus, Search, SkipBack, SkipForward, Sun, X,
 } from "lucide-react";
 import { DIMS, RIGS, VERDICTS, type Listen, type Model, EMPTY_MODEL, type Rec, type Verdict } from "@/lib/types";
 import JessicaAvatar from "./JessicaAvatar";
@@ -19,7 +19,7 @@ type SearchHit = { artist: string; track: string; album?: string; url: string; u
 // giorni si vede subito), ma detta come presenza e non come timestamp
 // di sistema — è la frase sotto il ritratto, non un log.
 function presencePhrase(iso?: string) {
-  if (!iso) return null;
+  if (!iso) return "Aspetto di riprendere ad ascoltare con te";
   const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
   if (h < 1) return "Sono con te in questo momento";
   if (h < 24) return "Ho ascoltato con te oggi";
@@ -66,7 +66,6 @@ export default function Meter() {
   const [manual, setManual] = useState({ open: false, artist: "", track: "" });
   const [toast, setToast] = useState<string | null>(null);
   const [playback, setPlayback] = useState<Playback | null>(null);
-  const [ambient, setAmbient] = useState("transparent");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
@@ -186,34 +185,6 @@ export default function Meter() {
     return () => clearInterval(t);
   }, [refreshPlayback]);
 
-  // Un indicatore "leading" tinto dal colore medio della copertina in
-  // riproduzione — non più un velo di vetro, solo un filo colorato sul
-  // bordo della card, coerente con superfici piatte.
-  useEffect(() => {
-    const art = playback?.art;
-    if (!art) { setAmbient("transparent"); return; }
-    let cancelled = false;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      if (cancelled) return;
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 12; canvas.height = 12;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0, 12, 12);
-        const { data } = ctx.getImageData(0, 0, 12, 12);
-        let r = 0, g = 0, b = 0, n = 0;
-        for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
-        if (n && !cancelled) setAmbient(`rgb(${Math.round(r / n)} ${Math.round(g / n)} ${Math.round(b / n)})`);
-      } catch { if (!cancelled) setAmbient("transparent"); } // tela "sporca" (CORS): niente velo, non un errore visibile
-    };
-    img.onerror = () => { if (!cancelled) setAmbient("transparent"); };
-    img.src = art;
-    return () => { cancelled = true; };
-  }, [playback?.art]);
-
   async function playerAction(action: "play" | "pause" | "next" | "previous", uri?: string) {
     const r = await fetch("/api/spotify/player", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -241,7 +212,7 @@ export default function Meter() {
   const dailyPicks = useMemo(() => listens
     .filter((l) => !l.verdict && l.source === "rec")
     .sort((a, b) => b.plays - a.plays)
-    .slice(0, 8), [listens]);
+    .slice(0, 6), [listens]);
 
   // Le copertine non sono in DB (richiederebbe una colonna in più): si
   // recuperano al volo quando un consiglio compare, una tantum per riga.
@@ -319,32 +290,34 @@ export default function Meter() {
   }
 
   const hasData = !!model.summary;
+  const isCurrent = (l: Listen) => !!playback && playback.track === l.track && playback.artist === l.artist;
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* Intestazione piatta: il wordmark METER a sinistra, le utility
-          e l'azione rapida "Giudica in ascolto" a destra — non più la
-          capsula sospesa, il ritratto di Jessica si è spostato più giù,
-          accanto a "Cosa so di te". */}
+      {/* ── Header: wordmark a sinistra, utility + azione rapida a destra ── */}
       <div className="topbar-wrap">
         <div className="topbar">
           <div className="topbar-logo">
-            <span className="topbar-logo-mark" aria-hidden="true"><Gauge size={15} /></span>
+            <span className="topbar-logo-mark" aria-hidden="true">
+              <svg viewBox="0 0 20 20" width={13} height={13} fill="none">
+                <path d="M3 15 L3 5 L10 12 L17 5 L17 15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
             <span className="topbar-wordmark">METER</span>
           </div>
           <div className="topbar-group">
             <div className="topbar-actions" role="group" aria-label="Stato e preferenze">
               <a className="icon-btn" href="/api/spotify/login" aria-label="Collega Spotify" title="Collega il tuo profilo Spotify">
-                <SpotifyMark size={20} />
+                <SpotifyMark size={18} />
               </a>
               <button className="icon-btn" onClick={() => flash("Ciao, da Petra! Mraaao")} aria-label="Petra, la gatta di Jessica" title="Petra">
-                <CatIcon size={20} />
+                <CatIcon size={18} />
               </button>
-              <button className="icon-btn topbar-theme" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} title={dark ? "Tema scuro" : "Tema chiaro"}>
-                {dark ? <Moon size={20} /> : <Sun size={20} />}
+              <button className="icon-btn topbar-theme" onClick={() => setDark((d) => !d)} aria-label={dark ? "Passa al tema chiaro" : "Passa al tema scuro"} title={dark ? "Tema chiaro" : "Tema scuro"}>
+                {dark ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               <button className="icon-btn" onClick={() => setWrappedOpen(true)} aria-label="Il tuo Wrapped" title="Vedi il tuo Wrapped">
-                <BookIcon size={20} />
+                <BookIcon size={18} />
               </button>
               <div ref={rigMenuRef} style={{ position: "relative" }}>
                 <button
@@ -353,7 +326,7 @@ export default function Meter() {
                   aria-haspopup="listbox" aria-expanded={rigMenuOpen} aria-label="Catena d'ascolto"
                   title={`Catena d'ascolto: ${RIGS.find((r) => r.key === rig)?.label}`}
                 >
-                  <Headphones size={20} aria-hidden="true" />
+                  <Headphones size={18} aria-hidden="true" />
                 </button>
                 {rigMenuOpen && (
                   <div className="menu" role="listbox" aria-label="Catena d'ascolto" onKeyDown={onRigMenuKeyDown}>
@@ -370,7 +343,7 @@ export default function Meter() {
                 )}
               </div>
             </div>
-            <button className="btn btn--filled btn--sm" onClick={quickJudge} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <button className="btn btn--filled btn--sm" onClick={quickJudge} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 6 }}>
               Giudica in ascolto <Plus size={14} />
             </button>
           </div>
@@ -378,9 +351,6 @@ export default function Meter() {
       </div>
 
       <div className="shell">
-        {/* Niente più schermata bianca se il DB è irraggiungibile: lo si
-            dice, con un modo per riprovare, e il resto della pagina
-            resta comunque usabile. */}
         {dbError && (
           <section className="card pop" style={{ padding: "16px 22px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
             <span className="t-body" style={{ fontSize: 14 }}>Non riesco a raggiungere la memoria di Jessica in questo momento.</span>
@@ -388,32 +358,25 @@ export default function Meter() {
           </section>
         )}
 
-        {/* Il ritratto di Jessica, ora accanto alla sua tesi invece che
-            sopra da solo: "Cosa so di te" — il paragrafo (model.summary)
-            inizia sempre con "Bubi sei...", lo garantisce il prompt che lo
-            genera. Una citazione, non un dato: l'unico posto (con
-            "Opinioni") dove entra il serif. Sotto, la presenza passiva
-            (non un timestamp) e il ciclo notturno, letto dal cron vero. */}
+        {/* ── Jessica + "Cosa so di te" ── */}
         <section className="hero-header rise">
           <div className="hero-profile">
-            <div className={`brand-mark brand-mark--sm${presenceTier(model.updatedAt) ? ` brand-mark--${presenceTier(model.updatedAt)}` : ""}`} title="Jessica AI">
-              <JessicaAvatar size={44} />
+            <div className={`brand-mark${presenceTier(model.updatedAt) ? ` brand-mark--${presenceTier(model.updatedAt)}` : ""}`} title="Jessica AI">
+              <JessicaAvatar size={80} />
             </div>
-            <span className="t-display" style={{ fontSize: 14 }}>Jessica</span>
+            <span className="hero-profile-label">Jessica</span>
           </div>
           <div className="hero-content">
             <p className="label" style={{ marginBottom: 16 }}>Cosa so di te</p>
-            <p className="warmup t-quote" style={{ fontSize: "clamp(22px, 3.2vw, 30px)" }}>
+            <p className="t-quote warmup" style={{ fontSize: "clamp(19px, 2.6vw, 24px)" }}>
               {model.summary || "Bubi sei un mistero anche per me: non so ancora niente del tuo ascolto. Importa il profilo Spotify o registra qualche brano."}
             </p>
-            {presencePhrase(model.updatedAt) && (
-              <p className="hero-presence">{presencePhrase(model.updatedAt)}</p>
-            )}
+            <p className="hero-presence">
+              <button className="hero-presence-btn" onClick={refresh}>{presencePhrase(model.updatedAt)}</button>
+            </p>
             {cyclePhrase(model.updatedAt) && (
               <span className="cycle-pill"><Moon size={12} aria-hidden="true" /> {cyclePhrase(model.updatedAt)}</span>
             )}
-            {/* Percorso guidato per chi arriva senza dati: due azioni
-                esplicite invece di lasciar scoprire da soli dove si comincia. */}
             {!hasData && (
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24 }}>
                 <a className="btn btn--filled" href="/api/spotify/login">Collega Spotify</a>
@@ -425,238 +388,203 @@ export default function Meter() {
           </div>
         </section>
 
-        {/* Telecomando: nessun audio passa da qui, comanda il dispositivo Spotify già attivo. */}
-        <section className="rise" style={{ marginBottom: 36 }}>
-          <p className="label" style={{ marginBottom: 14 }}>Ora in ascolto</p>
-
-          {playback ? (
-            /* Qualcosa è caricato, anche solo in pausa: diventa un web player
-               vero, con la copertina, non più la sola riga di testo. */
-            <div style={{ marginBottom: 20 }}>
-              <div className="card webplayer" style={{ "--ambient": ambient } as React.CSSProperties}>
-                <div key={playback.art ?? playback.track} className="webplayer-art pop" aria-hidden="true" style={playback.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
-                  {!playback.art && <Music2 size={26} style={{ opacity: .4 }} />}
-                </div>
-                <div className="webplayer-info">
-                  <p className="label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
-                    <Sparkles size={12} style={{ color: "var(--primary)", flexShrink: 0 }} aria-hidden="true" />
-                    <span className="truncate">{`In ascolto${playback.device ? " su " + playback.device : ""}`}</span>
-                    {playback.isPlaying && (
-                      <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
-                    )}
-                  </p>
-                  <p className="truncate" style={{ fontSize: 17 }}>
-                    <span className="t-display">{playback.track}</span> <span className="t-subdisplay">· {playback.artist}</span>
-                  </p>
-                </div>
-                <div className="webplayer-controls">
-                  <button className="icon-btn icon-btn--sm" onClick={() => playerAction("previous")} aria-label="Precedente">
-                    <SkipBack size={15} />
-                  </button>
-                  <button className="btn btn--filled" onClick={() => playerAction(playback.isPlaying ? "pause" : "play")} aria-label={playback.isPlaying ? "Pausa" : "Riproduci"} style={{ padding: "11px 15px" }}>
-                    {/* Non uno scambio secco di icona: le due si passano il
-                        posto, una si ritira ruotando mentre l'altra arriva
-                        dallo stesso punto — un morph, non un salto. */}
-                    <span className="play-morph">
-                      <span className={`play-morph-icon${playback.isPlaying ? "" : " is-out"}`}><Pause size={18} /></span>
-                      <span className={`play-morph-icon${playback.isPlaying ? " is-out" : ""}`}><Play size={18} /></span>
-                    </span>
-                  </button>
-                  <button className="icon-btn icon-btn--sm" onClick={() => playerAction("next")} aria-label="Successiva">
-                    <SkipForward size={15} />
-                  </button>
-                </div>
-              </div>
+        {/* ── Ora in ascolto ── */}
+        <section className="rise" style={{ marginBottom: 40 }}>
+          <p className="label" style={{ marginBottom: 16 }}>Ora in ascolto</p>
+          <div className="card webplayer">
+            <div className="webplayer-art" aria-hidden="true" style={playback?.art ? { backgroundImage: `url("${playback.art}")` } : undefined}>
+              {!playback?.art && <Music2 size={20} style={{ opacity: .4 }} />}
             </div>
-          ) : (
-            /* Stessa sagoma del web player attivo: se cambiasse altezza al primo
-               play, tutto sotto — la tracklist — si sposterebbe sotto al dito
-               proprio mentre si prova a toccare la riga successiva. */
-            <div style={{ marginBottom: 20 }}>
-              <div className="card webplayer">
-                <div className="webplayer-art" aria-hidden="true"><Music2 size={26} style={{ opacity: .4 }} /></div>
-                <div className="webplayer-info">
-                  <p className="t-body" style={{ fontSize: 15 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
-                </div>
-                {/* Stessi tre tasti, disattivati: sotto i 640px vanno a
-                    capo su una riga propria — se mancassero qui, la sagoma
-                    tornerebbe a cambiare altezza proprio su mobile. */}
-                <div className="webplayer-controls" style={{ opacity: .35 }}>
-                  <button className="icon-btn icon-btn--sm" disabled aria-hidden="true" tabIndex={-1}>
-                    <SkipBack size={15} />
-                  </button>
-                  <button className="btn btn--filled" disabled aria-hidden="true" tabIndex={-1} style={{ padding: "11px 15px" }}>
-                    <Play size={18} />
-                  </button>
-                  <button className="icon-btn icon-btn--sm" disabled aria-hidden="true" tabIndex={-1}>
-                    <SkipForward size={15} />
-                  </button>
-                </div>
-              </div>
+            <div className="webplayer-info">
+              {playback ? (
+                <>
+                  <p className="truncate" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="t-display truncate" style={{ fontSize: 15 }}>{playback.track}</span>
+                    {playback.isPlaying && <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>}
+                  </p>
+                  <p className="t-subdisplay truncate" style={{ fontSize: 13, marginTop: 2 }}>{playback.artist}</p>
+                </>
+              ) : (
+                <p className="t-body truncate" style={{ fontSize: 14 }}>Nessuna riproduzione attiva. Apri Spotify su un dispositivo.</p>
+              )}
             </div>
-          )}
+            <div className="webplayer-controls">
+              <button className="bp-transport-btn" disabled={!playback} onClick={() => playerAction("previous")} aria-label="Precedente">
+                <SkipBack size={16} />
+              </button>
+              <button
+                className="bp-play" disabled={!playback}
+                onClick={() => playback && playerAction(playback.isPlaying ? "pause" : "play")}
+                aria-label={playback?.isPlaying ? "Pausa" : "Riproduci"}
+              >
+                <span className="play-morph">
+                  <span className={`play-morph-icon${playback?.isPlaying ? "" : " is-out"}`}><Pause size={15} /></span>
+                  <span className={`play-morph-icon${playback?.isPlaying ? " is-out" : ""}`}><Play size={15} style={{ marginLeft: 1 }} /></span>
+                </span>
+              </button>
+              <button className="bp-transport-btn" disabled={!playback} onClick={() => playerAction("next")} aria-label="Successiva">
+                <SkipForward size={16} />
+              </button>
+            </div>
+          </div>
+        </section>
 
-          {/* Non più una barra sempre aperta: un trigger, come un comando
-              rapido. ⌘K la apre da ovunque nella pagina. "Registra un
-              ascolto" è passato al FAB in fondo alla pagina: qui resta
-              solo la ricerca, a piena larghezza. */}
+        {/* ── Ricerca ── */}
+        <section className="rise" style={{ marginBottom: 48 }}>
           <button className="field palette-trigger" onClick={() => setPaletteOpen(true)}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <Search size={15} style={{ opacity: .7, flexShrink: 0 }} />
+              <Search size={16} style={{ opacity: .7, flexShrink: 0 }} />
               <span className="truncate">Cerca un brano su Spotify</span>
             </span>
             <span className="kbd">⌘K</span>
           </button>
         </section>
 
-        {/* Jessica lavora da sola: ogni notte guarda cosa ascolti e propone
-            brani nuovi senza che nessuno glielo chieda. Qui vedi solo il
-            risultato, non c'è più una conversazione da tenere in piedi. */}
-        <section style={{ marginTop: 8 }}>
-          <p className="label" style={{ marginBottom: 14 }}>Le mie opinioni sulla tua musica</p>
-          <p className="t-body" style={{ fontSize: 15, maxWidth: 640, marginBottom: 28 }}>
-            Ogni notte passo in rassegna quello che ascolti e scelgo brani nuovi per conto mio — in totale autonomia, non me lo chiedi tu.
-          </p>
-
-          {/* Le analisi vere, quelle che Spotify non può fare: gli assi di
-              gusto che consolida nei cicli notturni — tutti in elenco,
-              ciascuno con la propria barra di confidenza. */}
-          {model.axes.length > 0 && (
-            <div style={{ marginBottom: 32, maxWidth: 480 }}>
-              {model.axes.map((axis, i) => (
-                <div className="axis-row" key={i}>
-                  <p className="t-quote" style={{ fontSize: 17 }}>&ldquo;{axis.claim}&rdquo;</p>
-                  <div className="axis-bar-row">
-                    <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(axis.confidence * 100)}%` }} /></div>
-                    <span className="label axis-pct">{Math.round(axis.confidence * 100)}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <p className="label" style={{ marginBottom: 16 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
+        {/* ── Consigli di oggi ── */}
+        <section className="rise" style={{ marginBottom: 48 }}>
+          <p className="label" style={{ marginBottom: 20 }}>Consigli di oggi{dailyPicks.length ? ` — ${dailyPicks.length}` : ""}</p>
 
           {dailyPicks.length === 0 ? (
-            <p className="t-body" style={{ fontSize: 15, maxWidth: 480 }}>
+            <p className="t-body" style={{ fontSize: 14 }}>
               Niente di nuovo ancora — propongo al ciclo notturno. Nel frattempo registra un ascolto che vuoi farmi conoscere.
             </p>
           ) : (
-            <>
-              {/* Il primo consiglio, in evidenza con la cover a tutto bordo:
-                  resta comunque anche nella lista sotto, questa card è solo
-                  enfasi visiva, non un filtro. */}
-              {(() => {
-                const pick = dailyPicks[0];
+            <div className="picks-grid">
+              {dailyPicks.map((pick) => {
                 const art = pick.id != null ? artByPick[pick.id] : undefined;
                 const canPlay = !!pick.spotify_id;
+                const active = isCurrent(pick);
                 const judge = () => openRating({ ...pick, url: pick.spotify_url, id: pick.id });
                 return (
-                  <div className="hero-pick pop" style={{ marginBottom: 24, ...(art ? { backgroundImage: `url("${art}")` } : null) }}>
-                    {!art && <Music2 size={30} className="hero-pick-fallback" aria-hidden="true" />}
-                    <div className="hero-pick-info">
-                      <p className="label" style={{ marginBottom: 8 }}>Pick di oggi</p>
-                      <p className="t-display truncate" style={{ fontSize: 21 }}>{pick.track}</p>
-                      <p className="t-subdisplay truncate" style={{ fontSize: 14, marginTop: 2 }}>{pick.artist}</p>
-                      {pick.bridge && <p className="t-body" style={{ fontSize: 13, marginTop: 8, maxWidth: 340 }}>{pick.bridge}</p>}
-                    </div>
-                    <div className="hero-pick-actions">
-                      <button
-                        className="icon-btn" disabled={!canPlay}
-                        aria-label={canPlay ? `Avvia ${pick.track}` : `${pick.track}: non ancora trovato su Spotify`}
-                        title={canPlay ? "Avvia l'ascolto" : "Non ancora trovato su Spotify"}
-                        onClick={() => canPlay && playerAction("play", pick.spotify_id)}
-                      >
-                        <Play size={16} fill="currentColor" />
-                      </button>
-                      <button
-                        className="btn btn--tonal btn--sm" aria-label={`Commenta ${pick.track}`} title="Commenta questo consiglio"
-                        onClick={judge}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-                      >
-                        <MessageSquare size={13} /> Commenta
-                      </button>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Come un diario, non righe uniformi: un filo verticale che
-                  scorre da un consiglio al successivo — il primo resta
-                  solo nella card in evidenza sopra, non si ripete qui. */}
-              <div className="timeline">
-                {dailyPicks.slice(1).map((e) => {
-                  const judge = () => openRating({ ...e, url: e.spotify_url, id: e.id });
-                  const canPlay = !!e.spotify_id;
-                  return (
-                  <div key={e.id} className="timeline-row">
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: "1 1 auto" }}>
-                        {/* Un solo bersaglio per "avvia l'ascolto": la copertina
-                            stessa è il pulsante play, non una riga che decide da
-                            sola cosa succede al tap. Disattivato (non assente)
-                            quando non c'è ancora un brano Spotify da avviare, così
-                            la differenza si vede subito, non si scopre a tentoni. */}
-                        <button
-                          type="button" className="tracklist-art-btn" disabled={!canPlay}
-                          aria-label={canPlay ? `Avvia ${e.track}` : `${e.track}: non ancora trovato su Spotify`}
-                          title={canPlay ? "Avvia l'ascolto" : "Non ancora trovato su Spotify"}
-                          onClick={() => canPlay && playerAction("play", e.spotify_id)}
-                        >
-                          <span className="tracklist-art" aria-hidden="true" style={e.id != null && artByPick[e.id] ? { backgroundImage: `url("${artByPick[e.id]}")` } : undefined}>
-                            {!(e.id != null && artByPick[e.id]) && <Music2 size={16} style={{ opacity: .35 }} />}
-                          </span>
-                          <span className="tracklist-play-overlay" aria-hidden="true"><Play size={15} fill="currentColor" /></span>
-                        </button>
-                        <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
-                          <span className="t-display truncate" style={{ fontSize: 16, maxWidth: 220 }}>{e.track}</span>
-                          <span className="t-subdisplay truncate" style={{ fontSize: 13, maxWidth: 220 }}>{e.artist}</span>
+                  <button
+                    key={pick.id ?? `${pick.artist}-${pick.track}`}
+                    type="button" className="pick-card"
+                    onClick={() => canPlay && playerAction(active && playback?.isPlaying ? "pause" : "play", pick.spotify_id)}
+                    aria-label={canPlay ? `Avvia ${pick.track}` : `${pick.track}: non ancora trovato su Spotify`}
+                  >
+                    <div className="pick-card-art">
+                      {art
+                        ? <img src={art} alt="" />
+                        : <Music2 size={22} style={{ opacity: .35 }} />}
+                      <div className={`pick-card-overlay${active ? " is-on" : ""}`}>
+                        <span className="pick-card-play">
+                          {active && playback?.isPlaying
+                            ? <Pause size={15} fill="currentColor" />
+                            : <Play size={15} fill="currentColor" style={{ marginLeft: 1 }} />}
                         </span>
-                      </span>
-                      <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                        {/* Il bridge dovrebbe essere una parola o due (lo dice il prompt), ma
-                            se Jessica esagera non deve mai spingersi sopra al titolo. */}
-                        {e.bridge && <span className="label truncate" style={{ maxWidth: 140 }}>{e.bridge}</span>}
-                        {/* Il secondo bersaglio, altrettanto esplicito: non più
-                            una sola icona ghost, ma un pulsante con etichetta —
-                            si legge "commenta", non si intuisce da un'iconcina. */}
-                        <button
-                          className="btn btn--tonal btn--sm" aria-label={`Commenta ${e.track}`} title="Commenta questo consiglio"
-                          onClick={judge}
-                          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-                        >
-                          <MessageSquare size={13} /> Commenta
-                        </button>
+                      </div>
+                      {active && <span className="pick-card-active-dot" aria-hidden="true" />}
+                      <span
+                        role="button" tabIndex={0}
+                        className="icon-btn icon-btn--sm"
+                        style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,.45)", color: "#fff" }}
+                        aria-label={`Commenta ${pick.track}`} title="Commenta questo consiglio"
+                        onClick={(e) => { e.stopPropagation(); judge(); }}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); judge(); } }}
+                      >
+                        <MessageSquare size={13} />
                       </span>
                     </div>
+                    <div style={{ minWidth: 0 }}>
+                      <p className={`pick-card-title truncate${active ? " is-active" : ""}`}>{pick.track}</p>
+                      <p className="pick-card-artist truncate">{pick.artist}</p>
+                      {pick.bridge && <p className="pick-card-bridge truncate">{pick.bridge}</p>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* ── Le mie opinioni sulla tua musica ── */}
+        <section className="rise">
+          <p className="label" style={{ marginBottom: 8 }}>Le mie opinioni sulla tua musica</p>
+          <p className="t-body" style={{ fontSize: 14, maxWidth: 560, marginBottom: 24 }}>
+            Ogni notte passo in rassegna quello che ascolti e scelgo brani nuovi per conto mio — in totale autonomia, non me lo chiedi tu.
+          </p>
+
+          {model.axes.length > 0 ? (
+            <div className="opinions-grid">
+              {model.axes.map((axis, i) => (
+                <div key={i}>
+                  <div className="opinion-row-head">
+                    <span className="t-quote">{axis.claim}</span>
+                    <span className="opinion-pct tnum">{Math.round(axis.confidence * 100)}%</span>
                   </div>
-                  );
-                })}
-              </div>
-            </>
+                  <div className="confidence-track"><div className="confidence-fill" style={{ width: `${Math.round(axis.confidence * 100)}%` }} /></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="t-body" style={{ fontSize: 14 }}>
+              Non ho ancora abbastanza ascolti giudicati per dirti qualcosa di preciso.
+            </p>
           )}
         </section>
       </div>
 
-      {/* foglio di giudizio */}
+      {/* ── barra di riproduzione in fondo ── */}
+      <div className="bottom-player">
+        <div className="bp-track">
+          {playback ? (
+            <>
+              <img
+                src={playback.art || "/avatars/jessica.png"}
+                alt="" className="bp-cover"
+              />
+              <div style={{ minWidth: 0 }}>
+                <p className="t-display truncate" style={{ fontSize: 13.5 }}>{playback.track}</p>
+                <p className="t-subdisplay truncate" style={{ fontSize: 12 }}>{playback.artist}</p>
+              </div>
+            </>
+          ) : (
+            <p className="t-body truncate" style={{ fontSize: 12.5 }}>Nessun brano selezionato</p>
+          )}
+        </div>
+
+        <div className="bp-center">
+          <div className="bp-transport">
+            <button className="bp-transport-btn" disabled={!playback} onClick={() => playerAction("previous")} aria-label="Precedente">
+              <SkipBack size={17} />
+            </button>
+            <button
+              className="bp-play" disabled={!playback}
+              onClick={() => playback && playerAction(playback.isPlaying ? "pause" : "play")}
+              aria-label={playback?.isPlaying ? "Pausa" : "Riproduci"}
+            >
+              <span className="play-morph">
+                <span className={`play-morph-icon${playback?.isPlaying ? "" : " is-out"}`}><Pause size={15} /></span>
+                <span className={`play-morph-icon${playback?.isPlaying ? " is-out" : ""}`}><Play size={15} style={{ marginLeft: 1 }} /></span>
+              </span>
+            </button>
+            <button className="bp-transport-btn" disabled={!playback} onClick={() => playerAction("next")} aria-label="Successiva">
+              <SkipForward size={17} />
+            </button>
+          </div>
+        </div>
+
+        <div style={{ width: 240, flexShrink: 0 }} />
+      </div>
+
+      {/* ── foglio di giudizio ── */}
       {rating && (
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && closeRating()}>
-          <div className="dialog sheet" style={{ maxWidth: 470, width: "100%", padding: 30 }}>
+          <div className="dialog sheet" style={{ maxWidth: 400, width: "100%", padding: 26 }}>
             <p className="label">Giudizio</p>
-            <p className="t-display" style={{ fontSize: 22, marginTop: 6 }}>{rating.rec.track}</p>
-            <p className="t-subdisplay" style={{ fontSize: 15, marginTop: 2 }}>{rating.rec.artist}</p>
+            <p className="t-display" style={{ fontSize: 20, marginTop: 6 }}>{rating.rec.track}</p>
+            <p className="t-subdisplay" style={{ fontSize: 14, marginTop: 2 }}>{rating.rec.artist}</p>
 
-            <div style={{ display: "flex", gap: 8, margin: "26px 0" }}>
+            <div style={{ display: "flex", gap: 8, margin: "24px 0" }}>
               {VERDICTS.map((v) => {
                 const on = rating.verdict === v.key;
-                // Un colore per verdetto, non uno per "selezionato": verde
-                // tenue per ciò che resta, blu tenue per ciò che resta in
-                // dubbio, niente colore per ciò che si scarta.
-                const bg = !on ? "var(--surface-container)" : v.key === "keep" ? "var(--success-container)" : v.key === "maybe" ? "var(--tertiary-container)" : "var(--on-surface)";
-                const fg = !on ? "var(--on-surface)" : v.key === "keep" ? "var(--on-success-container)" : v.key === "maybe" ? "var(--on-tertiary-container)" : "var(--surface)";
                 return (
-                  <button key={v.key} className="btn btn--sm" title={v.hint} style={{ flex: 1, background: bg, color: fg }}
-                    onClick={() => setRating((r) => r && { ...r, verdict: v.key })}>
+                  <button
+                    key={v.key} title={v.hint}
+                    className={`btn btn--sm${on ? " btn--filled" : " btn--tonal"}`}
+                    style={{ flex: 1 }}
+                    onClick={() => setRating((r) => r && { ...r, verdict: v.key })}
+                  >
                     {v.label}
                   </button>
                 );
@@ -664,10 +592,10 @@ export default function Meter() {
             </div>
 
             <p className="label">Su cosa</p>
-            <p className="t-body" style={{ fontSize: 15, margin: "6px 0 14px" }}>
+            <p className="t-body" style={{ fontSize: 13, margin: "6px 0 14px", lineHeight: 1.5 }}>
               È la parte che il modello impara davvero. Puoi sceglierne più di una.
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 26 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
               {DIMS.map((d) => {
                 const on = rating.dims.includes(d);
                 return (
@@ -692,12 +620,12 @@ export default function Meter() {
         </div>
       )}
 
-      {/* ingresso manuale */}
+      {/* ── ingresso manuale ── */}
       {manual.open && (
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && setManual({ open: false, artist: "", track: "" })}>
-          <div className="dialog sheet" style={{ maxWidth: 430, width: "100%", padding: 30 }}>
-            <p className="t-display" style={{ fontSize: 21 }}>Registra un ascolto</p>
-            <p className="t-body" style={{ fontSize: 15, margin: "10px 0 20px" }}>
+          <div className="dialog sheet" style={{ maxWidth: 400, width: "100%", padding: 26 }}>
+            <p className="t-display" style={{ fontSize: 19 }}>Registra un ascolto</p>
+            <p className="t-body" style={{ fontSize: 14, margin: "10px 0 18px" }}>
               Quello che ascolti fuori da qui vale più dei suoi suggerimenti.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -715,11 +643,10 @@ export default function Meter() {
         </div>
       )}
 
-      {/* comando rapido: cerca un brano, riproducilo o giudicalo — o registra
-          quello che non trova, senza chiudere e riaprire un altro foglio. */}
+      {/* ── comando rapido ── */}
       {paletteOpen && (
         <div className="scrim" onClick={(e) => e.target === e.currentTarget && setPaletteOpen(false)}>
-          <div className="dialog sheet" style={{ maxWidth: 560, width: "100%", padding: 24 }}>
+          <div className="dialog sheet" style={{ maxWidth: 540, width: "100%", padding: 22 }}>
             <div style={{ display: "flex", gap: 8 }}>
               <input
                 ref={paletteInputRef} className="field" style={{ flex: 1 }}
@@ -739,8 +666,8 @@ export default function Meter() {
             {searchResults.length > 0 && (
               <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8, maxHeight: "50vh", overflowY: "auto" }}>
                 {searchResults.map((r) => (
-                  <div key={r.uri} className="card card--filled" style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 15, minWidth: 0 }}><span className="t-display" style={{ fontSize: 15 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
+                  <div key={r.uri} className="card card--filled" style={{ padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 14, minWidth: 0 }}><span className="t-display" style={{ fontSize: 14 }}>{r.track}</span> <span className="t-subdisplay">· {r.artist}</span></span>
                     <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                       <button className="btn btn--tonal btn--sm" onClick={() => { playerAction("play", r.uri); setPaletteOpen(false); }}>Riproduci</button>
                       <button className="btn btn--text btn--sm" onClick={() => { openRating({ artist: r.artist, track: r.track, album: r.album, url: r.url }); setPaletteOpen(false); }}>Giudica</button>
@@ -751,7 +678,7 @@ export default function Meter() {
             )}
 
             {!searching && searchQuery.trim() && searchResults.length === 0 && (
-              <p className="t-body" style={{ fontSize: 14, marginTop: 16 }}>
+              <p className="t-body" style={{ fontSize: 13.5, marginTop: 16 }}>
                 Nessun risultato.{" "}
                 <button className="btn btn--text btn--sm" onClick={() => { setManual({ open: true, artist: "", track: "" }); setPaletteOpen(false); }}>
                   Registra manualmente
@@ -768,16 +695,13 @@ export default function Meter() {
         </div>
       )}
 
-      {/* Azione flottante, sempre a portata: se c'è già qualcosa in
-          ascolto salta dritto al giudizio, altrimenti apre il modulo
-          manuale — stessa logica che aveva il bottone inline di prima.
-          FAB M3 esteso: icona + etichetta, non solo un'icona. */}
+      {/* ── azione flottante "Registra" ── */}
       <button
         type="button" className="fab pop"
         onClick={quickJudge}
         aria-label="Registra un ascolto" title="Registra un ascolto"
       >
-        <Plus size={20} /> <span className="fab-label">Registra</span>
+        <Plus size={16} /> Registra
       </button>
 
       {wrappedOpen && <Wrapped onClose={() => setWrappedOpen(false)} />}
