@@ -1,6 +1,7 @@
 export type Verdict = "keep" | "maybe" | "drop";
 
 export type Axis = {
+  title: string;        // etichetta breve (2-3 parole) per la vista compatta
   claim: string;
   confidence: number;   // 0–0.95, mai 1: un gusto non chiude mai del tutto una porta
   evidence: number;
