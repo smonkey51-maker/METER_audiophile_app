@@ -129,8 +129,17 @@ html { scroll-behavior: smooth; }
   border-radius: var(--shape-lg);
   background: var(--surface-container);
   border: 1px solid var(--outline-variant);
+  transition: border-color .2s var(--ease), background .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    border-color: color-mix(in srgb, var(--primary) 35%, var(--outline-variant));
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0,0,0,.18);
+  }
 }
 .card--flush { background: transparent; border: 0; }
+.card--flush:hover { transform: none; box-shadow: none; }
 .card--outlined { background: var(--surface); border: 1px solid var(--outline-variant); }
 .card--filled { background: var(--surface-container-high); border: 0; }
 .card--large { border-radius: var(--shape-lg); }
@@ -451,6 +460,8 @@ html { scroll-behavior: smooth; }
 .webplayer {
   display: flex; align-items: center; gap: 16px;
   border-radius: var(--shape-xl); padding: 16px 20px;
+  background: color-mix(in srgb, var(--surface-container) 85%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
 .webplayer-art {
   width: 56px; height: 56px; flex-shrink: 0; border-radius: var(--shape-md);
@@ -469,7 +480,11 @@ html { scroll-behavior: smooth; }
 .confidence-track {
   flex: 1; height: 2px; border-radius: 99px; background: var(--surface-container-high); overflow: hidden;
 }
-.confidence-fill { height: 100%; background: var(--primary); border-radius: 99px; }
+.confidence-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #8fa922));
+  transition: width .3s var(--ease);
+}
 
 /* ── opinioni: griglia a due colonne, etichetta + barra sottile ── */
 .opinions-grid {
@@ -516,6 +531,10 @@ html { scroll-behavior: smooth; }
 .pick-card-play {
   width: 40px; height: 40px; border-radius: 999px; background: var(--primary); color: var(--on-primary);
   display: grid; place-items: center; box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  transition: transform .15s var(--spring);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pick-card:hover .pick-card-play { transform: scale(1.08); }
 }
 .pick-card-active-dot {
   position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 999px;
