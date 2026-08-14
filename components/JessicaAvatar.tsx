@@ -12,8 +12,7 @@ export default function JessicaAvatar({ size = 80 }: { size?: number }) {
         src="/avatars/jessica.png"
         alt=""
         aria-hidden="true"
-        className="line-photo"
-        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "invert(1)" }}
       />
     </div>
   );
