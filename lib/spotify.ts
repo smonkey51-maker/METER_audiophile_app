@@ -196,6 +196,8 @@ export async function playbackState(owner = OWNER) {
     artist: (data.item.artists ?? []).map((a: any) => a.name).join(", "),
     device: data.device?.name as string | undefined,
     art: data.item.album?.images?.[0]?.url as string | undefined,
+    progressMs: data.progress_ms as number | undefined,
+    durationMs: data.item.duration_ms as number | undefined,
   };
 }
 
@@ -231,6 +233,10 @@ export async function nextTrack(owner = OWNER) {
 export async function previousTrack(owner = OWNER) {
   const device = await targetDevice(owner);
   return command("POST", `/me/player/previous?device_id=${device}`, undefined, owner);
+}
+export async function seek(positionMs: number, owner = OWNER) {
+  const device = await targetDevice(owner);
+  return command("PUT", `/me/player/seek?position_ms=${Math.max(0, Math.round(positionMs))}&device_id=${device}`, undefined, owner);
 }
 
 /** Il nome mostrato sul profilo Spotify — per personalizzare l'interfaccia. */
