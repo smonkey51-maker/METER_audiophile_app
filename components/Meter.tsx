@@ -12,8 +12,13 @@ import BookIcon from "./BookIcon";
 import CatIcon from "./CatIcon";
 import Wrapped from "./Wrapped";
 
-type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string };
+type Playback = { isPlaying: boolean; track: string; artist: string; device?: string; art?: string; progressMs?: number; durationMs?: number };
 type SearchHit = { artist: string; track: string; album?: string; url: string; uri: string };
+
+function fmtTime(ms: number) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
 
 // Prova passiva che il ciclo notturno gira davvero (se non si muove da
 // giorni si vede subito), ma detta come presenza e non come timestamp
@@ -66,6 +71,10 @@ export default function Meter() {
   const [manual, setManual] = useState({ open: false, artist: "", track: "" });
   const [toast, setToast] = useState<string | null>(null);
   const [playback, setPlayback] = useState<Playback | null>(null);
+  const [scrubMs, setScrubMs] = useState<number | null>(null);
+  const [, forceTick] = useState(0);
+  const playbackFetchedAt = useRef(Date.now());
+  const seekTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
@@ -172,10 +181,15 @@ export default function Meter() {
 
   useEffect(() => { refresh().finally(() => setReady(true)); }, [refresh]);
 
+  const applyPlayback = useCallback((state: Playback | null) => {
+    playbackFetchedAt.current = Date.now();
+    setPlayback(state);
+  }, []);
+
   const refreshPlayback = useCallback(async () => {
     const r = await fetch("/api/spotify/player").then((x) => x.json()).catch(() => ({ state: null }));
-    setPlayback(r.state ?? null);
-  }, []);
+    applyPlayback(r.state ?? null);
+  }, [applyPlayback]);
 
   // Il telecomando non ha eventi push: un poll leggero è l'unico modo per
   // accorgersi che hanno cambiato brano da un altro dispositivo.
@@ -185,14 +199,42 @@ export default function Meter() {
     return () => clearInterval(t);
   }, [refreshPlayback]);
 
-  async function playerAction(action: "play" | "pause" | "next" | "previous", uri?: string) {
+  // Tra un poll e l'altro la barra avanza localmente (ogni 500ms), senza
+  // aspettare i 15s del prossimo /api/spotify/player. Si ferma mentre si
+  // trascina lo scrubber, per non litigare col dito dell'utente.
+  useEffect(() => {
+    if (!playback?.isPlaying || scrubMs !== null) return;
+    const t = setInterval(() => forceTick((x) => x + 1), 500);
+    return () => clearInterval(t);
+  }, [playback?.isPlaying, scrubMs]);
+
+  useEffect(() => () => clearTimeout(seekTimer.current), []);
+
+  async function playerAction(action: "play" | "pause" | "next" | "previous" | "seek", uri?: string, positionMs?: number) {
     const r = await fetch("/api/spotify/player", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, uri }),
+      body: JSON.stringify({ action, uri, positionMs }),
     }).then((x) => x.json()).catch(() => ({ error: "comando fallito" }));
     if (r.error) { flash(r.error); return; }
-    setPlayback(r.state ?? null);
+    applyPlayback(r.state ?? null);
   }
+
+  // Aggiorna subito la posizione visiva mentre si trascina, e manda il
+  // comando di seek con un piccolo debounce per non spammare l'API a ogni
+  // pixel — funziona sia col mouse (drag continuo) che da tastiera.
+  function onScrub(ms: number) {
+    setScrubMs(ms);
+    clearTimeout(seekTimer.current);
+    seekTimer.current = setTimeout(() => {
+      playerAction("seek", undefined, ms).finally(() => setScrubMs(null));
+    }, 300);
+  }
+
+  const durationMs = playback?.durationMs ?? 0;
+  const liveProgressMs = scrubMs ?? (playback
+    ? Math.min(durationMs || Infinity, (playback.progressMs ?? 0) + (playback.isPlaying ? Date.now() - playbackFetchedAt.current : 0))
+    : 0);
+  const progressPct = durationMs ? Math.min(100, (liveProgressMs / durationMs) * 100) : 0;
 
   async function runSearch() {
     const q = searchQuery.trim();
@@ -568,6 +610,21 @@ export default function Meter() {
             <button className="bp-transport-btn" disabled={!playback} onClick={() => playerAction("next")} aria-label="Successiva">
               <SkipForward size={17} />
             </button>
+          </div>
+          <div className="bp-progress">
+            <span className="bp-time tnum">{fmtTime(liveProgressMs)}</span>
+            <div className="bp-progress-track">
+              <div className="bp-progress-fill" style={{ width: `${progressPct}%` }} />
+              <input
+                type="range" className="bp-progress-input"
+                min={0} max={durationMs || 0} step={1000}
+                value={Math.min(liveProgressMs, durationMs || 0)}
+                disabled={!playback || !durationMs}
+                onChange={(e) => onScrub(Number(e.target.value))}
+                aria-label="Posizione nel brano"
+              />
+            </div>
+            <span className="bp-time tnum">-{fmtTime(Math.max(0, durationMs - liveProgressMs))}</span>
           </div>
         </div>
 
