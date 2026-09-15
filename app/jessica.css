@@ -1,0 +1,49 @@
+/* Jessica-first layer.
+   Invariants: Jessica's portrait and gold ring, Petra, Bubi, and the intimate voice
+   belong to METER's identity. This file only refines presentation around them. */
+
+/* The ring is a symbolic object, not an online/status indicator. Keep it gold and
+   visually stable; presence may breathe through the outer glow only. */
+.brand-mark {
+  border-radius: 999px;
+  padding: 5px;
+  background: transparent;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #c9a227 28%, transparent);
+}
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 28px color-mix(in srgb, #c9a227 11%, transparent);
+}
+
+/* Jessica is the emotional centre: give her thought more air than app chrome. */
+.hero-header { padding-top: clamp(42px, 8vw, 88px); padding-bottom: clamp(44px, 7vw, 76px); }
+.hero-content { max-width: 760px; }
+.hero-profile-label { letter-spacing: .18em; }
+.t-quote.warmup { line-height: 1.58; text-wrap: balance; }
+.hero-presence { margin-top: 24px; }
+
+/* Cron telemetry belongs to implementation, not Jessica's voice. */
+.cycle-pill { display: none !important; }
+
+/* Playback should feel like a shared listening room, not a monitoring widget. */
+.webplayer { border-color: color-mix(in srgb, currentColor 14%, transparent); }
+.webplayer-info { min-width: 0; }
+
+/* Confidence is evidence, not a score. De-emphasise the percentage while
+   retaining the underlying model and its inspectability. */
+.opinion-pct { opacity: .45; font-size: 11px; }
+.confidence-track { opacity: .48; height: 2px; }
+
+/* Petra is intentionally kept in the top-level constellation with Jessica. */
+.topbar-actions .icon-btn { transition: opacity 160ms ease, transform 160ms ease; }
+.topbar-actions .icon-btn:hover { transform: translateY(-1px); }
+
+@media (max-width: 720px) {
+  .hero-header { padding-top: 42px; }
+  .hero-content { text-align: center; }
+  .t-quote.warmup { font-size: clamp(20px, 5.6vw, 27px) !important; }
+}
