@@ -1,49 +1,232 @@
-/* Jessica-first layer.
-   Invariants: Jessica's portrait and gold ring, Petra, Bubi, and the intimate voice
-   belong to METER's identity. This file only refines presentation around them. */
+/* METER — Jessica's listening room
+   Identity invariants: Jessica, her gold ring, Bubi and Petra stay untouched.
+   This layer deliberately moves METER away from generic app/dashboard chrome
+   toward an intimate editorial music journal. */
 
-/* The ring is a symbolic object, not an online/status indicator. Keep it gold and
-   visually stable; presence may breathe through the outer glow only. */
-.brand-mark {
-  border-radius: 999px;
-  padding: 5px;
+:root {
+  --meter-gold: #c9a227;
+  --meter-gold-soft: color-mix(in srgb, var(--meter-gold) 18%, transparent);
+  --meter-hairline: color-mix(in srgb, var(--on-surface) 10%, transparent);
+  --meter-page: min(100% - 40px, 920px);
+}
+
+/* Quiet canvas: content first, chrome second. */
+.app-main {
+  background:
+    radial-gradient(ellipse 72% 36% at 50% 2%, color-mix(in srgb, var(--meter-gold) 5%, transparent), transparent 72%),
+    var(--surface);
+}
+.shell { width: var(--meter-page) !important; max-width: none !important; margin-inline: auto !important; }
+
+/* The old Spotify-like rail becomes a restrained editorial index. */
+.sidebar {
+  width: 204px;
+  padding: 28px 18px;
+  background: color-mix(in srgb, var(--surface-container-lowest) 92%, transparent);
+  border-right-color: var(--meter-hairline);
+}
+.sidebar-logo { padding: 4px 8px 34px; }
+.sidebar-logo-mark {
+  width: 30px; height: 30px;
+  border-radius: 50%;
   background: transparent;
-  box-shadow: 0 0 0 1px color-mix(in srgb, #c9a227 28%, transparent);
+  color: var(--meter-gold);
+  border: 1px solid color-mix(in srgb, var(--meter-gold) 62%, transparent);
+}
+.sidebar-nav { gap: 8px; }
+.sidebar-link {
+  padding: 9px 8px;
+  border-radius: 0;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .025em;
+  border-left: 1px solid transparent;
+}
+.sidebar-link:hover {
+  background: transparent !important;
+  color: var(--on-surface);
+  border-left-color: var(--meter-gold);
+}
+
+/* Header behaves like a slim utility shelf, not an app toolbar. */
+.topbar-wrap {
+  padding: 14px 24px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border-bottom-color: var(--meter-hairline);
+  backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+}
+.topbar { max-width: 920px; }
+.topbar-actions { gap: 5px; }
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  color: color-mix(in srgb, var(--on-surface) 64%, transparent);
+}
+.icon-btn:hover { background: transparent !important; color: var(--meter-gold) !important; }
+.topbar-actions .icon-btn { transition: color 160ms ease, transform 160ms ease, opacity 160ms ease; }
+.topbar-actions .icon-btn:hover { transform: translateY(-1px); }
+
+/* Jessica is the cover, not a widget. */
+.hero-header {
+  min-height: min(650px, 72vh);
+  display: grid !important;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(34px, 6vw, 76px);
+  padding: clamp(72px, 10vw, 128px) 0 clamp(70px, 9vw, 112px) !important;
+  border-bottom: 1px solid var(--meter-hairline);
+}
+.hero-profile { align-self: center; }
+.brand-mark {
+  position: relative;
+  border-radius: 999px;
+  padding: 7px;
+  background: transparent;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--meter-gold) 38%, transparent);
 }
 .brand-mark::after {
   content: "";
   position: absolute;
-  inset: -8px;
+  inset: -13px;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: 0 0 28px color-mix(in srgb, #c9a227 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--meter-gold) 13%, transparent);
+  box-shadow: 0 0 52px color-mix(in srgb, var(--meter-gold) 10%, transparent);
 }
-
-/* Jessica is the emotional centre: give her thought more air than app chrome. */
-.hero-header { padding-top: clamp(42px, 8vw, 88px); padding-bottom: clamp(44px, 7vw, 76px); }
-.hero-content { max-width: 760px; }
-.hero-profile-label { letter-spacing: .18em; }
-.t-quote.warmup { line-height: 1.58; text-wrap: balance; }
-.hero-presence { margin-top: 24px; }
-
-/* Cron telemetry belongs to implementation, not Jessica's voice. */
+.hero-profile-label {
+  margin-top: 24px !important;
+  color: var(--meter-gold) !important;
+  letter-spacing: .24em !important;
+  font-size: 10px !important;
+}
+.hero-content { max-width: 690px !important; }
+.hero-content > .label {
+  margin-bottom: 24px !important;
+  color: color-mix(in srgb, var(--on-surface) 48%, transparent);
+  letter-spacing: .2em;
+}
+.t-quote.warmup {
+  font-size: clamp(25px, 3.4vw, 39px) !important;
+  line-height: 1.38 !important;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+.hero-presence { margin-top: 30px !important; }
+.hero-presence-btn {
+  color: var(--meter-gold) !important;
+  opacity: .78;
+}
 .cycle-pill { display: none !important; }
 
-/* Playback should feel like a shared listening room, not a monitoring widget. */
-.webplayer { border-color: color-mix(in srgb, currentColor 14%, transparent); }
+/* Sections read as journal chapters. */
+#listening, #picks, #opinions { padding-top: 56px; }
+#listening > .label, #picks > .label, #opinions > .label,
+.shell > section > .label {
+  font-size: 10px !important;
+  letter-spacing: .2em !important;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--on-surface) 50%, transparent) !important;
+}
+
+/* Shared listening room: album art and controls, without dashboard weight. */
+.webplayer {
+  min-height: 104px;
+  border: 1px solid var(--meter-hairline) !important;
+  border-radius: 20px !important;
+  background: color-mix(in srgb, var(--surface-container-low) 72%, transparent) !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+.webplayer:hover { transform: none !important; box-shadow: none !important; border-color: color-mix(in srgb, var(--meter-gold) 24%, var(--meter-hairline)) !important; }
+.webplayer-art { border-radius: 14px !important; }
 .webplayer-info { min-width: 0; }
+.bp-play {
+  background: var(--meter-gold) !important;
+  color: #17140b !important;
+  box-shadow: none !important;
+}
 
-/* Confidence is evidence, not a score. De-emphasise the percentage while
-   retaining the underlying model and its inspectability. */
-.opinion-pct { opacity: .45; font-size: 11px; }
-.confidence-track { opacity: .48; height: 2px; }
+/* Search becomes a quiet command line. */
+.palette-trigger {
+  border-radius: 0 !important;
+  padding: 15px 2px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--meter-hairline) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.palette-trigger:hover { border-bottom-color: color-mix(in srgb, var(--meter-gold) 50%, transparent) !important; }
+.kbd { opacity: .42; }
 
-/* Petra is intentionally kept in the top-level constellation with Jessica. */
-.topbar-actions .icon-btn { transition: opacity 160ms ease, transform 160ms ease; }
-.topbar-actions .icon-btn:hover { transform: translateY(-1px); }
+/* Recommendations become record sleeves rather than product cards. */
+.picks-grid { gap: clamp(18px, 3vw, 30px) !important; }
+.pick-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  text-align: left;
+  box-shadow: none !important;
+}
+.pick-card:hover { transform: translateY(-3px) !important; background: transparent !important; }
+.pick-card-art {
+  border-radius: 4px !important;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0,0,0,.16);
+}
+.pick-card-overlay { background: linear-gradient(to top, rgba(0,0,0,.52), transparent 58%) !important; }
+.pick-card-play { background: var(--meter-gold) !important; color: #17140b !important; }
+.pick-card-active-dot { background: var(--meter-gold) !important; }
 
-@media (max-width: 720px) {
-  .hero-header { padding-top: 42px; }
+/* Memory/opinions: evidence feels annotated, not scored. */
+.opinion-pct { opacity: .32 !important; font-size: 10px !important; font-variant-numeric: tabular-nums; }
+.confidence-track { opacity: .32 !important; height: 1px !important; }
+.card { box-shadow: none; }
+.rows > * { border-bottom-color: var(--meter-hairline); }
+
+/* Buttons keep function but lose SaaS heaviness. */
+.btn { letter-spacing: .025em; }
+.btn--filled { background: var(--meter-gold); color: #17140b; }
+.btn--outlined { background: transparent; border-color: var(--meter-hairline); }
+.btn--tonal { background: color-mix(in srgb, var(--on-surface) 7%, transparent); }
+
+/* Petra stays a first-class personal presence. */
+.topbar-actions [data-meter-invariant="petra"] { filter: saturate(.78) contrast(1.02); }
+
+/* Light mode should feel like warm paper, not a white SaaS dashboard. */
+:root:not([data-theme="dark"]) .app-main {
+  background:
+    radial-gradient(ellipse 72% 36% at 50% 2%, rgba(201,162,39,.07), transparent 72%),
+    #fffaf3;
+}
+
+@media (max-width: 900px) {
+  :root { --meter-page: min(100% - 34px, 760px); }
+  .hero-header { grid-template-columns: 116px minmax(0, 1fr); gap: 34px; min-height: auto; }
+}
+
+@media (max-width: 640px) {
+  :root { --meter-page: calc(100% - 30px); }
+  .topbar-wrap { padding: 10px 15px; }
+  .topbar { justify-content: center !important; }
+  .hero-header {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 36px;
+    padding: 58px 0 68px !important;
+  }
+  .hero-profile { display: flex; flex-direction: column; align-items: center; }
   .hero-content { text-align: center; }
-  .t-quote.warmup { font-size: clamp(20px, 5.6vw, 27px) !important; }
+  .t-quote.warmup { font-size: clamp(24px, 7.4vw, 32px) !important; line-height: 1.42 !important; }
+  .hero-presence { margin-top: 26px !important; }
+  #listening, #picks, #opinions { padding-top: 42px; }
+  .webplayer { min-height: 92px; }
+  .picks-grid { gap: 28px 16px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pick-card:hover, .topbar-actions .icon-btn:hover { transform: none !important; }
 }
