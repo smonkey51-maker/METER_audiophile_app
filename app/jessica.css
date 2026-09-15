@@ -14,109 +14,57 @@ html { scroll-behavior: smooth; }
 .app-main { background: var(--surface); }
 .shell { width: var(--meter-page) !important; max-width: none !important; margin-inline: auto !important; }
 
-/* Navigation is an index, not the experience. */
-.sidebar {
-  width: 176px; padding: 30px 16px;
-  background: color-mix(in srgb, var(--surface) 96%, var(--meter-gold) 4%);
-  border-right: 1px solid var(--meter-line);
-}
+.sidebar { width: 176px; padding: 30px 16px; background: color-mix(in srgb, var(--surface) 96%, var(--meter-gold) 4%); border-right: 1px solid var(--meter-line); }
 .sidebar-logo { padding: 2px 8px 44px; }
-.sidebar-logo-mark {
-  width: 28px; height: 28px; border-radius: 0;
-  background: transparent; color: var(--meter-gold); border: 1px solid var(--meter-gold);
-}
+.sidebar-logo-mark { width: 28px; height: 28px; border-radius: 0; background: transparent; color: var(--meter-gold); border: 1px solid var(--meter-gold); }
 .sidebar-nav { gap: 0; }
-.sidebar-link {
-  padding: 13px 8px; border-radius: 0; gap: 11px;
-  font-size: 10px; font-weight: 650; letter-spacing: .09em; text-transform: uppercase;
-  border-top: 1px solid var(--meter-line); opacity: .68;
-}
+.sidebar-link { padding: 13px 8px; border-radius: 0; gap: 11px; font-size: 10px; font-weight: 650; letter-spacing: .09em; text-transform: uppercase; border-top: 1px solid var(--meter-line); opacity: .68; }
 .sidebar-link:last-child { border-bottom: 1px solid var(--meter-line); }
 .sidebar-link:hover { background: transparent !important; color: var(--meter-gold); opacity: 1; }
+.sidebar-link[href="#opinions"] { display: none !important; }
 
-/* Quiet utility strip. Petra remains a small personal presence among tools. */
-.topbar-wrap {
-  padding: 10px 24px; background: color-mix(in srgb, var(--surface) 98%, var(--meter-gold) 2%);
-  border-bottom: 1px solid var(--meter-line); backdrop-filter: none; -webkit-backdrop-filter: none;
-}
+.topbar-wrap { padding: 10px 24px; background: color-mix(in srgb, var(--surface) 98%, var(--meter-gold) 2%); border-bottom: 1px solid var(--meter-line); backdrop-filter: none; -webkit-backdrop-filter: none; }
 .topbar { max-width: 940px; }
 .topbar-actions { gap: 4px; }
-.icon-btn {
-  width: 42px; height: 42px; border-radius: 999px;
-  color: color-mix(in srgb, var(--on-surface) 58%, transparent);
-  transition: color 320ms ease, opacity 320ms ease !important;
-}
+.icon-btn { width: 42px; height: 42px; border-radius: 999px; color: color-mix(in srgb, var(--on-surface) 58%, transparent); transition: color 320ms ease, opacity 320ms ease !important; }
 .icon-btn:hover { background: transparent !important; color: var(--meter-gold) !important; transform: none !important; }
-.topbar-actions [data-meter-invariant="petra"] {
-  width: 30px !important; height: 30px !important; object-fit: contain;
-  filter: none !important; opacity: .92 !important;
-}
 
-/* Jessica is the still point. Her portrait and ring are deliberately the only strong circle. */
-.hero-header {
-  min-height: min(680px, 76vh); display: grid !important;
-  grid-template-columns: 164px minmax(0,1fr); align-items: center;
-  gap: clamp(44px, 8vw, 96px); padding: clamp(82px, 11vw, 132px) 0 !important;
-  border-bottom: 1px solid var(--meter-line);
-}
+/* Petra's source artwork is dark line-art. In dark mode it must be inverted,
+   otherwise the cat is technically present but disappears into the page. */
+.topbar-actions [data-meter-invariant="petra"] { width: 30px !important; height: 30px !important; object-fit: contain; filter: none !important; opacity: .94 !important; }
+[data-theme="dark"] .topbar-actions [data-meter-invariant="petra"] { filter: invert(1) !important; }
+
+/* Listening rig is model plumbing, not part of the intimate surface. */
+.topbar-actions > div[style*="position"] { display: none !important; }
+
+.hero-header { min-height: min(680px, 76vh); display: grid !important; grid-template-columns: 164px minmax(0,1fr); align-items: center; gap: clamp(44px, 8vw, 96px); padding: clamp(82px, 11vw, 132px) 0 !important; border-bottom: 1px solid var(--meter-line); }
 .hero-profile { align-self: center; }
-.brand-mark {
-  position: relative; border-radius: 999px; padding: 8px; background: transparent;
-  box-shadow: 0 0 0 1px var(--meter-gold);
-}
+.brand-mark { position: relative; border-radius: 999px; padding: 8px; background: transparent; box-shadow: 0 0 0 1px var(--meter-gold); }
 .brand-mark::after { content: none; }
-.hero-profile-label {
-  margin-top: 24px !important; color: var(--meter-gold) !important;
-  letter-spacing: .3em !important; font-size: 9px !important; opacity: .82;
-}
+.hero-profile-label { margin-top: 24px !important; color: var(--meter-gold) !important; letter-spacing: .3em !important; font-size: 9px !important; opacity: .82; }
 .hero-content { max-width: 680px !important; }
-.hero-content > .label, #listening > .label, #picks > .label, .shell > section > .label {
-  font-size: 9px !important; letter-spacing: .24em !important; text-transform: uppercase;
-  color: color-mix(in srgb, var(--on-surface) 42%, transparent) !important;
-}
-.t-quote.warmup {
-  font-size: clamp(29px, 3.8vw, 44px) !important; line-height: 1.38 !important;
-  letter-spacing: -.025em; text-wrap: balance; font-weight: 400;
-}
+.hero-content > .label, #listening > .label, #picks > .label, .shell > section > .label { font-size: 9px !important; letter-spacing: .24em !important; text-transform: uppercase; color: color-mix(in srgb, var(--on-surface) 42%, transparent) !important; }
+.t-quote.warmup { font-size: clamp(29px, 3.8vw, 44px) !important; line-height: 1.38 !important; letter-spacing: -.025em; text-wrap: balance; font-weight: 400; }
 .hero-presence { margin-top: 34px !important; }
-.hero-presence-btn {
-  color: var(--meter-gold) !important; opacity: .72;
-  transition: opacity 500ms ease !important;
-}
+.hero-presence-btn { color: var(--meter-gold) !important; opacity: .72; transition: opacity 500ms ease !important; }
 .hero-presence-btn:hover { opacity: 1; }
 .cycle-pill { display: none !important; }
 
-/* No dashboards in the listening room. */
 #opinions { display: none !important; }
 #listening, #picks { padding-top: 62px; }
 
-/* Player as a record sleeve laid on the page: quiet until touched. */
-.webplayer {
-  min-height: 104px; border: 0 !important; border-top: 1px solid var(--meter-line) !important;
-  border-bottom: 1px solid var(--meter-line) !important; border-radius: 0 !important;
-  background: transparent !important; box-shadow: none !important; overflow: hidden;
-}
+.webplayer { min-height: 104px; border: 0 !important; border-top: 1px solid var(--meter-line) !important; border-bottom: 1px solid var(--meter-line) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; overflow: hidden; }
 .webplayer:hover { transform: none !important; box-shadow: none !important; border-color: color-mix(in srgb, var(--meter-gold) 58%, transparent) !important; }
 .webplayer-art { border-radius: 0 !important; }
 .webplayer-info { min-width: 0; }
 .bp-play { border-radius: 999px !important; background: transparent !important; color: var(--meter-gold) !important; border: 1px solid var(--meter-gold); box-shadow: none !important; }
 
-/* Search behaves like a note in the margin. */
-.palette-trigger {
-  border-radius: 0 !important; padding: 18px 0 !important;
-  border: 0 !important; border-bottom: 1px solid var(--meter-line) !important;
-  background: transparent !important; box-shadow: none !important; opacity: .72;
-  transition: opacity 360ms ease, border-color 360ms ease !important;
-}
+.palette-trigger { border-radius: 0 !important; padding: 18px 0 !important; border: 0 !important; border-bottom: 1px solid var(--meter-line) !important; background: transparent !important; box-shadow: none !important; opacity: .72; transition: opacity 360ms ease, border-color 360ms ease !important; }
 .palette-trigger:hover { border-bottom-color: var(--meter-gold) !important; opacity: 1; }
 .kbd { opacity: .28; }
 
-/* Recommendations are records on a shelf, never product cards. */
 .picks-grid { gap: clamp(22px, 3.4vw, 34px) !important; }
-.pick-card {
-  border: 0 !important; border-radius: 0 !important; background: transparent !important;
-  padding: 0 !important; text-align: left; box-shadow: none !important;
-}
+.pick-card { border: 0 !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; text-align: left; box-shadow: none !important; }
 .pick-card:hover { transform: none !important; background: transparent !important; }
 .pick-card-art { border-radius: 0 !important; overflow: hidden; box-shadow: none !important; border: 0; }
 .pick-card-art img { filter: saturate(.88) contrast(.98); transition: filter 600ms ease, opacity 600ms ease !important; }
@@ -125,7 +73,6 @@ html { scroll-behavior: smooth; }
 .pick-card-play { border-radius: 999px !important; background: rgba(18,16,12,.72) !important; color: #eadcae !important; border: 1px solid rgba(234,220,174,.58); }
 .pick-card-active-dot { background: var(--meter-gold) !important; }
 
-/* Controls appear only when asked for; soften the technical layer. */
 .card { border-radius: 2px !important; box-shadow: none !important; }
 .btn { border-radius: 2px !important; letter-spacing: .04em; font-size: 11px; }
 .btn--filled { background: var(--meter-gold); color: #17140b; }
@@ -133,17 +80,20 @@ html { scroll-behavior: smooth; }
 .field, .menu, .menu-item, .chip { border-radius: 2px !important; }
 .menu { box-shadow: 0 18px 60px rgba(0,0,0,.18) !important; }
 
-/* Time should be felt, not animated. */
-*, *::before, *::after { animation-duration: 0s !important; }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-content, .hero-profile { transition: opacity 700ms ease !important; }
-}
+/* Manual Spotify learning lives outside the listening surface: always reachable,
+   visually quiet. It can also re-open OAuth to switch Spotify account. */
+.spotify-learn-global { position: fixed; z-index: 120; top: 12px; right: 18px; }
+.spotify-learn-global .icon-btn { color: #1db954; opacity: .78; }
+.spotify-learn-global .icon-btn:hover { color: #1ed760 !important; opacity: 1; }
+.spotify-learn-menu { position: absolute; top: calc(100% + 8px); right: 0; width: min(290px, calc(100vw - 28px)); padding: 8px; background: color-mix(in srgb, var(--surface) 97%, var(--meter-gold) 3%); border: 1px solid var(--meter-line); }
+.spotify-learn-menu .menu-item, .spotify-menu-link { width: 100%; display: flex; padding: 12px 10px; text-align: left; font-size: 12px; text-decoration: none; color: inherit; }
+.spotify-learn-status { margin: 8px 10px 6px; font-family: var(--font-lora); font-style: italic; font-size: 12px; line-height: 1.5; opacity: .72; }
 
-/* Warm paper / warm black: never sterile white or OLED-black. */
-:root:not([data-theme="dark"]) .app-main,
-:root:not([data-theme="dark"]) .topbar-wrap { background: var(--meter-paper); }
-[data-theme="dark"] .app-main,
-[data-theme="dark"] .topbar-wrap { background: var(--meter-ink); }
+*, *::before, *::after { animation-duration: 0s !important; }
+@media (prefers-reduced-motion: no-preference) { .hero-content, .hero-profile { transition: opacity 700ms ease !important; } }
+
+:root:not([data-theme="dark"]) .app-main, :root:not([data-theme="dark"]) .topbar-wrap { background: var(--meter-paper); }
+[data-theme="dark"] .app-main, [data-theme="dark"] .topbar-wrap { background: var(--meter-ink); }
 
 @media (max-width: 900px) {
   :root { --meter-page: min(100% - 34px, 760px); }
@@ -155,10 +105,8 @@ html { scroll-behavior: smooth; }
   .topbar { justify-content: center !important; }
   .icon-btn { width: 44px; height: 44px; }
   .topbar-actions [data-meter-invariant="petra"] { width: 30px !important; height: 30px !important; }
-  .hero-header {
-    display: flex !important; flex-direction: column; align-items: center; text-align: center;
-    gap: 38px; padding: 66px 0 76px !important;
-  }
+  .spotify-learn-global { top: 8px; right: 8px; }
+  .hero-header { display: flex !important; flex-direction: column; align-items: center; text-align: center; gap: 38px; padding: 66px 0 76px !important; }
   .hero-profile { display: flex; flex-direction: column; align-items: center; }
   .hero-content { text-align: center; }
   .t-quote.warmup { font-size: clamp(26px, 7.7vw, 34px) !important; line-height: 1.44 !important; }
