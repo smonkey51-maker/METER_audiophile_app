@@ -1,148 +1,168 @@
-/* METER — minimal/brutalist Jessica listening room.
+/* METER — intimate editorial / analog time.
+   The interface stays still; Jessica and memory are what change.
    Invariants: Jessica, her gold ring, Bubi and Petra are identity, not decoration. */
 
 :root {
   --meter-gold: #c9a227;
-  --meter-line: color-mix(in srgb, var(--on-surface) 16%, transparent);
+  --meter-ink: #151411;
+  --meter-paper: #f4efe4;
+  --meter-line: color-mix(in srgb, var(--on-surface) 12%, transparent);
   --meter-page: min(100% - 40px, 940px);
 }
 
+html { scroll-behavior: smooth; }
 .app-main { background: var(--surface); }
 .shell { width: var(--meter-page) !important; max-width: none !important; margin-inline: auto !important; }
 
-/* Editorial index: thin, square, deliberately non-app-like. */
+/* Navigation is an index, not the experience. */
 .sidebar {
-  width: 184px;
-  padding: 26px 14px;
-  background: var(--surface-container-lowest);
+  width: 176px; padding: 30px 16px;
+  background: color-mix(in srgb, var(--surface) 96%, var(--meter-gold) 4%);
   border-right: 1px solid var(--meter-line);
 }
-.sidebar-logo { padding: 2px 8px 38px; }
+.sidebar-logo { padding: 2px 8px 44px; }
 .sidebar-logo-mark {
-  width: 30px; height: 30px; border-radius: 0;
-  background: transparent; color: var(--meter-gold);
-  border: 1px solid var(--meter-gold);
+  width: 28px; height: 28px; border-radius: 0;
+  background: transparent; color: var(--meter-gold); border: 1px solid var(--meter-gold);
 }
 .sidebar-nav { gap: 0; }
 .sidebar-link {
-  padding: 12px 8px; border-radius: 0; gap: 11px;
-  font-size: 11px; font-weight: 700; letter-spacing: .06em;
-  text-transform: uppercase; border-top: 1px solid var(--meter-line);
+  padding: 13px 8px; border-radius: 0; gap: 11px;
+  font-size: 10px; font-weight: 650; letter-spacing: .09em; text-transform: uppercase;
+  border-top: 1px solid var(--meter-line); opacity: .68;
 }
 .sidebar-link:last-child { border-bottom: 1px solid var(--meter-line); }
-.sidebar-link:hover { background: transparent !important; color: var(--meter-gold); }
+.sidebar-link:hover { background: transparent !important; color: var(--meter-gold); opacity: 1; }
 
-/* Utility strip. Petra is intentionally a visible portrait, not a glyph. */
+/* Quiet utility strip. Petra remains a small personal presence among tools. */
 .topbar-wrap {
-  padding: 12px 24px; background: var(--surface);
+  padding: 10px 24px; background: color-mix(in srgb, var(--surface) 98%, var(--meter-gold) 2%);
   border-bottom: 1px solid var(--meter-line); backdrop-filter: none; -webkit-backdrop-filter: none;
 }
 .topbar { max-width: 940px; }
-.topbar-actions { gap: 2px; }
+.topbar-actions { gap: 4px; }
 .icon-btn {
-  width: 42px; height: 42px; border-radius: 0;
-  color: color-mix(in srgb, var(--on-surface) 68%, transparent);
+  width: 42px; height: 42px; border-radius: 999px;
+  color: color-mix(in srgb, var(--on-surface) 58%, transparent);
+  transition: color 320ms ease, opacity 320ms ease !important;
 }
-.icon-btn:hover { background: transparent !important; color: var(--meter-gold) !important; }
+.icon-btn:hover { background: transparent !important; color: var(--meter-gold) !important; transform: none !important; }
 .topbar-actions [data-meter-invariant="petra"] {
-  width: 28px !important; height: 28px !important; object-fit: contain;
-  filter: none !important; opacity: 1 !important;
+  width: 30px !important; height: 30px !important; object-fit: contain;
+  filter: none !important; opacity: .92 !important;
 }
-[data-theme="dark"] .topbar-actions [data-meter-invariant="petra"] { filter: none !important; }
 
-/* Jessica is the cover. The ring remains round and gold against the square system. */
+/* Jessica is the still point. Her portrait and ring are deliberately the only strong circle. */
 .hero-header {
-  min-height: min(620px, 70vh); display: grid !important;
-  grid-template-columns: 156px minmax(0,1fr); align-items: center;
-  gap: clamp(36px, 7vw, 84px); padding: clamp(68px, 9vw, 116px) 0 !important;
+  min-height: min(680px, 76vh); display: grid !important;
+  grid-template-columns: 164px minmax(0,1fr); align-items: center;
+  gap: clamp(44px, 8vw, 96px); padding: clamp(82px, 11vw, 132px) 0 !important;
   border-bottom: 1px solid var(--meter-line);
 }
 .hero-profile { align-self: center; }
 .brand-mark {
-  position: relative; border-radius: 999px; padding: 7px; background: transparent;
+  position: relative; border-radius: 999px; padding: 8px; background: transparent;
   box-shadow: 0 0 0 1px var(--meter-gold);
 }
 .brand-mark::after { content: none; }
 .hero-profile-label {
-  margin-top: 22px !important; color: var(--meter-gold) !important;
-  letter-spacing: .28em !important; font-size: 10px !important;
+  margin-top: 24px !important; color: var(--meter-gold) !important;
+  letter-spacing: .3em !important; font-size: 9px !important; opacity: .82;
 }
-.hero-content { max-width: 700px !important; }
+.hero-content { max-width: 680px !important; }
 .hero-content > .label, #listening > .label, #picks > .label, .shell > section > .label {
-  font-size: 10px !important; letter-spacing: .22em !important; text-transform: uppercase;
-  color: color-mix(in srgb, var(--on-surface) 48%, transparent) !important;
+  font-size: 9px !important; letter-spacing: .24em !important; text-transform: uppercase;
+  color: color-mix(in srgb, var(--on-surface) 42%, transparent) !important;
 }
 .t-quote.warmup {
-  font-size: clamp(27px, 3.7vw, 42px) !important; line-height: 1.32 !important;
-  letter-spacing: -.03em; text-wrap: balance;
+  font-size: clamp(29px, 3.8vw, 44px) !important; line-height: 1.38 !important;
+  letter-spacing: -.025em; text-wrap: balance; font-weight: 400;
 }
-.hero-presence { margin-top: 30px !important; }
-.hero-presence-btn { color: var(--meter-gold) !important; opacity: .82; }
+.hero-presence { margin-top: 34px !important; }
+.hero-presence-btn {
+  color: var(--meter-gold) !important; opacity: .72;
+  transition: opacity 500ms ease !important;
+}
+.hero-presence-btn:hover { opacity: 1; }
 .cycle-pill { display: none !important; }
 
-#listening, #picks { padding-top: 52px; }
+/* No dashboards in the listening room. */
+#opinions { display: none !important; }
+#listening, #picks { padding-top: 62px; }
 
-/* Player: one hard-edged instrument panel. */
+/* Player as a record sleeve laid on the page: quiet until touched. */
 .webplayer {
-  min-height: 100px; border: 1px solid var(--meter-line) !important;
-  border-radius: 0 !important; background: transparent !important;
-  box-shadow: none !important; overflow: hidden;
+  min-height: 104px; border: 0 !important; border-top: 1px solid var(--meter-line) !important;
+  border-bottom: 1px solid var(--meter-line) !important; border-radius: 0 !important;
+  background: transparent !important; box-shadow: none !important; overflow: hidden;
 }
-.webplayer:hover { transform: none !important; box-shadow: none !important; border-color: var(--meter-gold) !important; }
+.webplayer:hover { transform: none !important; box-shadow: none !important; border-color: color-mix(in srgb, var(--meter-gold) 58%, transparent) !important; }
 .webplayer-art { border-radius: 0 !important; }
 .webplayer-info { min-width: 0; }
-.bp-play { border-radius: 0 !important; background: var(--meter-gold) !important; color: #17140b !important; box-shadow: none !important; }
+.bp-play { border-radius: 999px !important; background: transparent !important; color: var(--meter-gold) !important; border: 1px solid var(--meter-gold); box-shadow: none !important; }
 
-/* Search is a command line, not a card. */
+/* Search behaves like a note in the margin. */
 .palette-trigger {
-  border-radius: 0 !important; padding: 16px 0 !important;
+  border-radius: 0 !important; padding: 18px 0 !important;
   border: 0 !important; border-bottom: 1px solid var(--meter-line) !important;
-  background: transparent !important; box-shadow: none !important;
+  background: transparent !important; box-shadow: none !important; opacity: .72;
+  transition: opacity 360ms ease, border-color 360ms ease !important;
 }
-.palette-trigger:hover { border-bottom-color: var(--meter-gold) !important; }
-.kbd { opacity: .38; }
+.palette-trigger:hover { border-bottom-color: var(--meter-gold) !important; opacity: 1; }
+.kbd { opacity: .28; }
 
-/* Recommendations: flat sleeves, no floating product cards. */
-.picks-grid { gap: clamp(18px, 3vw, 30px) !important; }
-.pick-card { border: 0 !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; text-align: left; box-shadow: none !important; }
+/* Recommendations are records on a shelf, never product cards. */
+.picks-grid { gap: clamp(22px, 3.4vw, 34px) !important; }
+.pick-card {
+  border: 0 !important; border-radius: 0 !important; background: transparent !important;
+  padding: 0 !important; text-align: left; box-shadow: none !important;
+}
 .pick-card:hover { transform: none !important; background: transparent !important; }
-.pick-card-art { border-radius: 0 !important; overflow: hidden; box-shadow: none !important; border: 1px solid var(--meter-line); }
-.pick-card:hover .pick-card-art { border-color: var(--meter-gold); }
-.pick-card-overlay { background: linear-gradient(to top, rgba(0,0,0,.48), transparent 58%) !important; }
-.pick-card-play { border-radius: 0 !important; background: var(--meter-gold) !important; color: #17140b !important; }
+.pick-card-art { border-radius: 0 !important; overflow: hidden; box-shadow: none !important; border: 0; }
+.pick-card-art img { filter: saturate(.88) contrast(.98); transition: filter 600ms ease, opacity 600ms ease !important; }
+.pick-card:hover .pick-card-art img { filter: saturate(1) contrast(1); }
+.pick-card-overlay { background: linear-gradient(to top, rgba(10,9,7,.5), transparent 60%) !important; }
+.pick-card-play { border-radius: 999px !important; background: rgba(18,16,12,.72) !important; color: #eadcae !important; border: 1px solid rgba(234,220,174,.58); }
 .pick-card-active-dot { background: var(--meter-gold) !important; }
 
-.card { border-radius: 0 !important; box-shadow: none !important; }
-.btn { border-radius: 0 !important; letter-spacing: .05em; text-transform: uppercase; font-size: 11px; }
+/* Controls appear only when asked for; soften the technical layer. */
+.card { border-radius: 2px !important; box-shadow: none !important; }
+.btn { border-radius: 2px !important; letter-spacing: .04em; font-size: 11px; }
 .btn--filled { background: var(--meter-gold); color: #17140b; }
-.btn--outlined { background: transparent; border-color: var(--meter-line); }
-.btn--tonal { background: transparent; border: 1px solid var(--meter-line); }
-.field, .menu, .menu-item, .chip { border-radius: 0 !important; }
+.btn--outlined, .btn--tonal { background: transparent; border-color: var(--meter-line); }
+.field, .menu, .menu-item, .chip { border-radius: 2px !important; }
+.menu { box-shadow: 0 18px 60px rgba(0,0,0,.18) !important; }
 
-/* The opinion dashboard is deliberately removed from the experience. */
-#opinions { display: none !important; }
+/* Time should be felt, not animated. */
+*, *::before, *::after { animation-duration: 0s !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-content, .hero-profile { transition: opacity 700ms ease !important; }
+}
 
-/* Warm paper remains available, but without gradients or decorative depth. */
-:root:not([data-theme="dark"]) .app-main { background: #fffaf3; }
+/* Warm paper / warm black: never sterile white or OLED-black. */
+:root:not([data-theme="dark"]) .app-main,
+:root:not([data-theme="dark"]) .topbar-wrap { background: var(--meter-paper); }
+[data-theme="dark"] .app-main,
+[data-theme="dark"] .topbar-wrap { background: var(--meter-ink); }
 
 @media (max-width: 900px) {
   :root { --meter-page: min(100% - 34px, 760px); }
-  .hero-header { grid-template-columns: 116px minmax(0,1fr); gap: 36px; min-height: auto; }
+  .hero-header { grid-template-columns: 120px minmax(0,1fr); gap: 42px; min-height: auto; }
 }
 @media (max-width: 640px) {
-  :root { --meter-page: calc(100% - 28px); }
+  :root { --meter-page: calc(100% - 30px); }
   .topbar-wrap { padding: 8px 14px; }
   .topbar { justify-content: center !important; }
   .icon-btn { width: 44px; height: 44px; }
   .topbar-actions [data-meter-invariant="petra"] { width: 30px !important; height: 30px !important; }
   .hero-header {
     display: flex !important; flex-direction: column; align-items: center; text-align: center;
-    gap: 34px; padding: 56px 0 64px !important;
+    gap: 38px; padding: 66px 0 76px !important;
   }
   .hero-profile { display: flex; flex-direction: column; align-items: center; }
   .hero-content { text-align: center; }
-  .t-quote.warmup { font-size: clamp(25px, 7.6vw, 33px) !important; line-height: 1.38 !important; }
-  #listening, #picks { padding-top: 40px; }
-  .webplayer { min-height: 92px; }
-  .picks-grid { gap: 28px 14px !important; }
+  .t-quote.warmup { font-size: clamp(26px, 7.7vw, 34px) !important; line-height: 1.44 !important; }
+  #listening, #picks { padding-top: 48px; }
+  .webplayer { min-height: 94px; }
+  .picks-grid { gap: 32px 15px !important; }
 }
