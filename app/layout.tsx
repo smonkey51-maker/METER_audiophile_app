@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./jessica.css";
 import type { Metadata, Viewport } from "next";
 import { Unbounded, Plus_Jakarta_Sans, Lora } from "next/font/google";
 
@@ -18,14 +19,11 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "METER",
-  description: "Curatore musicale con memoria che si consolida nel tempo",
+  title: "METER — Jessica",
+  description: "Memoria musicale condivisa: Jessica ascolta, impara e costruisce nel tempo un ritratto del tuo modo di ascoltare.",
 };
 
 export const viewport: Viewport = {
-  // La barra del browser segue la preferenza del sistema: non è legata
-  // al toggle dentro l'app (che parte da scuro), solo un'approssimazione
-  // ragionevole prima che React monti.
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fff8f0" },
     { media: "(prefers-color-scheme: dark)", color: "#141414" },
@@ -35,9 +33,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it" className={`${unbounded.variable} ${jakarta.variable} ${lora.variable}`}>
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
