@@ -2,6 +2,7 @@ import "./globals.css";
 import "./jessica.css";
 import type { Metadata, Viewport } from "next";
 import { Unbounded, Plus_Jakarta_Sans, Lora } from "next/font/google";
+import SpotifyLearnControl from "@/components/SpotifyLearnControl";
 
 const unbounded = Unbounded({
   subsets: ["latin"], weight: ["700", "900"],
@@ -33,7 +34,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it" className={`${unbounded.variable} ${jakarta.variable} ${lora.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <div className="spotify-learn-global" aria-label="Apprendimento Spotify">
+          <SpotifyLearnControl />
+        </div>
+      </body>
     </html>
   );
 }
