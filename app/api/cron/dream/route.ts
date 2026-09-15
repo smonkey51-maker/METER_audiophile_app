@@ -4,14 +4,14 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Alle 4:00. Consolidare a ore morte invece che a soglia di reazioni:
- * la memoria si assesta mentre dormi e la mattina il modello è cambiato.
+ * Alle 4:00: Jessica consolida ciò che METER ha raccolto durante il giorno
+ * e sceglie i consigli successivi. La raccolta Spotify frequente è separata
+ * in /api/cron/spotify-sync: questo ciclo resta il momento di riflessione,
+ * non un semplice polling.
  *
- * Il riaggiornamento dal profilo Spotify e la scelta dei consigli del
- * giorno girano nello stesso ciclo, incatenati: nessuno dei due ha un
- * cron dedicato (il piano Hobby ne ammette uno solo al giorno per
- * progetto, già preso da questo). Jessica propone dopo il consolidamento,
- * così i consigli riflettono il modello appena aggiornato.
+ * Manteniamo anche il reimport completo del profilo una volta al giorno:
+ * aggiorna top artist, libreria e traiettoria di lungo periodo, mentre lo
+ * scrobble frequente conserva gli ascolti tra un ciclo e l'altro.
  */
 export async function GET(req: Request) {
   if (process.env.CRON_SECRET && req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
